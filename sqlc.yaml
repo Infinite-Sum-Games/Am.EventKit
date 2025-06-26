@@ -1,0 +1,25 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    queries: "db/queries"
+    schema: "db/migrations"
+    gen:
+      go:
+        emit_methods_with_db_argument: true
+        emit_json_tags: true
+        package: "db"
+        out: "db/gen"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "timestampz"
+            go_type:
+              import: "time"
+              type: "Time"
+          - db_type: "jsonb"
+            go_type: "github.com/jackc/pgx/v5/pgtype.JSONB"
+

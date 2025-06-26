@@ -1,0 +1,16 @@
+# Ignore binaries
+tmp/
+bin/
+
+# Ignoring environment variables
+.env
+
+# Ignoring generated files
+db/gen
+
+# Ignoring RSA and log files
+*.log
+*.rsa
+
+# Added by goreleased init:
+dist/
