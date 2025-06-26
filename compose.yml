@@ -1,0 +1,49 @@
+services:
+  # Primary database
+  postgres:
+    image: postgres:latest
+    container_name: anokha-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Caching
+  valkey:
+    image: valkey/valkey:8.1.1-alpine
+    container_name: anokha-valkey
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: valkey-server --appendonly yes # persistance
+    volumes:
+      - valkey_data:/data
+    networks:
+      - valkey_network
+
+  # UI for Caching
+  insight:
+    image: redislabs/redisinsight:latest
+    container_name: anokha-insight
+    restart: on-failure
+    ports:
+      - "5540:5540"
+    depends_on:
+      - valkey
+    environment:
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+    networks:
+      - valkey_network
+
+networks:
+  valkey_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  valkey_data:
