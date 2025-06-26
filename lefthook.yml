@@ -1,9 +1,39 @@
 pre-commit:
+  parallel: true
   commands:
-    prevent-println:
+    # 1. Block fmt.Println usage
+    prevent-fmt-println:
       glob: "*.go"
       run: |
-        if git diff --cached --name-only | grep -E '\.go$' | xargs grep -l 'fmt.Println'; then
-          echo "Error: Found fmt.Println in staged Go files. Please remove them before committing."
+        if grep -n 'fmt\.Println' {staged_files}; then
+          echo "Error: Found 'fmt.Println' in staged Go files. Please remove them."
           exit 1
+        fi
+    # 2. Block log.Print or log.Println usage
+    prevent-log-print:
+      glob: "*.go"
+      run: |
+        if grep -n 'log\.Print' {staged_files}; then
+          echo "Error: Found 'log.Print*' in staged Go files. Use structured logging (zerolog) instead."
+          exit 1
+        fi
+    # 3. Fail if any file is not gofmt formatted
+    go-fmt:
+      glob: "*.go"
+      run: |
+        UNFORMATTED=$(gofmt -l {staged_files})
+        if [ -n "$UNFORMATTED" ]; then
+          echo "Error: The following files are not gofmt formatted:"
+          echo "$UNFORMATTED"
+          echo "Run: gofmt -w {staged_files}"
+          exit 1
+        fi
+    # 4. Run tests if *_test.go exists
+    go-test:
+      run: |
+        if find . -name "*_test.go" | grep . >/dev/null; then
+          echo "Running tests..."
+          go test ./...
+        else
+          echo "No test files found. Skipping tests."
         fi

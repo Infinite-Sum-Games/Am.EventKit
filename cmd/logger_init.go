@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"time"
@@ -41,8 +40,6 @@ func InitLogger(env string) *pkg.LoggerService {
 	}
 	zerolog.TimeFieldFormat = time.RFC3339
 	logger := zerolog.New(output).With().Timestamp().Logger()
-
-	fmt.Print("hello")
 
 	return &pkg.LoggerService{
 		Logger: logger,
