@@ -1,0 +1,9 @@
+pre-commit:
+  commands:
+    prevent-println:
+      glob: "*.go"
+      run: |
+        if git diff --cached --name-only | grep -E '\.go$' | xargs grep -l 'fmt.Println'; then
+          echo "Error: Found fmt.Println in staged Go files. Please remove them before committing."
+          exit 1
+        fi
