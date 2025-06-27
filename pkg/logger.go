@@ -6,6 +6,8 @@ import (
 	"maps"
 )
 
+var Logger_Service *LoggerService
+
 type LoggerService struct {
 	Logger zerolog.Logger
 	Env    string
