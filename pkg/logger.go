@@ -3,6 +3,7 @@ package pkg
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"maps"
 )
 
 type LoggerService struct {
@@ -12,7 +13,7 @@ type LoggerService struct {
 
 type LoggerServiceInterface interface {
 	// Error when something breaks (validation, DB fail, etc.)
-	LogError(err error, msg string, route string, function string)
+	LogError(err error, msg string, ctx *gin.Context)
 
 	// Warn about something unusual but not fatal (e.g., cache miss)
 	LogWarn(msg string, route string, function string)
@@ -30,21 +31,21 @@ type LoggerServiceInterface interface {
 	LogFatal(msg string, err error)
 }
 
-func (l *LoggerService) LogError(err error, msg string, route string, function string) {
-	event := l.Logger.Error().
-		Str("route", route).
-		Str("function", function).Err(err).Caller()
+func (l *LoggerService) LogError(err error, msg string, ctx *gin.Context) {
+	event := l.Logger.WithLevel(zerolog.ErrorLevel).
+		Str("route", ctx.FullPath()).
+		Str("method", ctx.Request.Method).Err(err).Caller()
 	event.Msg(msg)
 }
 
-func (l *LoggerService) LogWarn(msg string, route string, function string) {
-	l.Logger.Warn().
-		Str("route", route).
-		Str("function", function).Msg(msg)
+func (l *LoggerService) LogWarn(msg string, ctx *gin.Context) {
+	l.Logger.WithLevel(zerolog.WarnLevel).
+		Str("route", ctx.FullPath()).
+		Str("function", ctx.Request.Method).Msg(msg)
 }
 
 func (l *LoggerService) LogInfo(msg string) {
-	l.Logger.Info().Msg(msg)
+	l.Logger.WithLevel(zerolog.InfoLevel).Msg(msg)
 }
 
 func (l *LoggerService) LogDebug(msg string, route string, function string) {
@@ -53,38 +54,38 @@ func (l *LoggerService) LogDebug(msg string, route string, function string) {
 		return
 	}
 
-	l.Logger.Debug().
+	l.Logger.WithLevel(zerolog.DebugLevel).
 		Str("route", route).
 		Str("function", function).
 		Caller().Msg(msg)
 }
 
 func (l *LoggerService) LogFatal(msg string, err error) {
-	l.Logger.Fatal().
+	l.Logger.WithLevel(zerolog.FatalLevel).
 		Err(err).
 		Caller().Msg(msg)
 }
 
+// NOTE: Do not use this function in any module or file, this is being used in middleware
 func (l *LoggerService) LogRequest(c *gin.Context) {
-	// Extract query + path params into a map
-	params := map[string]string{}
+	// Path parameters
+	pathParams := map[string]string{}
 	for _, param := range c.Params {
-		params[param.Key] = param.Value
-	}
-	for key, value := range c.Request.URL.Query() {
-		if len(value) > 0 {
-			params[key] = value[0]
-		}
+		pathParams[param.Key] = param.Value
 	}
 
-	event := l.Logger.Info().
+	// Query parameters
+	queryParams := map[string][]string{}
+	maps.Copy(queryParams, c.Request.URL.Query())
+
+	event := l.Logger.WithLevel(zerolog.InfoLevel).
 		Str("route", c.FullPath()).
 		Str("method", c.Request.Method).
-		Interface("params", params).
+		Interface("path-params", pathParams).
+		Interface("query-params", queryParams).
 		Str("ip", c.ClientIP()).
 		Str("user-agent", c.Request.UserAgent()).
 		Str("function", "HTTPMiddleware")
 
 	event.Msg("incoming HTTP request")
 }
-
