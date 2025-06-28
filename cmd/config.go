@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"fmt"
-	"strings"
 	"errors"
+	"fmt"
 	"net/url"
+	"os"
+	"strings"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
@@ -22,17 +23,33 @@ var Env *EnvConfig
 func LoadConfig() (*EnvConfig, error) {
 	viper.AddConfigPath(".")
 	viper.SetConfigName("env")
+	viper.SetConfigFile("toml")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
-			return nil, fmt.Errorf(".env file either doesn't exist or is unreachable")
+			return nil, fmt.Errorf("env.toml file either doesn't exist or is unreachable")
 		}
 		// Config file was found but another error was produced
 		return nil, fmt.Errorf("unexpected error occurred while loading environment variables :%w", err)
 	}
+
+	allowedEnvs := map[string]bool{
+		"PRODUCTION":  true,
+		"DEVELOPMENT": true,
+	}
+
+	activeEnv := strings.ToUpper(os.Getenv("ENV"))
+	if activeEnv == "" {
+		activeEnv = "DEVELOPMENT"
+	}
+	// validating the ENV from source
+	if !allowedEnvs[activeEnv] {
+		return nil, fmt.Errorf("invalid ENV value: %s (allowed: PRODUCTION, DEVELOPMENT)", activeEnv)
+	}
+
 	config := &EnvConfig{}
-	if err := viper.Unmarshal(config); err != nil {
-		return nil, fmt.Errorf("failed to parse environment variables from .env :%w", err)
+	if err := viper.UnmarshalKey(activeEnv, config); err != nil {
+		return nil, fmt.Errorf("failed to parse environment variables from env.toml :%w", err)
 	}
 
 	// validate the config

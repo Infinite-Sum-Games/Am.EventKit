@@ -4,6 +4,7 @@ bin/
 
 # Ignoring environment variables
 .env
+env.toml
 
 # Ignoring generated files
 db/gen
