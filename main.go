@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	services "github.com/Thanus-Kumaar/anokha-2025-backend/services"
+	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	err := services.InitDBPool()
+	err := cmd.InitDBPool()
 	if err != nil {
 		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
 	}
