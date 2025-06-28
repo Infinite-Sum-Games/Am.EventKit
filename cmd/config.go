@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/spf13/viper"
 )
 
@@ -22,15 +23,37 @@ func LoadConfig() (*EnvConfig, error) {
 			// Config file not found; ignore error if desired
 			return nil, fmt.Errorf("configuration file is not found")
 		}
-			// Config file was found but another error was produced
-			return nil, fmt.Errorf("fatal error config file: %w", err)
+		// Config file was found but another error was produced
+		return nil, fmt.Errorf("fatal error config file: %w", err)
 	}
 	config := &EnvConfig{}
 	if err := viper.Unmarshal(config); err != nil {
 		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
 
-	// validate the config here
+	// validate the config
+	err := validateConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation of config files failed: %w", err)
+	}
 
 	return config, nil
+}
+
+func validateConfig(envConfig *EnvConfig) error {
+	return validation.ValidateStruct(envConfig,
+		validation.Field(&envConfig.Environment,
+			validation.Required,
+			validation.In("PRODUCTION", "DEVELOPMENT"),
+		),
+		validation.Field(&envConfig.Port,
+			validation.Required,
+			validation.Min(1),
+			validation.Max(65535),
+		),
+		validation.Field(&envConfig.DatabaseURL,
+			validation.Required,
+			validation.Length(5, 100),
+		),
+	)
 }
