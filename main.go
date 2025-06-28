@@ -16,7 +16,7 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	cmd.Env = config
-	log.Println("Configuration loaded successfully")
+	log.Println("Environment variables loaded successfully.")
 
 	r := gin.New()
 	r.Use(gin.Logger())

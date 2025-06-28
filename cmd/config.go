@@ -2,8 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+	"errors"
+	"net/url"
 
-	validation "github.com/go-ozzo/ozzo-validation/v4"
+	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/spf13/viper"
 )
 
@@ -21,39 +25,50 @@ func LoadConfig() (*EnvConfig, error) {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
-			return nil, fmt.Errorf("configuration file is not found")
+			return nil, fmt.Errorf(".env file either doesn't exist or is unreachable")
 		}
 		// Config file was found but another error was produced
-		return nil, fmt.Errorf("fatal error config file: %w", err)
+		return nil, fmt.Errorf("unexpected error occurred while loading environment variables :%w", err)
 	}
 	config := &EnvConfig{}
 	if err := viper.Unmarshal(config); err != nil {
-		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
+		return nil, fmt.Errorf("failed to parse environment variables from .env :%w", err)
 	}
 
 	// validate the config
 	err := validateConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("validation of config files failed: %w", err)
+		return nil, fmt.Errorf("invalid configurations found in .env :%w", err)
 	}
 
 	return config, nil
 }
 
 func validateConfig(envConfig *EnvConfig) error {
-	return validation.ValidateStruct(envConfig,
-		validation.Field(&envConfig.Environment,
-			validation.Required,
-			validation.In("PRODUCTION", "DEVELOPMENT"),
+	return v.ValidateStruct(envConfig,
+		v.Field(&envConfig.Environment,
+			v.Required,
+			v.In("PRODUCTION", "DEVELOPMENT"),
 		),
-		validation.Field(&envConfig.Port,
-			validation.Required,
-			validation.Min(1),
-			validation.Max(65535),
+		v.Field(&envConfig.Port,
+			v.Required,
+			v.Min(1),
+			v.Max(65535),
 		),
-		validation.Field(&envConfig.DatabaseURL,
-			validation.Required,
-			validation.Length(5, 100),
+		v.Field(&envConfig.DatabaseURL,
+			v.Required,
+			v.Length(5, 100),
+			is.URL,
+			v.By(func(value any) error {
+				s, _ := value.(string)
+				if !strings.HasPrefix(s, "postgres") {
+					return errors.New("database URL must start with 'postgres'")
+				}
+				if _, err := url.ParseRequestURI(s); err != nil {
+					return errors.New("database URL must be a valid URI")
+				}
+				return nil
+			}),
 		),
 	)
 }
