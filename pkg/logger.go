@@ -6,7 +6,7 @@ import (
 	"maps"
 )
 
-var Logger_Service *LoggerService
+var Log *LoggerService
 
 type LoggerService struct {
 	Logger zerolog.Logger

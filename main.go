@@ -19,10 +19,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Logger initialization failed: %v", err)
 	}
-	pkg.Logger_Service = logger
-	pkg.Logger_Service.LogInfo("Logger initiation successful")
+	pkg.Log = logger
+	pkg.Log.LogInfo("Logger initiation successful")
 
-	r.Use(middleware.RequestLoggerMiddleware(pkg.Logger_Service))
+	r.Use(middleware.RequestLoggerMiddleware(pkg.Log))
 
 	r.GET("/api/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
