@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var dbPool *pgxpool.Pool
+var DBPool *pgxpool.Pool
 
 const (
 	defaultMaxConns          = int32(100)
@@ -52,6 +52,6 @@ func InitDBPool() error {
 		return fmt.Errorf("Database connection test failed: %w", err)
 	}
 
-	dbPool = pool
+	DBPool = pool
 	return nil
 }
