@@ -47,3 +47,29 @@ func SignToken(email string, name string, userId, role string, tokenType string)
 	}
 	return signedToken, nil
 }
+
+func VerifyToken(tokenString string) (*ApplicationClaims, error) {
+	claims := &ApplicationClaims{}
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (any, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte("Random String"), nil //TODO: The same, should change to config
+		})
+	if err != nil {
+		return nil, fmt.Errorf("token parsing error: %s", err)
+	}
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+	if claims, ok := token.Claims.(*ApplicationClaims); ok {
+		if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
+			return nil, fmt.Errorf("token expired")
+		}
+		return claims, nil
+	}
+	return nil, fmt.Errorf("invalid token claims type")
+}
