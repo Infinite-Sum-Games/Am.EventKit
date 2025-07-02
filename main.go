@@ -12,6 +12,14 @@ import (
 )
 
 func main() {
+	// setting up application configuration
+	config, err := cmd.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+	cmd.Env = config
+	log.Println("Environment variables loaded successfully.")
+  
 	err := cmd.InitDBPool()
 	if err != nil {
 		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
@@ -35,7 +43,7 @@ func main() {
 			"message": "Server is live ◪_◪",
 		})
 	})
-  
+
 	err = r.Run(":" + "9000")
 	if err != nil {
 		fmt.Println("Server failed")
