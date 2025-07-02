@@ -12,7 +12,13 @@ import (
 )
 
 func main() {
+	err := cmd.InitDBPool()
+	if err != nil {
+		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
+	}
+
 	r := gin.New()
+	r.Use(gin.Logger())
 
 	// initializing the logger and other middlewares
 	logger, err := cmd.InitLogger("DEVELOPMENT") // NOTE: hardcoded now, will change once viper is setup
@@ -29,6 +35,7 @@ func main() {
 			"message": "Server is live ◪_◪",
 		})
 	})
+  
 	err = r.Run(":" + "9000")
 	if err != nil {
 		fmt.Println("Server failed")
