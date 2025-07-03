@@ -1,4 +1,4 @@
-package pkg
+package mail
 
 import (
 	"bytes"
@@ -8,6 +8,13 @@ import (
 
 	"gopkg.in/gomail.v2"
 )
+
+type EmailRequest struct {
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Type    string   `json:"type"`
+	Data    any      `json:"data"`
+}
 
 type OTPTemplateData struct {
 	UserName string
@@ -54,8 +61,8 @@ func SendMail(toAddresses []string, subject string, emailType string, data any) 
 func getTemplate(emailType string, data any) (string, error) {
 	basePath := filepath.Join("pkg", "template")
 	templateFiles := map[string]string{
-		"otp":     "otp.html",
-		"welcome": "welcome.html",
+		"otp":       "otp.html",
+		"welcome":   "welcome.html",
 		"event-reg": "event-registration.html",
 	}
 	fileName, ok := templateFiles[emailType]
@@ -90,7 +97,7 @@ func getTemplate(emailType string, data any) (string, error) {
 		}
 		err = tmpl.Execute(&rendered, eventData)
 	}
-	
+
 	if err != nil {
 		return "", fmt.Errorf("failed to execute template %s: %w", fileName, err)
 	}
