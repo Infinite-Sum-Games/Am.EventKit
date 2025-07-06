@@ -3,6 +3,7 @@
 -- +goose StatementBegin
 CREATE SCHEMA IF NOT EXISTS "public";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS citext;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
@@ -40,7 +41,7 @@ CREATE TYPE attendance_mode_enum AS ENUM (
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS staff (
-  id SERIAL NOT NULL,
+  id UUID DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   name TEXT NOT NULL,
@@ -100,7 +101,7 @@ CREATE TABLE IF NOT EXISTS student_onboarding (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE UNIQUE INDEX student_unique_roll_number
+CREATE UNIQUE INDEX student_onboarding_unique_roll_number
 ON student_onboarding(amrita_roll_number)
 WHERE amrita_roll_number IS NOT NULL;
 -- +goose StatementEnd
