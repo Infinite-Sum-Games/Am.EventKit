@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TYPE account_status_enum as ENUM (
+CREATE TYPE account_status_enum AS ENUM (
   'VERIFIED',
   'UNVERIFIED',
   'DISABLED'
@@ -25,7 +25,8 @@ CREATE TYPE event_type_enum AS ENUM (
 
 CREATE TYPE event_status_enum AS ENUM (
   'CLOSED',
-  'ACTIVE'
+  'ACTIVE',
+  'COMPLETED'
 );
 
 CREATE TYPE event_mode_enum AS ENUM (
