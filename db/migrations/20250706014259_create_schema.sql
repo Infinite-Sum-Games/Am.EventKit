@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS event (
   name TEXT NOT NULL UNIQUE,
   blurb TEXT NOT NULL,
   description TEXT NOT NULL,
-  cover_image_url TEXT NOT NULL UNIQUE,
+  cover_image_url TEXT UNIQUE,
   price NUMERIC NOT NULL,
   is_per_head BOOLEAN NOT NULL,
   rules TEXT NOT NULL,

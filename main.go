@@ -20,7 +20,7 @@ func main() {
 	cmd.Env = config
 	log.Println("Environment variables loaded successfully.")
   
-	err := cmd.InitDBPool()
+	err = cmd.InitDBPool()
 	if err != nil {
 		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
 	}
