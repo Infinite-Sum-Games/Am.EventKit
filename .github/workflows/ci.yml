@@ -1,0 +1,82 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'lefthook.yml'
+      # - '.golangci.yml' # Upcoming
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'lefthook.yml'
+      # - '.golangci.yml'
+  workflow_dispatch:
+
+jobs:
+  build_and_test:
+    name: Build, Test & Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'
+          cache: true        
+
+      # --- Common Go Dependencies Setup ---
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Check go.mod and go.sum consistency (go mod tidy)
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum || { echo "go.mod or go.sum needs to be tidied. Run 'go mod tidy'."; exit 1; }
+
+        # --- Code Quality Checks I: Missing Gofmt ---
+      - name: Go Format Check
+        run: |
+          unformatted_files=$(go fmt -l .)
+          if [ -n "$unformatted_files" ]; then
+            echo "::error file=go.mod::The following Go files are not formatted correctly:"
+            echo "$unformatted_files"
+            echo "Please run 'go fmt ./...' to fix them."
+            exit 1
+          fi
+          echo "All Go files are formatted correctly."
+
+      # --- Code Quality II: GolangCI-Lint ---
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.59.1
+          args: --timeout=5m
+          # config: .golangci.yml # Upcoming
+
+      # --- Lefthook Integration ---
+      - name: Install lefthook
+        run: go install github.com/evilmartians/lefthook@latest
+
+      - name: Run Lefthook pre-commit hooks
+        run: lefthook run pre-commit --verbose
+
+      # --- Basic Go Build & Test ---
+      - name: Build Go application
+        run: go build ./...
+
+      - name: Run Go tests
+        run: go test -v ./...
