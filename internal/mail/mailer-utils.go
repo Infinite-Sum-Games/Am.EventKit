@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"path/filepath"
 
-	"gopkg.in/gomail.v2"
+	gomail "gopkg.in/gomail.v2"
 )
 
 type EmailRequest struct {
