@@ -21,7 +21,7 @@ func main() {
 
 	err = cmd.InitDBPool()
 	if err != nil {
-		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
+		panic(fmt.Errorf("failed to initialize database pool: %w", err))
 	}
 
 	r := gin.New()
