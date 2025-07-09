@@ -1,4 +1,4 @@
-package services
+package cmd
 
 import (
 	"context"
@@ -11,32 +11,32 @@ import (
 var DBPool *pgxpool.Pool
 
 const (
-	defaultMaxConns          = int32(100)
-	defaultMinConns          = int32(10)
-	defaultMaxConnLifetime   = time.Hour
-	defaultMaxConnIdleTime   = time.Minute * 30
-	defaultHealthCheckPeriod = time.Minute
-	defaultConnectTimeout    = time.Second * 5
+	DEFAULT_MAX_CONNS          = int32(100)
+	DEFAULT_MIN_CONNS          = int32(10)
+	DEFAULT_MAX_CONN_LIFE_TIME   = time.Hour
+	DEFAULT_MAX_CONN_IDLE_TIME   = time.Minute * 30
+	DEFAULT_HEALTH_PERIOD = time.Minute
+	DEFAULT_CONN_TIMEOUT    = time.Second * 5
 )
 
 func InitDBPool() error {
-	dbConnectionStr := EnvConfig.DatabaseURL
+	dbConnectionStr := Env.DatabaseURL
 
 	dbConfig, err := pgxpool.ParseConfig(dbConnectionStr)
 	if err != nil {
-		return fmt.Errorf("Failed to parse database URL: %w", err)
+		return fmt.Errorf("failed to parse database URL: %w", err)
 	}
 
-	dbConfig.MaxConns = defaultMaxConns
-	dbConfig.MinConns = defaultMinConns
-	dbConfig.MaxConnLifetime = defaultMaxConnLifetime
-	dbConfig.MaxConnIdleTime = defaultMaxConnIdleTime
-	dbConfig.HealthCheckPeriod = defaultHealthCheckPeriod
-	dbConfig.ConnConfig.ConnectTimeout = defaultConnectTimeout
+	dbConfig.MaxConns = DEFAULT_MAX_CONNS
+	dbConfig.MinConns = DEFAULT_MIN_CONNS
+	dbConfig.MaxConnLifetime = DEFAULT_MAX_CONN_LIFE_TIME
+	dbConfig.MaxConnIdleTime = DEFAULT_MAX_CONN_IDLE_TIME
+	dbConfig.HealthCheckPeriod = DEFAULT_HEALTH_PERIOD
+	dbConfig.ConnConfig.ConnectTimeout = DEFAULT_CONN_TIMEOUT
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), dbConfig)
 	if err != nil {
-		return fmt.Errorf("Failed to create connection pool: %w", err)
+		return fmt.Errorf("failed to create connection pool: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -44,12 +44,12 @@ func InitDBPool() error {
 
 	dbConn, err := pool.Acquire(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to acquire connection from pool: %w", err)
+		return fmt.Errorf("failed to acquire connection from pool: %w", err)
 	}
 	defer dbConn.Release()
 
 	if err := dbConn.Ping(ctx); err != nil {
-		return fmt.Errorf("Database connection test failed: %w", err)
+		return fmt.Errorf("database connection test failed: %w", err)
 	}
 
 	DBPool = pool
