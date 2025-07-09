@@ -1,9 +1,12 @@
 # Ignore binaries
 tmp/
 bin/
+.out
+.exe
 
 # Ignoring environment variables
 .env
+env.toml
 
 # Ignoring generated files
 db/gen
