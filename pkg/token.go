@@ -8,8 +8,8 @@ import (
 )
 
 type ApplicationClaims struct {
-	role string `json: "role"`
-	name string `json: "name"`
+	Role string `json:"role"`
+	Name string `json:"name"`
 	jwt.RegisteredClaims
 }
 

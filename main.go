@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 )
@@ -36,7 +35,7 @@ func main() {
 	pkg.Log = logger
 	pkg.Log.LogInfo("Logger initiation successful")
 
-	r.Use(middleware.RequestLoggerMiddleware(pkg.Log))
+	r.Use(pkg.Log.LogRequest)
 
 	r.GET("/api/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
