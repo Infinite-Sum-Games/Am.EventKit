@@ -13,49 +13,52 @@ import (
 )
 
 type EnvConfig struct {
-	Environment string `mapstrucutre:"env"`
-	Port        int    `mapstructure:"port"`
-	DatabaseURL string `mapstructure:"database_url"`
+	Environment     string `mapstructure:"env"`
+	Port            int    `mapstructure:"port"`
+	DatabaseURL     string `mapstructure:"database_url"`
+	PrivateKeyPath  string `mapstructure:"private_key_path"`  // <- flattened directly
+	PublicKeyPath   string `mapstructure:"public_key_path"`   // <- flattened directly
 }
 
 var Env *EnvConfig
 
 func LoadConfig() (*EnvConfig, error) {
-	viper.AddConfigPath(".")
+	// Look for "env.toml" in current directory
 	viper.SetConfigName("env")
-	viper.SetConfigFile("toml")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath(".")
+
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired
 			return nil, fmt.Errorf("env.toml file either doesn't exist or is unreachable")
 		}
-		// Config file was found but another error was produced
 		return nil, fmt.Errorf("unexpected error occurred while loading environment variables :%w", err)
 	}
 
-	allowedEnvs := map[string]bool{
-		"PRODUCTION":  true,
-		"DEVELOPMENT": true,
-	}
-
+	// Default to DEVELOPMENT if ENV is unset
 	activeEnv := strings.ToUpper(os.Getenv("ENV"))
 	if activeEnv == "" {
 		activeEnv = "DEVELOPMENT"
 	}
-	// validating the ENV from source
+
+	// Validate allowed environments
+	allowedEnvs := map[string]bool{
+		"PRODUCTION":  true,
+		"DEVELOPMENT": true,
+	}
 	if !allowedEnvs[activeEnv] {
 		return nil, fmt.Errorf("invalid ENV value: %s (allowed: PRODUCTION, DEVELOPMENT)", activeEnv)
 	}
 
+	// Unmarshal based on selected env block
 	config := &EnvConfig{}
 	if err := viper.UnmarshalKey(activeEnv, config); err != nil {
 		return nil, fmt.Errorf("failed to parse environment variables from env.toml :%w", err)
 	}
 
-	// validate the config
-	err := validateConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("invalid configurations found in .env :%w", err)
+	// Validate loaded config
+	if err := validateConfig(config); err != nil {
+		return nil, fmt.Errorf("invalid configurations found in env.toml :%w", err)
 	}
 
 	return config, nil
@@ -87,5 +90,7 @@ func validateConfig(envConfig *EnvConfig) error {
 				return nil
 			}),
 		),
+		v.Field(&envConfig.PrivateKeyPath, v.Required),
+		v.Field(&envConfig.PublicKeyPath, v.Required),
 	)
 }
