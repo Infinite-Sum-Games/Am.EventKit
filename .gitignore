@@ -1,6 +1,8 @@
 # Ignore binaries
 tmp/
 bin/
+.out
+.exe
 
 # Ignoring environment variables
 .env
