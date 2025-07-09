@@ -3,7 +3,7 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - ** # Run on all branches
+      - '**' # Run on all branches
     paths:
       - '**.go'
       - 'go.mod'
@@ -12,7 +12,7 @@ on:
       # - '.golangci.yml' # Upcoming
   pull_request:
     branches:
-      - ** # Run on all branches
+      - '**' # Run on all branches
     paths:
       - '**.go'
       - 'go.mod'
