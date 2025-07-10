@@ -19,7 +19,7 @@ func main() {
 	}
 	cmd.Env = config
 	log.Println("Environment variables loaded successfully.")
-  
+
 	err = cmd.InitDBPool()
 	if err != nil {
 		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
@@ -35,6 +35,18 @@ func main() {
 	}
 	pkg.Log = logger
 	pkg.Log.LogInfo("Logger initiation successful")
+
+	// Initialize RSA
+	err = cmd.CheckRSAKeyPairExists()
+	if err != nil {
+		err = cmd.GenerateRSAKeyPair()
+		if err != nil {
+			panic(fmt.Errorf("Failed to initialize RSA: %w", err))
+		}
+		pkg.Log.LogInfo("[OK]: RSA keypair generated and saved successfully.")
+	} else {
+		pkg.Log.LogInfo("[OK]: Using existing RSA keypair.")
+	}
 
 	r.Use(middleware.RequestLoggerMiddleware(pkg.Log))
 
