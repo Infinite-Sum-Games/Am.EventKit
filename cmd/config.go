@@ -13,9 +13,13 @@ import (
 )
 
 type EnvConfig struct {
-	Environment string `mapstrucutre:"env"`
-	Port        int    `mapstructure:"port"`
-	DatabaseURL string `mapstructure:"database_url"`
+	Environment   string `mapstrucutre:"env"`
+	Port          int    `mapstructure:"port"`
+	DatabaseURL   string `mapstructure:"database_url"`
+	RedisHost     string `mapstructure:"redis_host"`
+	RedisPort     int    `mapstructure:"redis_port"`
+	RedisUsername string `mapstructure:"redis_username"`
+	RedisPassword string `mapstructure:"redis_password"`
 }
 
 var Env *EnvConfig
@@ -61,18 +65,11 @@ func LoadConfig() (*EnvConfig, error) {
 	return config, nil
 }
 
-func validateConfig(envConfig *EnvConfig) error {
-	return v.ValidateStruct(envConfig,
-		v.Field(&envConfig.Environment,
-			v.Required,
-			v.In("PRODUCTION", "DEVELOPMENT"),
-		),
-		v.Field(&envConfig.Port,
-			v.Required,
-			v.Min(1),
-			v.Max(65535),
-		),
-		v.Field(&envConfig.DatabaseURL,
+func validateConfig(env *EnvConfig) error {
+	return v.ValidateStruct(env,
+		v.Field(&env.Environment, v.Required, v.In("PRODUCTION", "DEVELOPMENT")),
+		v.Field(&env.Port, v.Required, v.Min(1), v.Max(65535)),
+		v.Field(&env.DatabaseURL,
 			v.Required,
 			v.Length(5, 100),
 			is.URL,
@@ -87,5 +84,10 @@ func validateConfig(envConfig *EnvConfig) error {
 				return nil
 			}),
 		),
+		v.Field(&env.RedisHost, v.Required),
+		v.Field(&env.RedisPort, v.Required, v.Min(1), v.Max(65535)),
+		// OPTIONAL
+		// v.Field(&env.RedisUsername, v.Required),
+		// v.Field(&env.RedisPassword, v.Required),
 	)
 }

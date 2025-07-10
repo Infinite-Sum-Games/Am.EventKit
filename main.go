@@ -19,14 +19,11 @@ func main() {
 	}
 	cmd.Env = config
 	log.Println("Environment variables loaded successfully.")
-  
+
 	err = cmd.InitDBPool()
 	if err != nil {
 		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
 	}
-
-	r := gin.New()
-	r.Use(gin.Logger())
 
 	// initializing the logger and other middlewares
 	logger, err := cmd.InitLogger("DEVELOPMENT") // NOTE: hardcoded now, will change once viper is setup
@@ -36,6 +33,15 @@ func main() {
 	pkg.Log = logger
 	pkg.Log.LogInfo("Logger initiation successful")
 
+	// Setting up Redis caching
+	err = cmd.InitCache()
+	if err != nil {
+		return
+	}
+	pkg.Log.LogInfo("[ACTIVE]: Cache service is online.")
+
+	r := gin.New()
+	r.Use(gin.Logger())
 	r.Use(middleware.RequestLoggerMiddleware(pkg.Log))
 
 	r.GET("/api/test", func(c *gin.Context) {
