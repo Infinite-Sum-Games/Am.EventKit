@@ -5,16 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"path/filepath"
-
-	gomail "gopkg.in/gomail.v2"
 )
-
-type EmailRequest struct {
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	Type    string   `json:"type"`
-	Data    any      `json:"data"`
-}
 
 type OTPTemplateData struct {
 	UserName string
@@ -33,31 +24,7 @@ type RegistrationData struct {
 	EventLocation string
 }
 
-func SendMail(toAddresses []string, subject string, emailType string, data any) error {
-	m := gomail.NewMessage()
-	m.SetHeader("From", "thanuskumaara@gmail.com") //TODO: Should change this to official email of anokha from config
-	m.SetHeader("To", toAddresses...)
-	m.SetHeader("Subject", subject)
-	body, err := getTemplate(emailType, data)
-	if err != nil {
-		return err
-	}
-	m.SetBody("text/html", body)
-
-	d := gomail.NewDialer(
-		//TODO: should setup from config file
-		"",
-		25,
-		"",
-		"",
-	)
-	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("cannot send email: %w", err)
-	}
-	//TODO: Log email sent successful message with logger
-	return nil
-}
-
+// funtion to get template of html based on email type
 func getTemplate(emailType string, data any) (string, error) {
 	basePath := filepath.Join("pkg", "template")
 	templateFiles := map[string]string{
