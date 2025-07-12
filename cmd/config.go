@@ -13,9 +13,13 @@ import (
 )
 
 type EnvConfig struct {
-	Environment string `mapstrucutre:"env"`
-	Port        int    `mapstructure:"port"`
-	DatabaseURL string `mapstructure:"database_url"`
+	Environment  string `mapstrucutre:"env"`
+	Port         int    `mapstructure:"port"`
+	DatabaseURL  string `mapstructure:"database_url"`
+	SMTPHost     string `mapstructure:"smtp_host"`
+	SMTPPort     int    `mapstructure:"smtp_port"`
+	SMTPUsername string `mapstructure:"smtp_username"`
+	SMTPPassword string `mapstructure:"smtp_password"`
 }
 
 var Env *EnvConfig
@@ -86,6 +90,23 @@ func validateConfig(envConfig *EnvConfig) error {
 				}
 				return nil
 			}),
+		),
+		v.Field(&envConfig.SMTPHost,
+			v.Required,
+			v.Length(1, 255),
+		),
+		v.Field(&envConfig.SMTPPort,
+			v.Required,
+			v.Min(1),
+			v.Max(65535),
+		),
+		v.Field(&envConfig.SMTPUsername,
+			v.Required,
+			v.Length(1, 100),
+		),
+		v.Field(&envConfig.SMTPPassword,
+			v.Required,
+			v.Length(1, 100),
 		),
 	)
 }
