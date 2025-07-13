@@ -110,9 +110,18 @@ sudo apt update && sudo apt install build-essential
   ```
 - Or use [GNUWin Make](http://gnuwin32.sourceforge.net/packages/make.htm) and add it to your system `PATH`.
 
+---
 
+### 3. Initialize Project Dependencies
 
-### 3. Run the Server
+Run the following command to install all required CLI tools and set up the project:
+
+```bash
+make setup
+```
+---
+
+### 4. Run the Server
 
 Use the included `Makefile`:
 
