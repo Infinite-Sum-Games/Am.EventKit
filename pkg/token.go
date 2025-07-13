@@ -40,7 +40,7 @@ func SignToken(email string, name string, userId, role string, tokenType string)
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	//TODO: use the jwt secret from env once merged...for now using random string
+	//TODO: use the jwt secret from env once merged...for now using "Random String" word.
 	signedToken, err := token.SignedString("Random String")
 	if err != nil {
 		return "", fmt.Errorf("unable to sign token: %w", err)

@@ -2,8 +2,10 @@ package mail
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	gomail "gopkg.in/gomail.v2"
 )
 
@@ -60,6 +62,6 @@ func (m *Mailer) Send(toAddresses []string, subject string, emailType string, da
 		_ = m.sender.Close()
 		return fmt.Errorf("cannot send email: %w", err)
 	}
-	//TODO: Log email sent successful message with logger
+	pkg.Log.LogInfo(fmt.Sprintf("Email sent successfully:\tTYPE: %s\tTO: %s", subject, strings.Join(toAddresses, ", ")))
 	return nil
 }
