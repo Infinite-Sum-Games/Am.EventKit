@@ -11,7 +11,6 @@ require (
 require github.com/mattn/go-colorable v0.1.13 // indirect
 
 require (
-	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
