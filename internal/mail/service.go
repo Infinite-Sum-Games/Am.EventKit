@@ -65,7 +65,7 @@ func (m *MailerService) worker(id int) {
 		default:
 			item, err := m.queue.DequeueBlock()
 			if err != nil {
-				pkg.Log.LogInfo(fmt.Sprintf("worker %d: failed to dequeue: %v", id, err))
+				pkg.Log.LogErrorSimple(err, fmt.Sprintf("[MAIL-WORKER-%d]: Failed to dequeue", id))
 				continue
 			}
 			req := item.(*EmailRequest)
@@ -73,7 +73,7 @@ func (m *MailerService) worker(id int) {
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
-				pkg.Log.LogInfo(fmt.Sprintf("[MAIL-WORKER-%d]: Failed to send email: %v", id, err))
+				pkg.Log.LogErrorSimple(err, fmt.Sprintf("[MAIL-WORKER-%d]: Failed to send email:", id))
 				// TODO: Retry queue or dead-letter (if critical)
 			}
 			m.wg.Done()
@@ -85,6 +85,6 @@ func (m *MailerService) Shutdown() {
 	m.cancel()
 	m.wg.Wait()
 	if err := m.queue.Close(); err != nil {
-		pkg.Log.LogInfo(fmt.Sprintf("error closing mail queue: %v\n", err))
+		pkg.Log.LogErrorSimple(err, "error closing mail queue: ")
 	}
 }

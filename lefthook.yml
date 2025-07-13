@@ -4,24 +4,14 @@ pre-commit:
     # 1. Block fmt.Println and fmt.Printf usage
     prevent-fmt-println:
       glob: "*.go"
-      run: |
-        if grep -nE 'fmt\.Print(ln|f)' {staged_files}; then
-          echo "Error: Found 'fmt.Println' or 'fmt.Printf' in staged Go files."
-          echo "Please use structured logging (zerolog) instead."
-          exit 1
-        fi
-    # 3. Fail if any file is not gofmt formatted
+      run: ./scripts/prevent-fmt-println.sh {staged_files}
+
+    # 2. Fail if any file is not gofmt formatted
     go-fmt:
       glob: "*.go"
-      run: |
-        UNFORMATTED=$(gofmt -l {staged_files})
-        if [ -n "$UNFORMATTED" ]; then
-          echo "Detected unformatted files. Running gofmt..."
-          gofmt -w {staged_files}
-          git add {staged_files}
-          echo "gofmt applied and changes staged."
-        fi
-    # 4. Run tests if *_test.go exists
+      run: ./scripts/go-fmt.sh {staged_files}
+
+    # 3. Run tests if *_test.go exists
     go-test:
       run: |
         if find . -name "*_test.go" | grep . >/dev/null; then
