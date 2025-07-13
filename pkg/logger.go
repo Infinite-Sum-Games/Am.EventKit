@@ -40,6 +40,11 @@ func (l *LoggerService) LogError(err error, msg string, ctx *gin.Context) {
 	event.Msg(msg)
 }
 
+// function to log error outside the request response life-cycle (without context)
+func (l *LoggerService) LogErrorSimple(err error, msg string) {
+	l.Logger.WithLevel(zerolog.ErrorLevel).Err(err).Caller().Msg(msg)
+}
+
 func (l *LoggerService) LogWarn(msg string, ctx *gin.Context) {
 	l.Logger.WithLevel(zerolog.WarnLevel).
 		Str("route", ctx.FullPath()).
