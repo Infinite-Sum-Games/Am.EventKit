@@ -9,6 +9,8 @@ setup:
 
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 
+	go mod tidy
+
 	@lefthook install
 
 	@echo "All CLI tools installed successfully in $(GO_BIN)"
