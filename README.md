@@ -27,9 +27,9 @@ You can either install them manually or use Docker.
 
 ### 🧩 Option A: Manual Install (OS-Specific)
 
-#### ✅ Go
+#### ✅ Go (version 1.24)
 
-- **macOS:** `brew install go`  
+- **macOS:** `brew install go@1.24`  
 - **Ubuntu/Debian:** `sudo apt update && sudo apt install golang`  
 - **Windows:** Use [official installer](https://go.dev/dl)
 
