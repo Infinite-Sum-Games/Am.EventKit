@@ -14,7 +14,7 @@ func main() {
 	// setting up application configuration
 	config, err := cmd.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Fatalf("%v", err)
 	}
 	cmd.Env = config
 	log.Println("Environment variables loaded successfully.")

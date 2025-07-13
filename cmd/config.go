@@ -8,12 +8,11 @@ import (
 	"strings"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/spf13/viper"
 )
 
 type EnvConfig struct {
-	Environment  string `mapstrucutre:"env"`
+	Environment  string `mapstructure:"env"`
 	Port         int    `mapstructure:"port"`
 	DatabaseURL  string `mapstructure:"database_url"`
 	SMTPHost     string `mapstructure:"smtp_host"`
@@ -27,7 +26,7 @@ var Env *EnvConfig
 func LoadConfig() (*EnvConfig, error) {
 	viper.AddConfigPath(".")
 	viper.SetConfigName("env")
-	viper.SetConfigFile("toml")
+	viper.SetConfigType("toml")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
@@ -78,19 +77,22 @@ func validateConfig(envConfig *EnvConfig) error {
 		),
 		v.Field(&envConfig.DatabaseURL,
 			v.Required,
-			v.Length(5, 100),
-			is.URL,
 			v.By(func(value any) error {
-				s, _ := value.(string)
-				if !strings.HasPrefix(s, "postgres") {
-					return errors.New("database URL must start with 'postgres'")
+				s, ok := value.(string)
+				if !ok {
+					return errors.New("database URL must be a string")
 				}
-				if _, err := url.ParseRequestURI(s); err != nil {
-					return errors.New("database URL must be a valid URI")
+				if !strings.HasPrefix(s, "postgres://") {
+					return errors.New("database URL must start with 'postgres://'")
+				}
+				parsed, err := url.Parse(s)
+				if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+					return errors.New("database URL must be a valid postgres URI")
 				}
 				return nil
 			}),
 		),
+
 		v.Field(&envConfig.SMTPHost,
 			v.Required,
 			v.Length(1, 255),
