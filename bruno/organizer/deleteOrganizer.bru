@@ -1,0 +1,15 @@
+meta {
+  name: deleteOrganizer
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}organizer/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
