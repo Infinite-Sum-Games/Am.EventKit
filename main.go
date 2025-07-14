@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt" "log" "net/http"
+	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
@@ -42,9 +44,8 @@ func main() {
 		panic(fmt.Errorf("failed to initialize database pool: %w", err))
 	}
 
-
-	r.Use(pkg.Log.LogRequest)
 	r := gin.New()
+	r.Use(pkg.Log.LogRequest)
 	r.GET("/api/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Server is live ◪_◪",
