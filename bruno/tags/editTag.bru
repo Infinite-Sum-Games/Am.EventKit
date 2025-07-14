@@ -1,0 +1,22 @@
+meta {
+  name: editTag
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/tags/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
+
+body:json {
+  {
+    "name": "Example Tag",
+    "abbreviation": "EX"
+  }
+}

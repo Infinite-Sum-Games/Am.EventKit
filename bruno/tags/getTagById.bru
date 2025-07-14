@@ -1,0 +1,15 @@
+meta {
+  name: getTagById
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/tags/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}

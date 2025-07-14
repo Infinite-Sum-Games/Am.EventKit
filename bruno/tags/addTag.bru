@@ -1,0 +1,18 @@
+meta {
+  name: addTag
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/tags
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Example Tag",
+    "abbreviation": "EX"
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: deleteTag
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/tags/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
