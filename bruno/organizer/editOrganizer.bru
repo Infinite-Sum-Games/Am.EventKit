@@ -1,0 +1,27 @@
+meta {
+  name: editOrganizer
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}organizer/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
+
+body:json {
+  {
+    "name": "Computer Science and Engineering",
+    "abbr": "CSE",
+    "type": "Department",
+    "student_head": "John Doe",
+    "student_co_head": null,
+    "faculty": "Dr. Krish"
+  }
+  
+}

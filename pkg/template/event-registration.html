@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Anokha 2025 - Registration Confirmation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset & base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, sans-serif;
+        }
+
+        body {
+            background-color: #fffdea; /* Soft light yellow */
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: auto;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+            border-left: 8px solid #facc15;
+        }
+
+        .header-img {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header-img img {
+            height: 80px;
+        }
+
+        .content h2 {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .content p {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .event-summary {
+            background-color: #fefce8;
+            border-left: 4px solid #facc15;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+
+        .event-summary p {
+            margin: 6px 0;
+            font-size: 15px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .footer p {
+            margin-bottom: 8px;
+        }
+
+        .contact-link {
+            color: #d97706;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .content h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-img">
+            <img src="" alt="Anokha Logo">
+        </div>
+        <div class="content">
+            <h2>Dear {{.UserName}},</h2>
+
+            <p>Thank you for registering for <strong>{{.EventName}}</strong> at <strong>Anokha 2025</strong>! We’re excited to have you participate in this exciting event as part of our annual tech fest at Amrita Vishwa Vidyapeetham, Coimbatore.</p>
+
+            <div class="event-summary">
+                <p><strong>Event:</strong> {{.EventName}}</p>
+                <p><strong>Date:</strong> {{.EventDate}}</p>
+                <p><strong>Time:</strong> {{.EventTime}}</p>
+                <p><strong>Location:</strong> {{.EventLocation}}</p>
+            </div>
+
+            <p>Please arrive at the venue at least 15 minutes early. If your event is online, a link and additional instructions will be emailed to you shortly.</p>
+
+            <p>We hope this event enriches your Anokha 2025 experience. Stay tuned for more updates, and don’t forget to explore other events and workshops!</p>
+
+            <p>Warm regards,<br>
+               <strong>WMD Team</strong><br>
+               Anokha 2025<br>
+               Amrita Vishwa Vidyapeetham<br>
+               Coimbatore Campus</p>
+
+            <p>If you have any questions or need support, contact us at 
+                <a href="mailto:contact@anokha25.in" class="contact-link">contact@anokha25.in</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
