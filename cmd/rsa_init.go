@@ -25,7 +25,7 @@ func GenerateRSAKeyPair() error {
 
 	// Writing both keys to individual files
 	if err := os.WriteFile("keys/app.rsa", privateKey.ExportBytes(), 0644); err != nil {
-		return fmt.Errorf("Error saving private key: %w", err)
+		return fmt.Errorf("error saving private key: %w", err)
 	}
 	if err := os.WriteFile("app.pub.rsa", publicKey.ExportBytes(), 0644); err != nil {
 		return fmt.Errorf("error saving public key: %w", err)

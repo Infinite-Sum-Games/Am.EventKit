@@ -20,11 +20,10 @@ func main() {
 	log.Println("Environment variables loaded successfully.")
 
 	// initializing the logger and other middlewares
-	logger, err := cmd.InitLogger("DEVELOPMENT") // NOTE: hardcoded now, will change once viper is setup
+	pkg.Log, err = cmd.InitLogger(cmd.Env.Environment)
 	if err != nil {
 		log.Fatalf("Logger initialization failed: %v", err)
 	}
-	pkg.Log = logger
 	pkg.Log.LogInfo("Logger initiation successful")
 
 	// Initialize RSA
@@ -32,7 +31,7 @@ func main() {
 	if err != nil {
 		err = cmd.GenerateRSAKeyPair()
 		if err != nil {
-			panic(fmt.Errorf("Failed to initialize RSA: %w", err))
+			panic(fmt.Errorf("failed to initialize rsa: %w", err))
 		}
 		pkg.Log.LogInfo("[OK]: RSA keypair generated and saved successfully.")
 	} else {
