@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 )
@@ -15,14 +14,14 @@ func main() {
 	// setting up application configuration
 	config, err := cmd.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		log.Fatalf("%v", err)
 	}
 	cmd.Env = config
 	log.Println("Environment variables loaded successfully.")
-  
+
 	err = cmd.InitDBPool()
 	if err != nil {
-		panic(fmt.Errorf("Failed to initialize database pool: %w", err))
+		panic(fmt.Errorf("failed to initialize database pool: %w", err))
 	}
 
 	r := gin.New()
@@ -36,7 +35,7 @@ func main() {
 	pkg.Log = logger
 	pkg.Log.LogInfo("Logger initiation successful")
 
-	r.Use(middleware.RequestLoggerMiddleware(pkg.Log))
+	r.Use(pkg.Log.LogRequest)
 
 	r.GET("/api/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

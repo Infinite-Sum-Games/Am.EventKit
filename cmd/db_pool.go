@@ -13,10 +13,10 @@ var DBPool *pgxpool.Pool
 const (
 	DEFAULT_MAX_CONNS          = int32(100)
 	DEFAULT_MIN_CONNS          = int32(10)
-	DEFAULT_MAX_CONN_LIFE_TIME   = time.Hour
-	DEFAULT_MAX_CONN_IDLE_TIME   = time.Minute * 30
-	DEFAULT_HEALTH_PERIOD = time.Minute
-	DEFAULT_CONN_TIMEOUT    = time.Second * 5
+	DEFAULT_MAX_CONN_LIFE_TIME = time.Hour
+	DEFAULT_MAX_CONN_IDLE_TIME = time.Minute * 30
+	DEFAULT_HEALTH_PERIOD      = time.Minute
+	DEFAULT_CONN_TIMEOUT       = time.Second * 5
 )
 
 func InitDBPool() error {

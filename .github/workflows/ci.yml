@@ -48,7 +48,7 @@ jobs:
         # --- Code Quality Checks I: Missing Gofmt ---
       - name: Go Format Check
         run: |
-          unformatted_files=$(go fmt -l .)
+          unformatted_files=$(gofmt -l .)
           if [ -n "$unformatted_files" ]; then
             echo "::error file=go.mod::The following Go files are not formatted correctly:"
             echo "$unformatted_files"
@@ -59,9 +59,9 @@ jobs:
 
       # --- Code Quality II: GolangCI-Lint ---
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: v1.59.1
+          version: v2.1
           args: --timeout=5m
           # config: .golangci.yml # Upcoming
 
