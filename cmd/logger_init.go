@@ -15,7 +15,7 @@ func InitLogger(env string) (*pkg.LoggerService, error) {
 
 	switch env {
 	case "DEVELOPMENT":
-		file, err := os.OpenFile("logs/dev.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		file, err := os.OpenFile("dev.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
 			return nil, err
 		}
@@ -30,7 +30,7 @@ func InitLogger(env string) (*pkg.LoggerService, error) {
 		}
 		output = zerolog.MultiLevelWriter(consoleWriter, fileWriter)
 	case "PRODUCTION":
-		file, err := os.OpenFile("logs/prod.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		file, err := os.OpenFile("prod.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
 			return nil, err
 		}

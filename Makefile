@@ -9,13 +9,13 @@ setup:
 
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 
-	go mod tidy
-
 	@lefthook install
 
 	@echo "All CLI tools installed successfully in $(GO_BIN)"
 
 build:
+	@go mod tidy
+	@go test -v ./...
 	@go fmt ./...
 	@go build -o bin/anokha-backend
 
