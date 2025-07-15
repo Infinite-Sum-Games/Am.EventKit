@@ -15,6 +15,7 @@ setup:
 
 build:
 	@go mod tidy
+	@go test -v ./...
 	@go fmt ./...
 	@go build -o bin/anokha-backend
 
