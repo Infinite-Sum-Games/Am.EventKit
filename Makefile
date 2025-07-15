@@ -14,7 +14,7 @@ setup:
 	@echo "All CLI tools installed successfully in $(GO_BIN)"
 
 build:
-	@	go mod tidy
+	@go mod tidy
 	@go fmt ./...
 	@go build -o bin/anokha-backend
 
