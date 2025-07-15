@@ -1,15 +1,6 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches:
-      - '**' # Run on all branches
-    paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
-      - 'lefthook.yml'
-      # - '.golangci.yml' # Upcoming
   pull_request:
     branches:
       - '**' # Run on all branches
