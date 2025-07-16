@@ -28,6 +28,6 @@ func StaffAuthRoutes(r *gin.RouterGroup) {
 	r.GET("/staff/login", LoginStaffCsrf)
 	r.POST("/staff/login", mw.VerifyCsrf, LoginStaff)
 
-	r.GET("/user/session", mw.Auth, FetchStaffSession)
+	r.GET("/staff/session", mw.Auth, FetchStaffSession)
 	r.GET("/staff/logout", mw.Auth, LogoutStaff)
 }
