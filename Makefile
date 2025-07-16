@@ -1,4 +1,12 @@
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
+
 GO_BIN := $(shell go env GOPATH)/bin
+GOOSE_DRIVER := postgres
+GOOSE_DBSTRING := $(DB_URL)
+GOOSE_MIGRATION_DIR := ./db/migrations/
 
 ifeq ($(OS),Windows_NT)
 	BIN_NAME := bin/anokha-backend.exe
@@ -30,13 +38,13 @@ test:
 	@go test -v ./...
 
 up:
-	@goose -dir ./db/migrations/ -no-versioning up
+	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
 
 seed:
-	@goose -dir ./db/seed/ -no-versioning up
+	@goose -dir ./db/seed/ -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
 
 down:
-	@goose -dir ./db/migrations/ -no-versioning down
+	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
 
 # For docker users
 doc:
