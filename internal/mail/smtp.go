@@ -62,6 +62,6 @@ func (m *Mailer) Send(toAddresses []string, subject string, emailType string, da
 		_ = m.sender.Close()
 		return fmt.Errorf("cannot send email: %w", err)
 	}
-	pkg.Log.LogInfo(fmt.Sprintf("Email sent successfully:\tTYPE: %s\tTO: %s", subject, strings.Join(toAddresses, ", ")))
+	pkg.Log.Info(fmt.Sprintf("Email sent successfully:\tTYPE: %s\tTO: %s", subject, strings.Join(toAddresses, ", ")))
 	return nil
 }

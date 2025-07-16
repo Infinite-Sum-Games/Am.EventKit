@@ -1,9 +1,15 @@
 package pkg
 
 import (
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	"maps"
 )
 
 var Log *LoggerService
@@ -13,86 +19,234 @@ type LoggerService struct {
 	Env    string
 }
 
-type LoggerServiceInterface interface {
-	// Error when something breaks (validation, DB fail, etc.)
-	LogError(err error, msg string, ctx *gin.Context)
+type ILoggerService interface {
 
-	// Warn about something unusual but not fatal (e.g., cache miss)
-	LogWarn(msg string, route string, function string)
+	// Function to enrich each log with data
+	enrich(c *gin.Context, e *zerolog.Event) *zerolog.Event
 
-	// Info log for successful operations (e.g., user signed up)
-	LogInfo(msg string)
+	// This set of functions is to be used in the context of the web-server
+	// where there is a gin.Context (server context) involved
+	DebugCtx(c *gin.Context, msg string)
+	InfoCtx(c *gin.Context, msg string)
+	WarnCtx(c *gin.Context, msg string)
+	ErrorCtx(c *gin.Context, msg string, err error)
+	FatalCtx(c *gin.Context, msg string, err error)
+	SuccessCtx(c *gin.Context)
 
-	// Debug logs (dev only, hide in prod)
-	LogDebug(msg string, route string, function string)
+	// This set of functions can be used in scenarios where there is no
+	// gin.Context (server context) involved
+	Debug(msg string)
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string, err error)
+	Fatal(msg string, err error)
 
-	// Log an HTTP request's metadata (used in middleware)
-	LogRequest(c *gin.Context)
-
-	// For startup-time fatal crashes (optional)
-	LogFatal(msg string, err error)
+	// Logging middleware to be used only as a global middleware during router
+	// initialization
+	LogMiddleware(c *gin.Context)
 }
 
-func (l *LoggerService) LogError(err error, msg string, ctx *gin.Context) {
-	event := l.Logger.WithLevel(zerolog.ErrorLevel).
-		Str("route", ctx.FullPath()).
-		Str("method", ctx.Request.Method).Err(err).Caller()
-	event.Msg(msg)
-}
+func InitLogger(env string) (*LoggerService, error) {
+	var output io.Writer
 
-// function to log error outside the request response life-cycle (without context)
-func (l *LoggerService) LogErrorSimple(err error, msg string) {
-	l.Logger.WithLevel(zerolog.ErrorLevel).Err(err).Caller().Msg(msg)
-}
-
-func (l *LoggerService) LogWarn(msg string, ctx *gin.Context) {
-	l.Logger.WithLevel(zerolog.WarnLevel).
-		Str("route", ctx.FullPath()).
-		Str("function", ctx.Request.Method).Msg(msg)
-}
-
-func (l *LoggerService) LogInfo(msg string) {
-	l.Logger.WithLevel(zerolog.InfoLevel).Msg(msg)
-}
-
-func (l *LoggerService) LogDebug(msg string, route string, function string) {
-	// Only log debug messages in non-production environments
-	if l.Env == "PROD" {
-		return
+	switch env {
+	case "DEVELOPMENT":
+		file, err := os.OpenFile("dev.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			return nil, err
+		}
+		consoleWriter := zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			TimeFormat: "",
+			FormatFieldName: func(i interface{}) string {
+				return fmt.Sprintf("%s=", i)
+			},
+			FormatFieldValue: func(i interface{}) string {
+				s := fmt.Sprintf("%v", i)
+				if strings.ContainsAny(s, " \t\n\r") {
+					return fmt.Sprintf("%q", s)
+				}
+				return s
+			},
+			FormatTimestamp: func(i interface{}) string {
+				t, err := time.Parse(time.RFC3339Nano, i.(string))
+				if err != nil {
+					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
+				}
+				return fmt.Sprintf("time=%d", t.UnixMilli())
+			},
+			FormatLevel: func(i interface{}) string {
+				return fmt.Sprintf("level=%s", i)
+			},
+			FormatMessage: func(i interface{}) string {
+				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
+			},
+		}
+		fileWriter := zerolog.ConsoleWriter{
+			Out:        file,
+			TimeFormat: "",
+			FormatFieldName: func(i interface{}) string {
+				return fmt.Sprintf("%s=", i)
+			},
+			FormatFieldValue: func(i interface{}) string {
+				s := fmt.Sprintf("%v", i)
+				if strings.ContainsAny(s, " \t\n\r") {
+					return fmt.Sprintf("%q", s)
+				}
+				return s
+			},
+			FormatTimestamp: func(i interface{}) string {
+				t, err := time.Parse(time.RFC3339Nano, i.(string))
+				if err != nil {
+					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
+				}
+				return fmt.Sprintf("time=%d", t.UnixMilli())
+			},
+			FormatLevel: func(i interface{}) string {
+				return fmt.Sprintf("level=%s", i)
+			},
+			FormatMessage: func(i interface{}) string {
+				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
+			},
+			NoColor: true,
+		}
+		output = zerolog.MultiLevelWriter(consoleWriter, fileWriter)
+	case "PRODUCTION":
+		file, err := os.OpenFile("prod.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			return nil, err
+		}
+		output = zerolog.ConsoleWriter{
+			Out:        file,
+			TimeFormat: "",
+			FormatFieldName: func(i interface{}) string {
+				return fmt.Sprintf("%s=", i)
+			},
+			FormatFieldValue: func(i interface{}) string {
+				s := fmt.Sprintf("%v", i)
+				if strings.ContainsAny(s, " \t\n\r") {
+					return fmt.Sprintf("%q", s)
+				}
+				return s
+			},
+			FormatTimestamp: func(i interface{}) string {
+				t, err := time.Parse(time.RFC3339Nano, i.(string))
+				if err != nil {
+					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
+				}
+				return fmt.Sprintf("time=%d", t.UnixMilli())
+			},
+			FormatLevel: func(i interface{}) string {
+				return fmt.Sprintf("level=%s", i)
+			},
+			FormatMessage: func(i interface{}) string {
+				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
+			},
+			NoColor: true,
+		}
+	default:
+		return nil, errors.New("invalid environment for logger setup")
 	}
 
-	l.Logger.WithLevel(zerolog.DebugLevel).
-		Str("route", route).
-		Str("function", function).
-		Caller().Msg(msg)
+	logger := zerolog.New(output).With().Timestamp().Logger()
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+	return &LoggerService{
+		Logger: logger,
+		Env:    env,
+	}, nil
 }
 
-func (l *LoggerService) LogFatal(msg string, err error) {
-	l.Logger.WithLevel(zerolog.FatalLevel).
-		Err(err).
-		Caller().Msg(msg)
-}
-
-// NOTE: Do not use this function in any module or file, this is being used in middleware
-func (l *LoggerService) LogRequest(c *gin.Context) {
+func (l *LoggerService) enrich(c *gin.Context, e *zerolog.Event) *zerolog.Event {
 	// Path parameters
-	pathParams := map[string]string{}
+	pathParams := make(map[string]string)
 	for _, param := range c.Params {
 		pathParams[param.Key] = param.Value
 	}
+	// Query parameters are directly available as url.Values (map[string][]string)
+	queryParams := c.Request.URL.Query()
 
-	// Query parameters
-	queryParams := map[string][]string{}
-	maps.Copy(queryParams, c.Request.URL.Query())
-
-	event := l.Logger.WithLevel(zerolog.InfoLevel).
+	return e.
 		Str("route", c.FullPath()).
 		Str("method", c.Request.Method).
 		Interface("path-params", pathParams).
 		Interface("query-params", queryParams).
 		Str("ip", c.ClientIP()).
-		Str("user-agent", c.Request.UserAgent()).
-		Str("function", "HTTPMiddleware")
+		Str("user-agent", c.Request.UserAgent())
+}
 
-	event.Msg("incoming HTTP request")
+func (l *LoggerService) DebugCtx(c *gin.Context, msg string) {
+	if l.Env == "PRODUCTION" {
+		return
+	}
+	event := l.Logger.WithLevel(zerolog.DebugLevel)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) InfoCtx(c *gin.Context, msg string) {
+	event := l.Logger.WithLevel(zerolog.InfoLevel)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) WarnCtx(c *gin.Context, msg string) {
+	event := l.Logger.WithLevel(zerolog.WarnLevel)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) ErrorCtx(c *gin.Context, msg string, err error) {
+	event := l.Logger.WithLevel(zerolog.ErrorLevel).Err(err)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) FatalCtx(c *gin.Context, msg string, err error) {
+	event := l.Logger.WithLevel(zerolog.FatalLevel).Err(err)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) SuccessCtx(c *gin.Context) {
+	event := l.Logger.WithLevel(zerolog.InfoLevel)
+	l.enrich(c, event).Msg("request successful")
+}
+
+func (l *LoggerService) Debug(msg string) {
+	if l.Env == "PRODUCTION" {
+		return
+	}
+	l.Logger.WithLevel(zerolog.DebugLevel).Caller().Msg(msg)
+}
+
+func (l *LoggerService) Info(msg string) {
+	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Msg(msg)
+}
+
+func (l *LoggerService) Warn(msg string) {
+	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Msg(msg)
+}
+
+func (l *LoggerService) Error(msg string, err error) {
+	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Err(err).Msg(msg)
+}
+
+func (l *LoggerService) Fatal(msg string, err error) {
+	l.Logger.WithLevel(zerolog.FatalLevel).Caller().Err(err).Msg(msg)
+}
+
+func (l *LoggerService) LogMiddleware(c *gin.Context) {
+	start := time.Now()
+	c.Next()
+
+	pathParams := map[string]string{}
+	for _, param := range c.Params {
+		pathParams[param.Key] = param.Value
+	}
+
+	l.Logger.WithLevel(zerolog.InfoLevel).
+		Str("route", c.FullPath()).
+		Str("method", c.Request.Method).
+		Int("status", c.Writer.Status()).
+		Int("response-size", c.Writer.Size()).
+		Dur("duration", time.Since(start)).
+		Interface("path-params", pathParams).
+		Interface("query-params", c.Request.URL.Query()).
+		Str("ip", c.ClientIP()).
+		Str("user-agent", c.Request.UserAgent())
 }
