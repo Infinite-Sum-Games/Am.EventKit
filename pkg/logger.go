@@ -58,55 +58,32 @@ func InitLogger(env string) (*LoggerService, error) {
 		}
 		consoleWriter := zerolog.ConsoleWriter{
 			Out:        os.Stderr,
-			TimeFormat: "",
-			FormatFieldName: func(i interface{}) string {
-				return fmt.Sprintf("%s=", i)
-			},
-			FormatFieldValue: func(i interface{}) string {
-				s := fmt.Sprintf("%v", i)
-				if strings.ContainsAny(s, " \t\n\r") {
-					return fmt.Sprintf("%q", s)
-				}
-				return s
-			},
-			FormatTimestamp: func(i interface{}) string {
-				t, err := time.Parse(time.RFC3339Nano, i.(string))
-				if err != nil {
-					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
-				}
-				return fmt.Sprintf("time=%d", t.UnixMilli())
-			},
-			FormatLevel: func(i interface{}) string {
-				return fmt.Sprintf("level=%s", i)
-			},
-			FormatMessage: func(i interface{}) string {
-				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
-			},
+			TimeFormat: time.RFC3339,
 		}
 		fileWriter := zerolog.ConsoleWriter{
 			Out:        file,
 			TimeFormat: "",
-			FormatFieldName: func(i interface{}) string {
+			FormatFieldName: func(i any) string {
 				return fmt.Sprintf("%s=", i)
 			},
-			FormatFieldValue: func(i interface{}) string {
+			FormatFieldValue: func(i any) string {
 				s := fmt.Sprintf("%v", i)
 				if strings.ContainsAny(s, " \t\n\r") {
 					return fmt.Sprintf("%q", s)
 				}
 				return s
 			},
-			FormatTimestamp: func(i interface{}) string {
-				t, err := time.Parse(time.RFC3339Nano, i.(string))
+			FormatTimestamp: func(i any) string {
+				t, err := time.Parse(time.RFC3339, i.(string))
 				if err != nil {
 					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
 				}
 				return fmt.Sprintf("time=%d", t.UnixMilli())
 			},
-			FormatLevel: func(i interface{}) string {
-				return fmt.Sprintf("level=%s", i)
+			FormatLevel: func(i any) string {
+				return fmt.Sprintf("level=%q", i)
 			},
-			FormatMessage: func(i interface{}) string {
+			FormatMessage: func(i any) string {
 				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
 			},
 			NoColor: true,
@@ -120,18 +97,18 @@ func InitLogger(env string) (*LoggerService, error) {
 		output = zerolog.ConsoleWriter{
 			Out:        file,
 			TimeFormat: "",
-			FormatFieldName: func(i interface{}) string {
+			FormatFieldName: func(i any) string {
 				return fmt.Sprintf("%s=", i)
 			},
-			FormatFieldValue: func(i interface{}) string {
+			FormatFieldValue: func(i any) string {
 				s := fmt.Sprintf("%v", i)
 				if strings.ContainsAny(s, " \t\n\r") {
 					return fmt.Sprintf("%q", s)
 				}
 				return s
 			},
-			FormatTimestamp: func(i interface{}) string {
-				t, err := time.Parse(time.RFC3339Nano, i.(string))
+			FormatTimestamp: func(i any) string {
+				t, err := time.Parse(time.RFC3339, i.(string))
 				if err != nil {
 					return fmt.Sprintf("time=%q", i) // Fallback if parsing fails
 				}
