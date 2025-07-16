@@ -29,7 +29,7 @@ func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 	if err != nil {
 		return nil, fmt.Errorf("queue init failed: %w", err)
 	}
-	pkg.Log.LogInfo("mail queue created successfully!")
+	pkg.Log.Info("mail queue created successfully!")
 	ctx, cancel := context.WithCancel(context.Background())
 	return &MailerService{
 		queue:   queue,
@@ -59,13 +59,13 @@ func (m *MailerService) worker(id int) {
 			if sender.sender != nil {
 				_ = sender.sender.Close()
 			}
-			pkg.Log.LogInfo(fmt.Sprintf("worker %d: shutting down", id))
+			pkg.Log.Info(fmt.Sprintf("worker %d: shutting down", id))
 			return
 
 		default:
 			item, err := m.queue.DequeueBlock()
 			if err != nil {
-				pkg.Log.LogErrorSimple(err, fmt.Sprintf("[MAIL-WORKER-%d]: Failed to dequeue", id))
+				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: Failed to dequeue", id), err)
 				continue
 			}
 			req := item.(*EmailRequest)
@@ -73,7 +73,7 @@ func (m *MailerService) worker(id int) {
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
-				pkg.Log.LogErrorSimple(err, fmt.Sprintf("[MAIL-WORKER-%d]: Failed to send email:", id))
+				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: Failed to send email:", id), err)
 				// TODO: Retry queue or dead-letter (if critical)
 			}
 			m.wg.Done()
@@ -85,6 +85,6 @@ func (m *MailerService) Shutdown() {
 	m.cancel()
 	m.wg.Wait()
 	if err := m.queue.Close(); err != nil {
-		pkg.Log.LogErrorSimple(err, "error closing mail queue: ")
+		pkg.Log.Error("error in closing mail queue: ", err)
 	}
 }
