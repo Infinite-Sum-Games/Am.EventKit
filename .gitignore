@@ -1,9 +1,9 @@
 # Ignore binaries
 tmp/
 bin/
-.out
-.exe
-anokha-2025-backend
+*.out
+*.exe
+anokha-2025-backend*
 
 # Ignoring environment variables
 .env
