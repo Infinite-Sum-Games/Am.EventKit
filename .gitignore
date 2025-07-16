@@ -8,9 +8,6 @@ bin/
 .env
 env.toml
 
-# Ignoring generated files
-db/gen
-
 # Ignoring RSA and log files
 *.log
 *.rsa
