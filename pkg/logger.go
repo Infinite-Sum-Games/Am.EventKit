@@ -31,6 +31,7 @@ type ILoggerService interface {
 	WarnCtx(c *gin.Context, msg string)
 	ErrorCtx(c *gin.Context, msg string, err error)
 	FatalCtx(c *gin.Context, msg string, err error)
+	PanicCtx(c *gin.Context, msg string, r any, trace string) // r = recover()
 	SuccessCtx(c *gin.Context)
 
 	// This set of functions can be used in scenarios where there is no
@@ -199,6 +200,13 @@ func (l *LoggerService) ErrorCtx(c *gin.Context, msg string, err error) {
 
 func (l *LoggerService) FatalCtx(c *gin.Context, msg string, err error) {
 	event := l.Logger.WithLevel(zerolog.FatalLevel).Err(err)
+	l.enrich(c, event).Msg(msg)
+}
+
+func (l *LoggerService) PanicCtx(c *gin.Context, msg string, r any, trace string) {
+	event := l.Logger.WithLevel(zerolog.InfoLevel).
+		Str("panic_value", fmt.Sprintf("%v", r)).
+		Str("trace", trace)
 	l.enrich(c, event).Msg(msg)
 }
 
