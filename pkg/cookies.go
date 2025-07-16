@@ -83,7 +83,6 @@ func NullifyCookies(c *gin.Context) {
 		return
 	}
 	RevokeRefreshToken(c, email.(string))
-	return
 }
 
 /*
@@ -114,5 +113,4 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	}
 
 	Log.InfoCtx(c, "[AUTH-INFO]: Successfully revoked Refresh Token in DB")
-	return
 }
