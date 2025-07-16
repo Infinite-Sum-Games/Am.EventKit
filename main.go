@@ -17,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func setupRouter() *gin.Engine {
+func SetupRouter() *gin.Engine {
 
 	config := cors.Config{
 		AllowOrigins:              []string{cmd.Env.Domain},
@@ -58,7 +58,7 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func main() {
+func StartApp() {
 	// Setting up environment variables
 	config, err := cmd.LoadConfig()
 	if err != nil {
@@ -101,11 +101,13 @@ func main() {
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
 	pkg.Log.Info("[OK]: Start the server on port 9000")
-	err = setupRouter().Run(":" + "9000")
+	err = SetupRouter().Run(":" + "9000")
 	if err != nil {
 		pkg.Log.Fatal("[CRASH]: Server failed to start", err)
 		return
 	}
+}
 
-	// TODO: Gracefully shutdown DB, Valkey, Logger and Mailer service
+func main() {
+	StartApp()
 }
