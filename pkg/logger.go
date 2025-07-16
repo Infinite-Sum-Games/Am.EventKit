@@ -211,23 +211,23 @@ func (l *LoggerService) Debug(msg string) {
 	if l.Env == "PRODUCTION" {
 		return
 	}
-	l.Logger.WithLevel(zerolog.DebugLevel).Caller().Msg(msg)
+	l.Logger.WithLevel(zerolog.DebugLevel).Msg(msg)
 }
 
 func (l *LoggerService) Info(msg string) {
-	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Msg(msg)
+	l.Logger.WithLevel(zerolog.InfoLevel).Msg(msg)
 }
 
 func (l *LoggerService) Warn(msg string) {
-	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Msg(msg)
+	l.Logger.WithLevel(zerolog.InfoLevel).Msg(msg)
 }
 
 func (l *LoggerService) Error(msg string, err error) {
-	l.Logger.WithLevel(zerolog.InfoLevel).Caller().Err(err).Msg(msg)
+	l.Logger.WithLevel(zerolog.InfoLevel).Err(err).Msg(msg)
 }
 
 func (l *LoggerService) Fatal(msg string, err error) {
-	l.Logger.WithLevel(zerolog.FatalLevel).Caller().Err(err).Msg(msg)
+	l.Logger.WithLevel(zerolog.FatalLevel).Err(err).Msg(msg)
 }
 
 func (l *LoggerService) LogMiddleware(c *gin.Context) {
