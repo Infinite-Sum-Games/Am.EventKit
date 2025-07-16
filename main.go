@@ -7,10 +7,8 @@ import (
 
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
-	apiPay "github.com/Thanus-Kumaar/anokha-2025-backend/api/payment"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
-	apiTicket "github.com/Thanus-Kumaar/anokha-2025-backend/api/ticket"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
@@ -55,8 +53,6 @@ func setupRouter() *gin.Engine {
 	apiAuth.StaffAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(userRouter)
-	apiPay.PaymentRoutes(userRouter)
-	apiTicket.TicketRoutes(userRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
 
 	return r
@@ -66,7 +62,7 @@ func main() {
 	// Setting up environment variables
 	config, err := cmd.LoadConfig()
 	if err != nil {
-		log.Println("[CRASH] Failed to load environment variables: %v", err)
+		log.Printf("[CRASH] Failed to load environment variables: %v", err)
 		return
 	}
 	cmd.Env = config
@@ -75,7 +71,7 @@ func main() {
 	// Initializing the logger and other middlewares
 	pkg.Log, err = pkg.InitLogger(cmd.Env.Environment)
 	if err != nil {
-		log.Println("[CRASH]: Logger initialization failed: %v", err)
+		log.Printf("[CRASH]: Logger initialization failed: %v", err)
 		return
 	}
 	pkg.Log.Info("[OK]: Logger initiation successful")
