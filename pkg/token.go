@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -47,13 +48,13 @@ func InitPaseto() error {
 	// Verify using public key
 	VerifyKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKeyHex)
 	if err != nil {
-		fmt.Println("Error in public-paseto")
+		log.Println("Error in public-paseto")
 		return err
 	}
 	// Sign using private key
 	SignKey, err = paseto.NewV4AsymmetricSecretKeyFromHex(privateKeyHex)
 	if err != nil {
-		fmt.Println("Error is private-paseto")
+		log.Println("Error is private-paseto")
 		return err
 	}
 	return nil
@@ -68,8 +69,13 @@ func CreateAuthToken(username, email string, user, host, staff bool) string {
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
-	token.Set("STUDENT-ROLE", user)
-	token.Set("STAFF-ROLE", staff)
+	if err := token.Set("STUDENT-ROLE", user); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
+	}
+
+	if err := token.Set("STAFF-ROLE", staff); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
+	}
 
 	signed := token.V4Sign(SignKey, nil)
 	return signed
@@ -84,8 +90,13 @@ func CreateRefreshToken(username, email string, user, host, staff bool) string {
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
-	token.Set("STUDENT-ROLE", user)
-	token.Set("STAFF-ROLE", staff)
+	if err := token.Set("STUDENT-ROLE", user); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
+	}
+
+	if err := token.Set("STAFF-ROLE", staff); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
+	}
 
 	signed := token.V4Sign(SignKey, nil)
 	return signed
@@ -122,7 +133,9 @@ func ParseToken(token, tokeType string) (bool, *paseto.Token) {
 func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	ok, parsedAuthToken := ParseToken(authToken, "access_token")
 	if !ok {
-		VerifyRefreshToken(c, refreshToken)
+		if _, err := VerifyRefreshToken(c, refreshToken); err != nil {
+			return false
+		}
 	}
 	ok, parsedRefToken := ParseToken(refreshToken, "refresh_token")
 	if !ok {
@@ -168,7 +181,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	email, ok := c.Get("email")
 	if !ok {
 		Log.WarnCtx(c, "[GIN-ERROR]: Email not passed down in context")
-		return nil, fmt.Errorf("Could not fetch email from gin.Context")
+		return nil, fmt.Errorf("could not fetch email from gin.Context")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -191,12 +204,12 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 		return nil, err
 	}
 	if token.String == "" {
-		return nil, fmt.Errorf("[AUTH-ERROR] Refresh token not available in DB.")
+		return nil, fmt.Errorf("[AUTH-ERROR] Refresh token not available in DB")
 	}
 
 	ok, validToken := ParseToken(token.String, "refresh_token")
-	if ok != true {
-		return nil, fmt.Errorf("[AUTH-ERROR]: Failed to parse refresh token.")
+	if !ok {
+		return nil, fmt.Errorf("[AUTH-ERROR]: Failed to parse refresh token")
 	}
 
 	return validToken, nil

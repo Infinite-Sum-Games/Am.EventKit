@@ -75,11 +75,11 @@ func NullifyCookies(c *gin.Context) {
 	}
 
 	email, exists := c.Get("email")
-	if exists != true {
+	if !exists {
 		Log.ErrorCtx(
 			c,
 			"[AUTH-ERROR]: Failed to Revoke Refresh Token in DB",
-			fmt.Errorf("Email fetch failed from gin.Context"))
+			fmt.Errorf("email fetch failed from gin.Context"))
 		return
 	}
 	RevokeRefreshToken(c, email.(string))
@@ -98,7 +98,11 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Revoke Refresh Token in DB", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil {
+			Log.ErrorCtx(c, "[AUTH-ERROR]: Error in checking database for refresh tokens", err)
+		}
+	}()
 
 	q := db.New()
 	result, err := q.RevokeRefreshTokenQuery(ctx, tx, email)
