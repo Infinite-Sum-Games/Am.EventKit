@@ -8,6 +8,22 @@ GOOSE_DRIVER := postgres
 GOOSE_DBSTRING := $(DB_URL)
 GOOSE_MIGRATION_DIR := ./db/migrations/
 
+# TODO: Right now, we are writing down the name of every package that needs to 
+# be tested explicitly. However, there should be a way to ignore these:
+# db/gen, tests/, seed/ via some pattern-matching regex
+TEST_PACKAGES := \
+	github.com/Thanus-Kumaar/anokha-2025-backend \
+	github.com/Thanus-Kumaar/anokha-2025-backend/api/auth \
+	github.com/Thanus-Kumaar/anokha-2025-backend/api/event \
+	github.com/Thanus-Kumaar/anokha-2025-backend/api/profile \
+	github.com/Thanus-Kumaar/anokha-2025-backend/api/staff \
+	github.com/Thanus-Kumaar/anokha-2025-backend/cmd \
+	github.com/Thanus-Kumaar/anokha-2025-backend/internal/events \
+	github.com/Thanus-Kumaar/anokha-2025-backend/internal/profile \
+	github.com/Thanus-Kumaar/anokha-2025-backend/mail \
+	github.com/Thanus-Kumaar/anokha-2025-backend/middleware \
+	github.com/Thanus-Kumaar/anokha-2025-backend/pkg
+
 ifeq ($(OS),Windows_NT)
 	BIN_NAME := bin/anokha-backend.exe
 else
@@ -34,8 +50,9 @@ build:
 run: build
 	@./$(BIN_NAME)
 
+# Requires the gotest tool for colored outputs
 test:
-	@go test -v ./...
+	@gotest -v $(TEST_PACKAGES)
 
 up:
 	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
