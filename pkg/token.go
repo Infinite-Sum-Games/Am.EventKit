@@ -138,7 +138,7 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
 	c4 := authData["STAFF-ROLE"] != refData["STAFF-ROLE"]
 
-	if !(c1 && c2 && c3 && c4) {
+	if !c1 || !c2 || !c3 || !c4 {
 		return false
 	}
 
@@ -166,7 +166,7 @@ func VerifyTempToken(c *gin.Context, tempToken string) bool {
 
 func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, error) {
 	email, ok := c.Get("email")
-	if ok != true {
+	if !ok {
 		Log.WarnCtx(c, "[GIN-ERROR]: Email not passed down in context")
 		return nil, fmt.Errorf("Could not fetch email from gin.Context")
 	}
