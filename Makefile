@@ -2,15 +2,10 @@ GO_BIN := $(shell go env GOPATH)/bin
 
 setup:
 	go install github.com/air-verse/air@latest
-
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-
 	go install github.com/evilmartians/lefthook@latest
-
 	go install github.com/pressly/goose/v3/cmd/goose@latest
-
 	@lefthook install
-
 	@echo "All CLI tools installed successfully in $(GO_BIN)"
 
 build:
