@@ -43,7 +43,7 @@ dev:
 
 build:
 	@go mod tidy
-	@go test -v ./...
+	@go test ./...
 	@go fmt ./...
 	@go build -o $(BIN_NAME) main.go
 
@@ -52,7 +52,7 @@ run: build
 
 # Requires the gotest tool for colored outputs
 test:
-	@gotest -v $(TEST_PACKAGES)
+	@gotest $(TEST_PACKAGES)
 
 up:
 	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
