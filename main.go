@@ -95,8 +95,8 @@ func main() {
 	}
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
-	err = setupRouter().Run(":" + "9000")
 	pkg.Log.Info("[OK]: Start the server on port 9000")
+	err = setupRouter().Run(":" + "9000")
 	if err != nil {
 		pkg.Log.Fatal("[CRASH]: Server failed to start", err)
 		return
