@@ -35,7 +35,8 @@ setup:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install github.com/evilmartians/lefthook@latest
 	go install github.com/pressly/goose/v3/cmd/goose@latest
-	@lefthook install
+	# TODO: The following tool needs to be downloaded and installed into GO_BIN
+	# curl https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
 	@echo "All CLI tools installed successfully in $(GO_BIN)"
 
 dev:
@@ -43,7 +44,7 @@ dev:
 
 build:
 	@go mod tidy
-	@go test ./...
+	@go test $(TEST_PACKAGES)
 	@go fmt ./...
 	@go build -o $(BIN_NAME) main.go
 
