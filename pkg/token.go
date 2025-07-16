@@ -8,10 +8,9 @@ import (
 	"time"
 
 	paseto "aidanwoods.dev/go-paseto"
-	db "github.com/IAmRiteshKoushik/mercury/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 /*
@@ -168,7 +167,7 @@ func VerifyTempToken(c *gin.Context, tempToken string) bool {
 func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, error) {
 	email, ok := c.Get("email")
 	if ok != true {
-		Log.LogWarn("[GIN-ERROR]: Email not passed down in context", c)
+		Log.WarnCtx(c, "[GIN-ERROR]: Email not passed down in context")
 		return nil, fmt.Errorf("Could not fetch email from gin.Context")
 	}
 
@@ -181,21 +180,14 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	defer conn.Release()
 
 	q := db.New()
-	token, err := q.CheckRefreshTokenQuery(ctx, conn, db.CheckRefreshTokenQueryParams{
-		Email: fmt.Sprintf("%v", email),
-		RefreshToken: pgtype.Text{
-			String: refreshToken,
-			Valid:  true,
-		},
-	})
+	token, err := q.CheckRefreshTokenQuery(ctx, conn, fmt.Sprintf("%v", email))
 
 	// Possible scenarios
 	// 1. RefreshToken does not exist
 	// 2. RefreshToken has become invalid
 	// 3. RefreshToken is perfect and it can generate AuthToken
 	if err != nil {
-		// TODO: Add context to logger
-		Log.LogFatal("[AUTH-ERROR] Failed to fetch refresh token from DB", err)
+		Log.FatalCtx(c, "[AUTH-ERROR] Failed to fetch refresh token from DB", err)
 		return nil, err
 	}
 	if token.String == "" {
