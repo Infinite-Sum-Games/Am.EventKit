@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -48,14 +47,12 @@ func InitPaseto() error {
 	// Verify using public key
 	VerifyKey, err = paseto.NewV4AsymmetricPublicKeyFromHex(publicKeyHex)
 	if err != nil {
-		log.Println("Error in public-paseto")
-		return err
+		return fmt.Errorf("Error in public-paseto: %w", err)
 	}
 	// Sign using private key
 	SignKey, err = paseto.NewV4AsymmetricSecretKeyFromHex(privateKeyHex)
 	if err != nil {
-		log.Println("Error is private-paseto")
-		return err
+		return fmt.Errorf("Error in private-paseto: %w", err)
 	}
 	return nil
 }

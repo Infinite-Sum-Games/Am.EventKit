@@ -88,6 +88,11 @@ func main() {
 		pkg.Log.Info("[OK]: Using existing RSA keypair.")
 	}
 
+	if err := pkg.InitPaseto(); err != nil {
+		pkg.Log.Fatal("[CRASH]: Paseto initialization failed: %w", err)
+	}
+	pkg.Log.Info("[OK]: Paseto initialization successful!")
+
 	err = cmd.InitDBPool()
 	if err != nil {
 		pkg.Log.Fatal("[CRASH]: Failed to initialize database pool: %w", err)
