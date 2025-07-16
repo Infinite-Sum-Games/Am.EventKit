@@ -81,25 +81,36 @@ func StartApp() {
 	if err != nil {
 		err = cmd.GenerateRSAKeyPair()
 		if err != nil {
-			pkg.Log.Fatal("[CRASH]: Failed to initialize rsa: %w", err)
+			pkg.Log.Fatal("[CRASH]: Failed to initialize rsa", err)
 		}
 		pkg.Log.Info("[OK]: RSA keypair generated and saved successfully.")
 	} else {
 		pkg.Log.Info("[OK]: Using existing RSA keypair.")
 	}
 
+	// Setup PASETO
 	if err := pkg.InitPaseto(); err != nil {
-		pkg.Log.Fatal("[CRASH]: Paseto initialization failed: %w", err)
+		pkg.Log.Fatal("[CRASH]: Paseto initialization failed", err)
 	}
 	pkg.Log.Info("[OK]: Paseto initialization successful!")
 
+	// Initialize DB Pool
 	err = cmd.InitDBPool()
 	if err != nil {
-		pkg.Log.Fatal("[CRASH]: Failed to initialize database pool: %w", err)
+		pkg.Log.Fatal("[CRASH]: Failed to initialize database pool", err)
 		return
 	}
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
+	// Initialize Valkey (cache)
+	cmd.Valkey, err = cmd.InitValkey()
+	if err != nil {
+		pkg.Log.Fatal("[CRASH]: Failed to initialize cache", err)
+		return
+	}
+	pkg.Log.Info("[OK]: Valkey initialized successfully")
+
+	// Initialize server
 	pkg.Log.Info("[OK]: Start the server on port 9000")
 	err = SetupRouter().Run(":" + "9000")
 	if err != nil {
