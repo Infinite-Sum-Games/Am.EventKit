@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -60,26 +59,23 @@ func NullifyCookies(c *gin.Context) {
 	// Otherwise we are in problem because nullification failed
 	_, err := c.Cookie("access_token")
 	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Cookies", err)
+		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Access-Cookies", err)
 		return
 	}
 	_, err = c.Cookie("refresh_token")
 	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Cookies", err)
+		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Refresh-Cookies", err)
 		return
 	}
 	_, err = c.Cookie("csrf_token")
 	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Cookies", err)
+		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Csrf-Cookies", err)
 		return
 	}
 
 	email, exists := c.Get("email")
 	if !exists {
-		Log.ErrorCtx(
-			c,
-			"[AUTH-ERROR]: Failed to Revoke Refresh Token in DB",
-			fmt.Errorf("email fetch failed from gin.Context"))
+		Log.WarnCtx(c, "[AUTH-ERROR]: No email in gin.Context, failed to revoke Refresh-Token in DB")
 		return
 	}
 	RevokeRefreshToken(c, email.(string))
