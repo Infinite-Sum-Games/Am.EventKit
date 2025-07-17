@@ -84,6 +84,8 @@ services:
       - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
     networks:
       - monitoring_network
+    extra_hosts:
+      - "anokha-backend-host:host-gateway" 
 
   # Grafana for visualizing metrics
   grafana:

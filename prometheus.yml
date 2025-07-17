@@ -4,7 +4,7 @@ global:
 scrape_configs:
   - job_name: 'anokha-backend'
     static_configs:
-      - targets: ['172.28.96.1:9000']
+      - targets: ['anokha-backend-host:9000']
 
   - job_name: 'postgres'
     static_configs:
