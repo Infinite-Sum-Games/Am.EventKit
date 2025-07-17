@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	redis "github.com/redis/go-redis/v9"
@@ -34,6 +35,8 @@ func InitValkey() (*redis.Client, error) {
 
 func CloseValkey(client *redis.Client) {
 	if client != nil {
-		client.Close()
+		if err := client.Close(); err != nil {
+			log.Printf("[ERROR]: Unable to close valkey client)")
+		}
 	}
 }
