@@ -9,6 +9,8 @@ services:
     ports:
       - "5432:5432"
     restart: on-failure
+    networks:
+      - app_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -20,10 +22,10 @@ services:
     ports:
       - "6379:6379"
     command: valkey-server --appendonly yes # persistance
+    networks:
+      - app_network
     volumes:
       - valkey_data:/data
-    networks:
-      - valkey_network
 
   # UI for Caching
   insight:
@@ -38,12 +40,73 @@ services:
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
     networks:
-      - valkey_network
+      - app_network
+
+  # PostgreSQL Exporter to export Postgres metrics to Prometheus
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres_exporter
+    restart: on-failure
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1234@postgres:5432/postgres?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+      - monitoring_network
+
+  # Redis Exporter to export Valkey metrics to Prometheus
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis_exporter
+    restart: on-failure
+    environment:
+      - REDIS_ADDR=redis://valkey:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - valkey
+    networks:
+      - app_network
+      - monitoring_network
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+    networks:
+      - monitoring_network
+
+  # Grafana for visualizing metrics
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring_network
 
 networks:
-  valkey_network:
+  app_network:
+    driver: bridge
+  monitoring_network:
     driver: bridge
 
 volumes:
   postgres_data:
   valkey_data:
+  grafana_data:

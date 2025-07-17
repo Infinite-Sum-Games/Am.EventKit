@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	Metrics "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 )
@@ -37,15 +38,16 @@ func main() {
 
 	r.Use(pkg.Log.LogRequest)
 
-	r.GET("/api/test", func(c *gin.Context) {
+	r.GET("/api/test", Metrics.PrometheusMiddleware("/api/test"), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Server is live ◪_◪",
 		})
 	})
+	r.GET("/metrics", Metrics.MetricsHandler())
 
 	err = r.Run(":" + "9000")
 	if err != nil {
-		fmt.Println("Server failed")
+		pkg.Log.LogFatal("Failed to start server", err)
 		return
 	}
 }

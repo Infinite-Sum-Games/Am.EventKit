@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'anokha-backend'
+    static_configs:
+      - targets: ['172.28.96.1:9000']
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres_exporter:9187']
+
+  - job_name: 'valkey'
+    static_configs:
+      - targets: ['redis_exporter:9121']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+
+# TODO: Add alert rule files and configurations
