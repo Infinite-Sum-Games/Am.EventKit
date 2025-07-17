@@ -3,6 +3,7 @@ module github.com/Thanus-Kumaar/anokha-2025-backend
 go 1.24.1
 
 require (
+	aidanwoods.dev/go-paseto v1.5.4
 	github.com/gin-gonic/gin v1.10.1
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/prometheus/client_golang v1.22.0
@@ -12,6 +13,7 @@ require (
 require github.com/mattn/go-colorable v0.1.13 // indirect
 
 require (
+	aidanwoods.dev/go-result v0.3.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
