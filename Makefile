@@ -18,8 +18,7 @@ TEST_PACKAGES := \
 	github.com/Thanus-Kumaar/anokha-2025-backend/api/profile \
 	github.com/Thanus-Kumaar/anokha-2025-backend/api/staff \
 	github.com/Thanus-Kumaar/anokha-2025-backend/cmd \
-	github.com/Thanus-Kumaar/anokha-2025-backend/internal/events \
-	github.com/Thanus-Kumaar/anokha-2025-backend/internal/profile \
+	github.com/Thanus-Kumaar/anokha-2025-backend/models \
 	github.com/Thanus-Kumaar/anokha-2025-backend/mail \
 	github.com/Thanus-Kumaar/anokha-2025-backend/middleware \
 	github.com/Thanus-Kumaar/anokha-2025-backend/pkg
