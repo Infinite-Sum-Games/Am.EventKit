@@ -144,6 +144,7 @@ func (l *LoggerService) enrich(c *gin.Context, e *zerolog.Event) *zerolog.Event 
 	queryParams := c.Request.URL.Query()
 
 	return e.
+		Str("req-id", GrabRequestId(c)).
 		Str("route", c.FullPath()).
 		Str("method", c.Request.Method).
 		Interface("path-params", pathParams).
@@ -225,6 +226,7 @@ func (l *LoggerService) LogMiddleware(c *gin.Context) {
 	}
 
 	l.Logger.WithLevel(zerolog.InfoLevel).
+		Str("req-id", GrabRequestId(c)).
 		Str("route", c.FullPath()).
 		Str("method", c.Request.Method).
 		Int("status", c.Writer.Status()).
