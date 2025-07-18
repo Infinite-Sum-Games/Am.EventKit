@@ -69,13 +69,10 @@ CREATE TABLE IF NOT EXISTS student (
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
   academic_year TEXT NOT NULL,
   account_status account_status_enum NOT NULL,
-  refresh_token TEXT ,
+  refresh_token TEXT,
 
   CONSTRAINT "student_pkey" PRIMARY KEY (id)
-  );
--- +goose StatementEnd
-
--- +goose StatementBegin
+);
 CREATE UNIQUE INDEX student_unique_roll_number
 ON student(amrita_roll_number)
 WHERE amrita_roll_number IS NOT NULL;
@@ -99,9 +96,6 @@ CREATE TABLE IF NOT EXISTS student_onboarding (
 
   CONSTRAINT "student_onboarding_pkey" PRIMARY KEY (id)
 );
--- +goose StatementEnd
-
--- +goose StatementBegin
 CREATE UNIQUE INDEX student_onboarding_unique_roll_number
 ON student_onboarding(amrita_roll_number)
 WHERE amrita_roll_number IS NOT NULL;
@@ -401,6 +395,7 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
   ON UPDATE CASCADE
 );
 -- +goose StatementEnd
+
 -- +goose down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS solo_event_participant;
