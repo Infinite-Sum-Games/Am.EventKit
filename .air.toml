@@ -5,7 +5,7 @@ root = "."
   bin = "./bin/anokha-backend"
   cmd = "make build"
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bruno"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bruno", "public"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
@@ -14,7 +14,7 @@ root = "."
   include_dir = []
   include_ext = ["go", "tpl", "tmpl", "html"]
   include_file = []
-  kill_delay = "0s"
+  kill_delay = "200ms"
   log = "build-errors.log"
   poll = false
   poll_interval = 0
@@ -46,5 +46,5 @@ root = "."
   proxy_port = 0
 
 [screen]
-  clear_on_rebuild = false
+  clear_on_rebuild = true
   keep_scroll = true

@@ -1,4 +1,4 @@
-package Metrics
+package mw
 
 import (
 	"fmt"

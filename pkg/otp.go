@@ -6,9 +6,13 @@ import (
 	"math/big"
 )
 
+var otpMax = big.NewInt(10000)
+
 func GenerateOTP() (int, error) {
-	max := big.NewInt(10000)
-	n, err := rand.Int(rand.Reader, max)
+	if otpMax.Cmp(big.NewInt(0)) <= 0 {
+		return 0, fmt.Errorf("failed to generate OTP: max must be > 0 (got %s)", otpMax.String())
+	}
+	n, err := rand.Int(rand.Reader, otpMax)
 	if err != nil {
 		return 0, fmt.Errorf("failed to generate OTP: %w", err)
 	}
