@@ -49,3 +49,22 @@ FROM people;
 -- name: ListTags :many
 SELECT id, name, abbrevation
 FROM tags;
+
+-- name: ListEventToOrganizerMapping :many
+SELECT id, event_id, organizer_id
+FROM event_to_organizer_mapping;
+
+-- name: ListEventSchedule :many
+SELECT id, event_id, event_date, start_time, end_time, venue
+FROM event_schedule;
+
+-- name: ListPeopleToEventMapping :many
+SELECT id, event_id, person_id
+FROM people_to_event_mapping;
+
+-- name: ListEventTagMapping :many
+SELECT id, tag_id, event_id
+FROM event_tag_mapping;
+
+-- name: TruncateAllTables :exec
+TRUNCATE TABLE organizer, people, tags, event, event_to_organizer_mapping, event_schedule, people_to_event_mapping, event_tag_mapping CASCADE;

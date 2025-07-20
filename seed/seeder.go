@@ -38,6 +38,12 @@ func SeedOrganizers(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	organizers, _ := q.ListOrganizers(context.Background(), conn)
+	if len(organizers) > 0 {
+		fmt.Println("Organizers already seeded, skipping...")
+		return nil
+	}
+
 	// Manually seed a few organizers for reference
 	manualOrganizers := []db.InsertOrganizerParams{
 		{
@@ -87,6 +93,12 @@ func SeedPeople(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	people, _ := q.ListPeople(context.Background(), conn)
+	if len(people) > 0 {
+		fmt.Println("People already seeded, skipping...")
+		return nil
+	}
+
 	// Manually seed a few people for reference
 	manualPeople := []db.InsertPeopleParams{
 		{
@@ -127,6 +139,12 @@ func SeedTags(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	tags, _ := q.ListTags(context.Background(), conn)
+	if len(tags) > 0 {
+		fmt.Println("Tags already seeded, skipping...")
+		return nil
+	}
+
 	// Manually seed a few tags for reference
 	manualTags := []db.InsertTagsParams{
 		{
@@ -166,6 +184,12 @@ func SeedTags(conn *pgx.Conn) error {
 func SeedEvents(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
+
+	events, _ := q.ListEvents(context.Background(), conn)
+	if len(events) > 0 {
+		fmt.Println("Events already seeded, skipping...")
+		return nil
+	}
 
 	// Manually seed a few events for reference
 	manualEvents := []db.InsertEventParams{
@@ -240,6 +264,12 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	records, err := q.ListEventToOrganizerMapping(context.Background(), conn)
+	if len(records) > 0 {
+		fmt.Println("Event to Organizer mappings already seeded, skipping...")
+		return nil
+	}
+
 	events, err := q.ListEvents(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
@@ -293,6 +323,12 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 func SeedEventSchedule(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
+
+	records, err := q.ListEventSchedule(context.Background(), conn)
+	if len(records) > 0 {
+		fmt.Println("Event schedules already seeded, skipping...")
+		return nil
+	}
 
 	events, err := q.ListEvents(context.Background(), conn)
 	if err != nil {
@@ -376,6 +412,12 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	records, err := q.ListPeopleToEventMapping(context.Background(), conn)
+	if len(records) > 0 {
+		fmt.Println("People to Event mappings already seeded, skipping...")
+		return nil
+	}
+
 	events, err := q.ListEvents(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
@@ -430,6 +472,12 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	var q *db.Queries
 	q = db.New()
 
+	records, err := q.ListEventTagMapping(context.Background(), conn)
+	if len(records) > 0 {
+		fmt.Println("Event to Tag mappings already seeded, skipping...")
+		return nil
+	}
+
 	events, err := q.ListEvents(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
@@ -478,4 +526,51 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 
 	fmt.Println("Successfully seeded event tag mappings.")
 	return nil
+}
+
+func main() {
+	// Initialize database connection
+	err, conn := initDB()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Database initialization failed: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background()) // Close connection when done
+
+	if err := SeedOrganizers(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := SeedPeople(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SeedTags(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SeedEvents(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := SeedEventToOrganizerMapping(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := SeedEventSchedule(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := SeedPeopleToEventMapping(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := SeedEventTagMapping(conn); err != nil {
+		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Database seeding completed successfully.")
 }
