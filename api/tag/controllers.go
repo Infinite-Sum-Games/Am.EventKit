@@ -17,7 +17,7 @@ func GetAllTags(c *gin.Context) {
 	defer cancel()
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to acquire DB connection"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
 		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
