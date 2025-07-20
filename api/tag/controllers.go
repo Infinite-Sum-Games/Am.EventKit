@@ -25,7 +25,7 @@ func GetAllTags(c *gin.Context) {
 
 	tags, err := q.ListTags(ctx, conn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch tags"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch tags"})
 		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to fetch tags", err)
 		return
 	}
