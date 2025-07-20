@@ -3,6 +3,7 @@ package tag
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
@@ -11,10 +12,21 @@ import (
 )
 
 func GetAllTags(c *gin.Context) {
-	queries := db.New()
-	tags, err := queries.ListTags(context.Background(), cmd.DBPool)
+	q := db.New()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to acquire DB connection"})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+	defer conn.Release()
+
+	tags, err := q.ListTags(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch tags"})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to fetch tags", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
