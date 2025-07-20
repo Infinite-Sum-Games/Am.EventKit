@@ -26,16 +26,16 @@ test:
 	@go test -v ./...
 
 up:
-	@export $(shell cat .env | xargs) && \
-	goose -dir ./db/migrations/ -no-versioning up
+	@goose -dir ./db/migrations/ -no-versioning up
 
-seed:
-	@export $(shell cat .env | xargs) && \
-	goose -dir ./db/seed/ -no-versioning up
+seed: build
+	@go run ./seed/seeder.go
 
 down:
-	@export $(shell cat .env | xargs) && \
-	goose -dir ./db/migrations/ -no-versioning down
+	@goose -dir ./db/migrations/ -no-versioning down
+
+truncate: build
+	go run ./truncate/truncate.go
 
 # For docker users
 doc:
