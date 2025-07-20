@@ -26,7 +26,7 @@ func initDB() (error, *pgx.Conn) {
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %v", err), nil
 	}
-	q = db.New() // Initialize with the connection
+	q = db.New()
 	return nil, conn
 }
 

@@ -30,7 +30,7 @@ func initDB() (error, *pgx.Conn) {
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %v", err), nil
 	}
-	q = db.New() // Initialize the db.Queries
+	q = db.New()
 	return nil, conn
 }
 
@@ -285,12 +285,12 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	// Manually map the first two events to organizers
 	manualMappings := []db.InsertEventToOrganizerMappingParams{
 		{
-			EventID:     events[0].ID,     // "Tech Workshop"
-			OrganizerID: organizers[0].ID, // "Engineering Department"
+			EventID:     events[0].ID,
+			OrganizerID: organizers[0].ID,
 		},
 		{
-			EventID:     events[1].ID,     // "Art Exhibition"
-			OrganizerID: organizers[1].ID, // "Music Club"
+			EventID:     events[1].ID,
+			OrganizerID: organizers[1].ID,
 		},
 	}
 	for _, mapping := range manualMappings {
@@ -339,9 +339,9 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 	// Manually schedule the first two events
 	manualSchedules := []db.InsertEventScheduleParams{
 		{
-			EventID: events[0].ID, // "Tech Workshop"
+			EventID: events[0].ID,
 			EventDate: pgtype.Date{
-				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour), // Truncate to date only
+				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour),
 				Valid: true,
 			},
 			StartTime: pgtype.Timestamp{
@@ -355,9 +355,9 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 			Venue: "Online Zoom Room",
 		},
 		{
-			EventID: events[1].ID, // "Art Exhibition"
+			EventID: events[1].ID,
 			EventDate: pgtype.Date{
-				Time:  time.Now().AddDate(0, 0, 2).Truncate(24 * time.Hour), // Truncate to date only
+				Time:  time.Now().AddDate(0, 0, 2).Truncate(24 * time.Hour),
 				Valid: true,
 			},
 			StartTime: pgtype.Timestamp{
@@ -384,7 +384,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		schedule := db.InsertEventScheduleParams{
 			EventID: events[i].ID,
 			EventDate: pgtype.Date{
-				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour), // Truncate to date only
+				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour),
 				Valid: true,
 			},
 			StartTime: pgtype.Timestamp{
@@ -433,12 +433,12 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	// Manually map the first two events to people
 	manualMappings := []db.InsertPeopleToEventMappingParams{
 		{
-			EventID:  events[0].ID, // "Tech Workshop"
-			PersonID: people[0].ID, // "Eve Wilson"
+			EventID:  events[0].ID,
+			PersonID: people[0].ID,
 		},
 		{
-			EventID:  events[1].ID, // "Art Exhibition"
-			PersonID: people[1].ID, // "Frank Miller"
+			EventID:  events[1].ID,
+			PersonID: people[1].ID,
 		},
 	}
 	for _, mapping := range manualMappings {
@@ -493,12 +493,12 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	// Manually map the first two events to tags
 	manualMappings := []db.InsertEventTagMappingParams{
 		{
-			EventID: events[0].ID, // "Tech Workshop"
-			TagID:   tags[0].ID,   // "Tech"
+			EventID: events[0].ID,
+			TagID:   tags[0].ID,
 		},
 		{
-			EventID: events[1].ID, // "Art Exhibition"
-			TagID:   tags[1].ID,   // "Art"
+			EventID: events[1].ID,
+			TagID:   tags[1].ID,
 		},
 	}
 	for _, mapping := range manualMappings {
@@ -535,7 +535,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Database initialization failed: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(context.Background()) // Close connection when done
+	defer conn.Close(context.Background())
 
 	if err := SeedOrganizers(conn); err != nil {
 		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
