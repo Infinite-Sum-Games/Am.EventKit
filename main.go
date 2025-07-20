@@ -9,6 +9,7 @@ import (
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
+	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
@@ -54,6 +55,7 @@ func SetupRouter() *gin.Engine {
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(userRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
+	apiTag.TagRoutes(v1)
 
 	return r
 }
