@@ -1,15 +1,13 @@
 # Ignore binaries
 tmp/
 bin/
-.out
-.exe
+*.out
+*.exe
+anokha-2025-backend*
 
 # Ignoring environment variables
 .env
 env.toml
-
-# Ignoring generated files
-db/gen
 
 # Ignoring RSA and log files
 *.log

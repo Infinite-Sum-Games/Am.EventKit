@@ -24,14 +24,13 @@ Backend server for Anokha, built with Go, PostgreSQL, Redis, and modern tooling.
 
 You can either install them manually or use Docker.
 
-
-### 🧩 Option A: Manual Install (OS-Specific)
-
 #### ✅ Go (version 1.24)
 
 - **macOS:** `brew install go@1.24`  
 - **Ubuntu/Debian:** `sudo apt update && sudo apt install golang`  
 - **Windows:** Use [official installer](https://go.dev/dl)
+
+### 🧩 Option A: Manual Install (OS-Specific)
 
 #### ✅ PostgreSQL
 
@@ -48,12 +47,6 @@ You can either install them manually or use Docker.
   ```
 
 - **Windows:** Install from https://www.postgresql.org/download/windows/
-
-#### ✅ Redis
-
-- **macOS:** `brew install redis && brew services start redis`  
-- **Ubuntu/Debian:** `sudo apt install redis && sudo systemctl start redis`  
-- **Windows:** Use Redis via Docker or WSL
 
 #### ✅ Goose (for DB migrations)
 
@@ -81,7 +74,8 @@ docker compose up -d
 This will start:
 
 - PostgreSQL on `localhost:5432`
-- Redis on `localhost:6379`
+- Valkey on `localhost:6379`
+- RedisInsight on `localhost:5540`
 
 ---
 
