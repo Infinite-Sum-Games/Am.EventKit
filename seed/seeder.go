@@ -10,10 +10,9 @@ import (
 	"github.com/joho/godotenv"
 	"math/big"
 	"os"
+	"strconv"
 	"time"
 )
-
-var q *db.Queries
 
 func initDB() (error, *pgx.Conn) {
 	err := godotenv.Load()
@@ -30,13 +29,11 @@ func initDB() (error, *pgx.Conn) {
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %v", err), nil
 	}
-	q = db.New()
 	return nil, conn
 }
 
 func SeedOrganizers(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	organizers, _ := q.ListOrganizers(context.Background(), conn)
 	if len(organizers) > 0 {
@@ -72,8 +69,8 @@ func SeedOrganizers(conn *pgx.Conn) error {
 	// Seed additional organizers with random data
 	for i := 2; i < 5; i++ {
 		organizer := db.InsertOrganizerParams{
-			Name:        gofakeit.Company() + " " + string(i+1),
-			Abbr:        gofakeit.LetterN(3) + string(i+1),
+			Name:        gofakeit.Company() + " " + strconv.Itoa(i+1),
+			Abbr:        gofakeit.LetterN(3) + strconv.Itoa(i+1),
 			OrgType:     db.OrganizerTypeEnum(gofakeit.RandomString([]string{"DEPARTMENT", "CLUB"})),
 			StudentHead: gofakeit.Name(),
 			FacultyHead: gofakeit.Name(),
@@ -90,8 +87,7 @@ func SeedOrganizers(conn *pgx.Conn) error {
 }
 
 func SeedPeople(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	people, _ := q.ListPeople(context.Background(), conn)
 	if len(people) > 0 {
@@ -136,8 +132,7 @@ func SeedPeople(conn *pgx.Conn) error {
 }
 
 func SeedTags(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	tags, _ := q.ListTags(context.Background(), conn)
 	if len(tags) > 0 {
@@ -167,8 +162,8 @@ func SeedTags(conn *pgx.Conn) error {
 	// Seed additional tags with random data
 	for i := 2; i < 10; i++ {
 		tag := db.InsertTagsParams{
-			Name:        gofakeit.Word() + "Tag" + string(i+1),
-			Abbrevation: gofakeit.LetterN(3) + string(i+1),
+			Name:        gofakeit.Word() + "Tag" + strconv.Itoa(i+1),
+			Abbrevation: gofakeit.LetterN(3) + strconv.Itoa(i+1),
 		}
 		err := q.InsertTags(context.Background(), conn, tag)
 		if err != nil {
@@ -182,8 +177,7 @@ func SeedTags(conn *pgx.Conn) error {
 }
 
 func SeedEvents(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	events, _ := q.ListEvents(context.Background(), conn)
 	if len(events) > 0 {
@@ -235,7 +229,7 @@ func SeedEvents(conn *pgx.Conn) error {
 	// Seed additional events with random data
 	for i := 2; i < 10; i++ {
 		event := db.InsertEventParams{
-			Name:           gofakeit.BeerName() + " " + string(i+1),
+			Name:           gofakeit.BeerName() + " " + strconv.Itoa(i+1),
 			Blurb:          gofakeit.Sentence(10),
 			Description:    gofakeit.Paragraph(3, 5, 10, " "),
 			Price:          pgtype.Numeric{Int: big.NewInt(int64(gofakeit.Int32())), Exp: 0, Valid: true},
@@ -261,13 +255,15 @@ func SeedEvents(conn *pgx.Conn) error {
 }
 
 func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	records, err := q.ListEventToOrganizerMapping(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event to Organizer mappings already seeded, skipping...")
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to list event to organizer mappings: %v", err)
 	}
 
 	events, err := q.ListEvents(context.Background(), conn)
@@ -321,13 +317,15 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 }
 
 func SeedEventSchedule(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	records, err := q.ListEventSchedule(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event schedules already seeded, skipping...")
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to list event schedules: %v", err)
 	}
 
 	events, err := q.ListEvents(context.Background(), conn)
@@ -409,13 +407,15 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 }
 
 func SeedPeopleToEventMapping(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	records, err := q.ListPeopleToEventMapping(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("People to Event mappings already seeded, skipping...")
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to list people to event mappings: %v", err)
 	}
 
 	events, err := q.ListEvents(context.Background(), conn)
@@ -469,13 +469,15 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 }
 
 func SeedEventTagMapping(conn *pgx.Conn) error {
-	var q *db.Queries
-	q = db.New()
+	q := db.New()
 
 	records, err := q.ListEventTagMapping(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event to Tag mappings already seeded, skipping...")
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("failed to list event to tag mappings: %v", err)
 	}
 
 	events, err := q.ListEvents(context.Background(), conn)

@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-var q *db.Queries
-
 func initDB() (error, *pgx.Conn) {
 	err := godotenv.Load()
 	if err != nil {
@@ -26,7 +24,6 @@ func initDB() (error, *pgx.Conn) {
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %v", err), nil
 	}
-	q = db.New()
 	return nil, conn
 }
 
@@ -37,6 +34,8 @@ func main() {
 		return
 	}
 	defer conn.Close(context.Background())
+
+	q := db.New()
 
 	if err := q.TruncateAllTables(context.Background(), conn); err != nil {
 		fmt.Printf("Error truncating tables: %v\n", err)
