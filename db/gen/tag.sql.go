@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const listTags = `-- name: ListTags :many
-SELECT id, name, abbrevation FROM tags
+const listTagsQuery = `-- name: ListTagsQuery :many
+SELECT id, name, abbreviation FROM tags
 `
 
-func (q *Queries) ListTags(ctx context.Context, db DBTX) ([]Tag, error) {
-	rows, err := db.Query(ctx, listTags)
+func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
+	rows, err := db.Query(ctx, listTagsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (q *Queries) ListTags(ctx context.Context, db DBTX) ([]Tag, error) {
 	var items []Tag
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.ID, &i.Name, &i.Abbrevation); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
