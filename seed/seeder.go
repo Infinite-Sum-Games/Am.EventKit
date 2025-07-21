@@ -143,12 +143,12 @@ func SeedTags(conn *pgx.Conn) error {
 	// Manually seed a few tags for reference
 	manualTags := []db.InsertTagsParams{
 		{
-			Name:        "Tech",
-			Abbrevation: "TEC",
+			Name:         "Tech",
+			Abbreviation: "TEC",
 		},
 		{
-			Name:        "Art",
-			Abbrevation: "ART",
+			Name:         "Art",
+			Abbreviation: "ART",
 		},
 	}
 	for _, tag := range manualTags {
@@ -162,8 +162,8 @@ func SeedTags(conn *pgx.Conn) error {
 	// Seed additional tags with random data
 	for i := 2; i < 10; i++ {
 		tag := db.InsertTagsParams{
-			Name:        gofakeit.Word() + "Tag" + strconv.Itoa(i+1),
-			Abbrevation: gofakeit.LetterN(3) + strconv.Itoa(i+1),
+			Name:         gofakeit.Word() + "Tag" + strconv.Itoa(i+1),
+			Abbreviation: gofakeit.LetterN(3) + strconv.Itoa(i+1),
 		}
 		err := q.InsertTags(context.Background(), conn, tag)
 		if err != nil {

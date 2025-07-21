@@ -166,17 +166,17 @@ func (q *Queries) InsertPeopleToEventMapping(ctx context.Context, db DBTX, arg I
 }
 
 const insertTags = `-- name: InsertTags :exec
-INSERT INTO tags(name, abbrevation)
+INSERT INTO tags(name, abbreviation)
 VALUES ($1, $2)
 `
 
 type InsertTagsParams struct {
-	Name        string `json:"name"`
-	Abbrevation string `json:"abbrevation"`
+	Name         string `json:"name"`
+	Abbreviation string `json:"abbreviation"`
 }
 
 func (q *Queries) InsertTags(ctx context.Context, db DBTX, arg InsertTagsParams) error {
-	_, err := db.Exec(ctx, insertTags, arg.Name, arg.Abbrevation)
+	_, err := db.Exec(ctx, insertTags, arg.Name, arg.Abbreviation)
 	return err
 }
 
@@ -419,7 +419,7 @@ func (q *Queries) ListPeopleToEventMapping(ctx context.Context, db DBTX) ([]Peop
 }
 
 const listTags = `-- name: ListTags :many
-SELECT id, name, abbrevation
+SELECT id, name, abbreviation
 FROM tags
 `
 
@@ -432,7 +432,7 @@ func (q *Queries) ListTags(ctx context.Context, db DBTX) ([]Tag, error) {
 	var items []Tag
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.ID, &i.Name, &i.Abbrevation); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

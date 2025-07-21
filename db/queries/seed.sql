@@ -26,7 +26,7 @@ INSERT INTO people_to_event_mapping(event_id, person_id)
 VALUES ($1, $2);
 
 -- name: InsertTags :exec
-INSERT INTO tags(name, abbrevation)
+INSERT INTO tags(name, abbreviation)
 VALUES ($1, $2);
 
 -- name: InsertEventTagMapping :exec
@@ -47,7 +47,7 @@ SELECT id, name, phone_number, profession, email
 FROM people;
 
 -- name: ListTags :many
-SELECT id, name, abbrevation
+SELECT id, name, abbreviation
 FROM tags;
 
 -- name: ListEventToOrganizerMapping :many

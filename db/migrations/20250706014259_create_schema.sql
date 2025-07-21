@@ -222,7 +222,7 @@ CREATE TABLE IF NOT EXISTS event_to_organizer_mapping (
 CREATE TABLE IF NOT EXISTS tags (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
-  abbrevation TEXT NOT NULL UNIQUE,
+  abbreviation TEXT NOT NULL UNIQUE,
 
   CONSTRAINT "tags_pkey" PRIMARY KEY (id)
 );
