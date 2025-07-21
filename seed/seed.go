@@ -7,30 +7,11 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/joho/godotenv"
 	"math/big"
 	"os"
 	"strconv"
 	"time"
 )
-
-func initDB() (*pgx.Conn, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error loading .env file: %v", err)
-	}
-
-	dbURL := os.Getenv("database_url")
-	if dbURL == "" {
-		return nil, fmt.Errorf("DATABASE_URL is not set in .env file")
-	}
-
-	conn, err := pgx.Connect(context.Background(), dbURL)
-	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %v", err)
-	}
-	return conn, nil
-}
 
 func SeedOrganizers(conn *pgx.Conn) error {
 	q := db.New()
@@ -530,8 +511,7 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	return nil
 }
 
-func main() {
-	// Initialize database connection
+func seed() {
 	conn, err := initDB()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Database initialization failed: %v\n", err)
