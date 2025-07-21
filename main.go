@@ -55,7 +55,7 @@ func SetupRouter() *gin.Engine {
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(userRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
-	apiTag.TagRoutes(v1)
+	apiTag.TagRoutes(userRouter)
 
 	return r
 }
