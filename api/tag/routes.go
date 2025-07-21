@@ -5,5 +5,5 @@ import (
 )
 
 func TagRoutes(r *gin.RouterGroup) {
-	r.GET("/tags/all", GetAllTags)
+	r.GET("/tags/all", GetAllEventTags)
 }

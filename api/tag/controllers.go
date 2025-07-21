@@ -11,10 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllTags(c *gin.Context) {
-	q := db.New()
+func GetAllEventTags(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
@@ -22,6 +22,8 @@ func GetAllTags(c *gin.Context) {
 		return
 	}
 	defer conn.Release()
+
+	q := db.New()
 
 	tags, err := q.ListTagsQuery(ctx, conn)
 	if err != nil {
