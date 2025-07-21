@@ -14,22 +14,22 @@ import (
 	"time"
 )
 
-func initDB() (error, *pgx.Conn) {
+func initDB() (*pgx.Conn, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return fmt.Errorf("error loading .env file: %v", err), nil
+		return nil, fmt.Errorf("error loading .env file: %v", err)
 	}
 
 	dbURL := os.Getenv("database_url")
 	if dbURL == "" {
-		return fmt.Errorf("DATABASE_URL is not set in .env file"), nil
+		return nil, fmt.Errorf("DATABASE_URL is not set in .env file")
 	}
 
 	conn, err := pgx.Connect(context.Background(), dbURL)
 	if err != nil {
-		return fmt.Errorf("unable to connect to database: %v", err), nil
+		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
-	return nil, conn
+	return conn, nil
 }
 
 func SeedOrganizers(conn *pgx.Conn) error {
@@ -532,12 +532,16 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 
 func main() {
 	// Initialize database connection
-	err, conn := initDB()
+	conn, err := initDB()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Database initialization failed: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(context.Background())
+	defer func() {
+		if err := conn.Close(context.Background()); err != nil {
+			fmt.Fprintf(os.Stderr, "Error closing database connection: %v\n", err)
+		}
+	}()
 
 	if err := SeedOrganizers(conn); err != nil {
 		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
