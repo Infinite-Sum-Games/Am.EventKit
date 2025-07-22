@@ -34,6 +34,18 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 	)
 }
 
+func SetTempCookie(c *gin.Context, tempTokenString string) {
+	c.SetCookie(
+		"temp_token",         // key
+		tempTokenString,      // value
+		5*60,                 // maxAge (5 mins)
+		"/",                  // path
+		cmd.Env.Domain,       // domain
+		cmd.Env.CookieSecure, // secure
+		true,                 // httpOnly
+	)
+}
+
 func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 	c.SetCookie(
 		"csrf_token",         // key
