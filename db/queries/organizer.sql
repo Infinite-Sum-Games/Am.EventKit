@@ -1,4 +1,4 @@
--- name: ListOrganizers :many
+-- name: ListOrganizersQuery :many
 
 SELECT
   name,
