@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const insertEvent = `-- name: InsertEvent :exec
+const insertEventQuery = `-- name: InsertEventQuery :exec
 INSERT INTO event(name, blurb, description, price, is_per_head, rules, 
   event_type, is_group, total_seats, seats_filled, event_status, event_mode, 
   attendance_mode) VALUES (
@@ -20,7 +20,7 @@ INSERT INTO event(name, blurb, description, price, is_per_head, rules,
 )
 `
 
-type InsertEventParams struct {
+type InsertEventQueryParams struct {
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
@@ -36,8 +36,8 @@ type InsertEventParams struct {
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
 }
 
-func (q *Queries) InsertEvent(ctx context.Context, db DBTX, arg InsertEventParams) error {
-	_, err := db.Exec(ctx, insertEvent,
+func (q *Queries) InsertEventQuery(ctx context.Context, db DBTX, arg InsertEventQueryParams) error {
+	_, err := db.Exec(ctx, insertEventQuery,
 		arg.Name,
 		arg.Blurb,
 		arg.Description,
@@ -55,12 +55,12 @@ func (q *Queries) InsertEvent(ctx context.Context, db DBTX, arg InsertEventParam
 	return err
 }
 
-const insertEventSchedule = `-- name: InsertEventSchedule :exec
+const insertEventScheduleQuery = `-- name: InsertEventScheduleQuery :exec
 INSERT INTO event_schedule(event_id, event_date, start_time, end_time, venue)
 VALUES ($1, $2, $3, $4, $5)
 `
 
-type InsertEventScheduleParams struct {
+type InsertEventScheduleQueryParams struct {
 	EventID   uuid.UUID        `json:"event_id"`
 	EventDate pgtype.Date      `json:"event_date"`
 	StartTime pgtype.Timestamp `json:"start_time"`
@@ -68,8 +68,8 @@ type InsertEventScheduleParams struct {
 	Venue     string           `json:"venue"`
 }
 
-func (q *Queries) InsertEventSchedule(ctx context.Context, db DBTX, arg InsertEventScheduleParams) error {
-	_, err := db.Exec(ctx, insertEventSchedule,
+func (q *Queries) InsertEventScheduleQuery(ctx context.Context, db DBTX, arg InsertEventScheduleQueryParams) error {
+	_, err := db.Exec(ctx, insertEventScheduleQuery,
 		arg.EventID,
 		arg.EventDate,
 		arg.StartTime,
@@ -79,42 +79,42 @@ func (q *Queries) InsertEventSchedule(ctx context.Context, db DBTX, arg InsertEv
 	return err
 }
 
-const insertEventTagMapping = `-- name: InsertEventTagMapping :exec
+const insertEventTagMappingQuery = `-- name: InsertEventTagMappingQuery :exec
 INSERT INTO event_tag_mapping(tag_id, event_id)
 VALUES ($1, $2)
 `
 
-type InsertEventTagMappingParams struct {
+type InsertEventTagMappingQueryParams struct {
 	TagID   uuid.UUID `json:"tag_id"`
 	EventID uuid.UUID `json:"event_id"`
 }
 
-func (q *Queries) InsertEventTagMapping(ctx context.Context, db DBTX, arg InsertEventTagMappingParams) error {
-	_, err := db.Exec(ctx, insertEventTagMapping, arg.TagID, arg.EventID)
+func (q *Queries) InsertEventTagMappingQuery(ctx context.Context, db DBTX, arg InsertEventTagMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertEventTagMappingQuery, arg.TagID, arg.EventID)
 	return err
 }
 
-const insertEventToOrganizerMapping = `-- name: InsertEventToOrganizerMapping :exec
+const insertEventToOrganizerMappingQuery = `-- name: InsertEventToOrganizerMappingQuery :exec
 INSERT INTO event_to_organizer_mapping(event_id, organizer_id)
 VALUES ($1, $2)
 `
 
-type InsertEventToOrganizerMappingParams struct {
+type InsertEventToOrganizerMappingQueryParams struct {
 	EventID     uuid.UUID `json:"event_id"`
 	OrganizerID uuid.UUID `json:"organizer_id"`
 }
 
-func (q *Queries) InsertEventToOrganizerMapping(ctx context.Context, db DBTX, arg InsertEventToOrganizerMappingParams) error {
-	_, err := db.Exec(ctx, insertEventToOrganizerMapping, arg.EventID, arg.OrganizerID)
+func (q *Queries) InsertEventToOrganizerMappingQuery(ctx context.Context, db DBTX, arg InsertEventToOrganizerMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertEventToOrganizerMappingQuery, arg.EventID, arg.OrganizerID)
 	return err
 }
 
-const insertOrganizer = `-- name: InsertOrganizer :exec
+const insertOrganizerQuery = `-- name: InsertOrganizerQuery :exec
 INSERT INTO organizer(name, abbr, org_type, student_head, student_co_head, faculty_head)
 VALUES ($1, $2, $3, $4, $5, $6)
 `
 
-type InsertOrganizerParams struct {
+type InsertOrganizerQueryParams struct {
 	Name          string            `json:"name"`
 	Abbr          string            `json:"abbr"`
 	OrgType       OrganizerTypeEnum `json:"org_type"`
@@ -123,8 +123,8 @@ type InsertOrganizerParams struct {
 	FacultyHead   string            `json:"faculty_head"`
 }
 
-func (q *Queries) InsertOrganizer(ctx context.Context, db DBTX, arg InsertOrganizerParams) error {
-	_, err := db.Exec(ctx, insertOrganizer,
+func (q *Queries) InsertOrganizerQuery(ctx context.Context, db DBTX, arg InsertOrganizerQueryParams) error {
+	_, err := db.Exec(ctx, insertOrganizerQuery,
 		arg.Name,
 		arg.Abbr,
 		arg.OrgType,
@@ -135,57 +135,57 @@ func (q *Queries) InsertOrganizer(ctx context.Context, db DBTX, arg InsertOrgani
 	return err
 }
 
-const insertPeople = `-- name: InsertPeople :exec
+const insertPeopleQuery = `-- name: InsertPeopleQuery :exec
 INSERT INTO people(name, phone_number)
 VALUES ($1, $2)
 `
 
-type InsertPeopleParams struct {
+type InsertPeopleQueryParams struct {
 	Name        string `json:"name"`
 	PhoneNumber string `json:"phone_number"`
 }
 
-func (q *Queries) InsertPeople(ctx context.Context, db DBTX, arg InsertPeopleParams) error {
-	_, err := db.Exec(ctx, insertPeople, arg.Name, arg.PhoneNumber)
+func (q *Queries) InsertPeopleQuery(ctx context.Context, db DBTX, arg InsertPeopleQueryParams) error {
+	_, err := db.Exec(ctx, insertPeopleQuery, arg.Name, arg.PhoneNumber)
 	return err
 }
 
-const insertPeopleToEventMapping = `-- name: InsertPeopleToEventMapping :exec
+const insertPeopleToEventMappingQuery = `-- name: InsertPeopleToEventMappingQuery :exec
 INSERT INTO people_to_event_mapping(event_id, person_id)
 VALUES ($1, $2)
 `
 
-type InsertPeopleToEventMappingParams struct {
+type InsertPeopleToEventMappingQueryParams struct {
 	EventID  uuid.UUID `json:"event_id"`
 	PersonID uuid.UUID `json:"person_id"`
 }
 
-func (q *Queries) InsertPeopleToEventMapping(ctx context.Context, db DBTX, arg InsertPeopleToEventMappingParams) error {
-	_, err := db.Exec(ctx, insertPeopleToEventMapping, arg.EventID, arg.PersonID)
+func (q *Queries) InsertPeopleToEventMappingQuery(ctx context.Context, db DBTX, arg InsertPeopleToEventMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertPeopleToEventMappingQuery, arg.EventID, arg.PersonID)
 	return err
 }
 
-const insertTags = `-- name: InsertTags :exec
+const insertTagsQuery = `-- name: InsertTagsQuery :exec
 INSERT INTO tags(name, abbreviation)
 VALUES ($1, $2)
 `
 
-type InsertTagsParams struct {
+type InsertTagsQueryParams struct {
 	Name         string `json:"name"`
 	Abbreviation string `json:"abbreviation"`
 }
 
-func (q *Queries) InsertTags(ctx context.Context, db DBTX, arg InsertTagsParams) error {
-	_, err := db.Exec(ctx, insertTags, arg.Name, arg.Abbreviation)
+func (q *Queries) InsertTagsQuery(ctx context.Context, db DBTX, arg InsertTagsQueryParams) error {
+	_, err := db.Exec(ctx, insertTagsQuery, arg.Name, arg.Abbreviation)
 	return err
 }
 
-const listEventSchedule = `-- name: ListEventSchedule :many
+const listEventScheduleQuery = `-- name: ListEventScheduleQuery :many
 SELECT id, event_id, event_date, start_time, end_time, venue
 FROM event_schedule
 `
 
-type ListEventScheduleRow struct {
+type ListEventScheduleQueryRow struct {
 	ID        uuid.UUID        `json:"id"`
 	EventID   uuid.UUID        `json:"event_id"`
 	EventDate pgtype.Date      `json:"event_date"`
@@ -194,15 +194,15 @@ type ListEventScheduleRow struct {
 	Venue     string           `json:"venue"`
 }
 
-func (q *Queries) ListEventSchedule(ctx context.Context, db DBTX) ([]ListEventScheduleRow, error) {
-	rows, err := db.Query(ctx, listEventSchedule)
+func (q *Queries) ListEventScheduleQuery(ctx context.Context, db DBTX) ([]ListEventScheduleQueryRow, error) {
+	rows, err := db.Query(ctx, listEventScheduleQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListEventScheduleRow
+	var items []ListEventScheduleQueryRow
 	for rows.Next() {
-		var i ListEventScheduleRow
+		var i ListEventScheduleQueryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.EventID,
@@ -221,13 +221,13 @@ func (q *Queries) ListEventSchedule(ctx context.Context, db DBTX) ([]ListEventSc
 	return items, nil
 }
 
-const listEventTagMapping = `-- name: ListEventTagMapping :many
+const listEventTagMappingQuery = `-- name: ListEventTagMappingQuery :many
 SELECT id, tag_id, event_id
 FROM event_tag_mapping
 `
 
-func (q *Queries) ListEventTagMapping(ctx context.Context, db DBTX) ([]EventTagMapping, error) {
-	rows, err := db.Query(ctx, listEventTagMapping)
+func (q *Queries) ListEventTagMappingQuery(ctx context.Context, db DBTX) ([]EventTagMapping, error) {
+	rows, err := db.Query(ctx, listEventTagMappingQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -246,13 +246,13 @@ func (q *Queries) ListEventTagMapping(ctx context.Context, db DBTX) ([]EventTagM
 	return items, nil
 }
 
-const listEventToOrganizerMapping = `-- name: ListEventToOrganizerMapping :many
+const listEventToOrganizerMappingQuery = `-- name: ListEventToOrganizerMappingQuery :many
 SELECT id, event_id, organizer_id
 FROM event_to_organizer_mapping
 `
 
-func (q *Queries) ListEventToOrganizerMapping(ctx context.Context, db DBTX) ([]EventToOrganizerMapping, error) {
-	rows, err := db.Query(ctx, listEventToOrganizerMapping)
+func (q *Queries) ListEventToOrganizerMappingQuery(ctx context.Context, db DBTX) ([]EventToOrganizerMapping, error) {
+	rows, err := db.Query(ctx, listEventToOrganizerMappingQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -271,13 +271,13 @@ func (q *Queries) ListEventToOrganizerMapping(ctx context.Context, db DBTX) ([]E
 	return items, nil
 }
 
-const listEvents = `-- name: ListEvents :many
+const listEventsQuery = `-- name: ListEventsQuery :many
 SELECT id, name, blurb, description, price, is_per_head, rules, event_type, is_group, 
        total_seats, seats_filled, event_status, event_mode, attendance_mode
 FROM event
 `
 
-type ListEventsRow struct {
+type ListEventsQueryRow struct {
 	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
@@ -294,15 +294,15 @@ type ListEventsRow struct {
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
 }
 
-func (q *Queries) ListEvents(ctx context.Context, db DBTX) ([]ListEventsRow, error) {
-	rows, err := db.Query(ctx, listEvents)
+func (q *Queries) ListEventsQuery(ctx context.Context, db DBTX) ([]ListEventsQueryRow, error) {
+	rows, err := db.Query(ctx, listEventsQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListEventsRow
+	var items []ListEventsQueryRow
 	for rows.Next() {
-		var i ListEventsRow
+		var i ListEventsQueryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -329,13 +329,13 @@ func (q *Queries) ListEvents(ctx context.Context, db DBTX) ([]ListEventsRow, err
 	return items, nil
 }
 
-const listOrganizers = `-- name: ListOrganizers :many
+const listOrganizersQuery = `-- name: ListOrganizersQuery :many
 SELECT id, name, abbr, org_type, student_head, student_co_head, faculty_head
 FROM organizer
 `
 
-func (q *Queries) ListOrganizers(ctx context.Context, db DBTX) ([]Organizer, error) {
-	rows, err := db.Query(ctx, listOrganizers)
+func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]Organizer, error) {
+	rows, err := db.Query(ctx, listOrganizersQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -362,13 +362,13 @@ func (q *Queries) ListOrganizers(ctx context.Context, db DBTX) ([]Organizer, err
 	return items, nil
 }
 
-const listPeople = `-- name: ListPeople :many
+const listPeopleQuery = `-- name: ListPeopleQuery :many
 SELECT id, name, phone_number, profession, email
 FROM people
 `
 
-func (q *Queries) ListPeople(ctx context.Context, db DBTX) ([]Person, error) {
-	rows, err := db.Query(ctx, listPeople)
+func (q *Queries) ListPeopleQuery(ctx context.Context, db DBTX) ([]Person, error) {
+	rows, err := db.Query(ctx, listPeopleQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -393,13 +393,13 @@ func (q *Queries) ListPeople(ctx context.Context, db DBTX) ([]Person, error) {
 	return items, nil
 }
 
-const listPeopleToEventMapping = `-- name: ListPeopleToEventMapping :many
+const listPeopleToEventMappingQuery = `-- name: ListPeopleToEventMappingQuery :many
 SELECT id, event_id, person_id
 FROM people_to_event_mapping
 `
 
-func (q *Queries) ListPeopleToEventMapping(ctx context.Context, db DBTX) ([]PeopleToEventMapping, error) {
-	rows, err := db.Query(ctx, listPeopleToEventMapping)
+func (q *Queries) ListPeopleToEventMappingQuery(ctx context.Context, db DBTX) ([]PeopleToEventMapping, error) {
+	rows, err := db.Query(ctx, listPeopleToEventMappingQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -418,13 +418,13 @@ func (q *Queries) ListPeopleToEventMapping(ctx context.Context, db DBTX) ([]Peop
 	return items, nil
 }
 
-const listTags = `-- name: ListTags :many
+const listTagsQuery = `-- name: ListTagsQuery :many
 SELECT id, name, abbreviation
 FROM tags
 `
 
-func (q *Queries) ListTags(ctx context.Context, db DBTX) ([]Tag, error) {
-	rows, err := db.Query(ctx, listTags)
+func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
+	rows, err := db.Query(ctx, listTagsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -443,11 +443,11 @@ func (q *Queries) ListTags(ctx context.Context, db DBTX) ([]Tag, error) {
 	return items, nil
 }
 
-const truncateAllTables = `-- name: TruncateAllTables :exec
+const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE organizer, people, tags, event, event_to_organizer_mapping, event_schedule, people_to_event_mapping, event_tag_mapping CASCADE
 `
 
-func (q *Queries) TruncateAllTables(ctx context.Context, db DBTX) error {
-	_, err := db.Exec(ctx, truncateAllTables)
+func (q *Queries) TruncateAllTablesQuery(ctx context.Context, db DBTX) error {
+	_, err := db.Exec(ctx, truncateAllTablesQuery)
 	return err
 }

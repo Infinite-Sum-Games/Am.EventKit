@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"os"
@@ -15,12 +16,7 @@ func initDB() (*pgx.Conn, error) {
 		return nil, fmt.Errorf("error loading .env file: %v", err)
 	}
 
-	dbURL := os.Getenv("database_url")
-	if dbURL == "" {
-		return nil, fmt.Errorf("DATABASE_URL is not set in .env file")
-	}
-
-	conn, err := pgx.Connect(context.Background(), dbURL)
+	conn, err := pgx.Connect(context.Background(), cmd.Env.DatabaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}

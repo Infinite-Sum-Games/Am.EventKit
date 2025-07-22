@@ -16,14 +16,14 @@ import (
 func SeedOrganizers(conn *pgx.Conn) error {
 	q := db.New()
 
-	organizers, _ := q.ListOrganizers(context.Background(), conn)
+	organizers, _ := q.ListOrganizersQuery(context.Background(), conn)
 	if len(organizers) > 0 {
 		fmt.Println("Organizers already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few organizers for reference
-	manualOrganizers := []db.InsertOrganizerParams{
+	manualOrganizers := []db.InsertOrganizerQueryParams{
 		{
 			Name:        "Engineering Department",
 			Abbr:        "ENG",
@@ -40,7 +40,7 @@ func SeedOrganizers(conn *pgx.Conn) error {
 		},
 	}
 	for _, organizer := range manualOrganizers {
-		err := q.InsertOrganizer(context.Background(), conn, organizer)
+		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
 		if err != nil {
 			fmt.Printf("Error inserting manual organizer: %v\n", err)
 			return err
@@ -49,14 +49,14 @@ func SeedOrganizers(conn *pgx.Conn) error {
 
 	// Seed additional organizers with random data
 	for i := 2; i < 5; i++ {
-		organizer := db.InsertOrganizerParams{
+		organizer := db.InsertOrganizerQueryParams{
 			Name:        gofakeit.Company() + " " + strconv.Itoa(i+1),
 			Abbr:        gofakeit.LetterN(3) + strconv.Itoa(i+1),
 			OrgType:     db.OrganizerTypeEnum(gofakeit.RandomString([]string{"DEPARTMENT", "CLUB"})),
 			StudentHead: gofakeit.Name(),
 			FacultyHead: gofakeit.Name(),
 		}
-		err := q.InsertOrganizer(context.Background(), conn, organizer)
+		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
 		if err != nil {
 			fmt.Printf("Error inserting organizer: %v\n", err)
 			return err
@@ -70,14 +70,14 @@ func SeedOrganizers(conn *pgx.Conn) error {
 func SeedPeople(conn *pgx.Conn) error {
 	q := db.New()
 
-	people, _ := q.ListPeople(context.Background(), conn)
+	people, _ := q.ListPeopleQuery(context.Background(), conn)
 	if len(people) > 0 {
 		fmt.Println("People already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few people for reference
-	manualPeople := []db.InsertPeopleParams{
+	manualPeople := []db.InsertPeopleQueryParams{
 		{
 			Name:        "Eve Wilson",
 			PhoneNumber: "9876543210",
@@ -88,7 +88,7 @@ func SeedPeople(conn *pgx.Conn) error {
 		},
 	}
 	for _, person := range manualPeople {
-		err := q.InsertPeople(context.Background(), conn, person)
+		err := q.InsertPeopleQuery(context.Background(), conn, person)
 		if err != nil {
 			fmt.Printf("Error inserting manual person: %v\n", err)
 			return err
@@ -97,11 +97,11 @@ func SeedPeople(conn *pgx.Conn) error {
 
 	// Seed additional people with random data
 	for i := 2; i < 20; i++ {
-		person := db.InsertPeopleParams{
+		person := db.InsertPeopleQueryParams{
 			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Phone(),
 		}
-		err := q.InsertPeople(context.Background(), conn, person)
+		err := q.InsertPeopleQuery(context.Background(), conn, person)
 		if err != nil {
 			fmt.Printf("Error inserting person: %v\n", err)
 			return err
@@ -115,14 +115,14 @@ func SeedPeople(conn *pgx.Conn) error {
 func SeedTags(conn *pgx.Conn) error {
 	q := db.New()
 
-	tags, _ := q.ListTags(context.Background(), conn)
+	tags, _ := q.ListTagsQuery(context.Background(), conn)
 	if len(tags) > 0 {
 		fmt.Println("Tags already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few tags for reference
-	manualTags := []db.InsertTagsParams{
+	manualTags := []db.InsertTagsQueryParams{
 		{
 			Name:         "Tech",
 			Abbreviation: "TEC",
@@ -133,7 +133,7 @@ func SeedTags(conn *pgx.Conn) error {
 		},
 	}
 	for _, tag := range manualTags {
-		err := q.InsertTags(context.Background(), conn, tag)
+		err := q.InsertTagsQuery(context.Background(), conn, tag)
 		if err != nil {
 			fmt.Printf("Error inserting manual tag: %v\n", err)
 			return err
@@ -142,11 +142,11 @@ func SeedTags(conn *pgx.Conn) error {
 
 	// Seed additional tags with random data
 	for i := 2; i < 10; i++ {
-		tag := db.InsertTagsParams{
+		tag := db.InsertTagsQueryParams{
 			Name:         gofakeit.Word() + "Tag" + strconv.Itoa(i+1),
 			Abbreviation: gofakeit.LetterN(3) + strconv.Itoa(i+1),
 		}
-		err := q.InsertTags(context.Background(), conn, tag)
+		err := q.InsertTagsQuery(context.Background(), conn, tag)
 		if err != nil {
 			fmt.Printf("Error inserting tag: %v\n", err)
 			return err
@@ -160,14 +160,14 @@ func SeedTags(conn *pgx.Conn) error {
 func SeedEvents(conn *pgx.Conn) error {
 	q := db.New()
 
-	events, _ := q.ListEvents(context.Background(), conn)
+	events, _ := q.ListEventsQuery(context.Background(), conn)
 	if len(events) > 0 {
 		fmt.Println("Events already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few events for reference
-	manualEvents := []db.InsertEventParams{
+	manualEvents := []db.InsertEventQueryParams{
 		{
 			Name:           "Tech Workshop",
 			Blurb:          "A workshop on technology trends.",
@@ -200,7 +200,7 @@ func SeedEvents(conn *pgx.Conn) error {
 		},
 	}
 	for _, event := range manualEvents {
-		err := q.InsertEvent(context.Background(), conn, event)
+		err := q.InsertEventQuery(context.Background(), conn, event)
 		if err != nil {
 			fmt.Printf("Error inserting manual event: %v\n", err)
 			return err
@@ -209,7 +209,7 @@ func SeedEvents(conn *pgx.Conn) error {
 
 	// Seed additional events with random data
 	for i := 2; i < 10; i++ {
-		event := db.InsertEventParams{
+		event := db.InsertEventQueryParams{
 			Name:           gofakeit.BeerName() + " " + strconv.Itoa(i+1),
 			Blurb:          gofakeit.Sentence(10),
 			Description:    gofakeit.Paragraph(3, 5, 10, " "),
@@ -224,7 +224,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventMode:      db.EventModeEnum(gofakeit.RandomString([]string{"ONLINE", "OFFLINE"})),
 			AttendanceMode: db.AttendanceModeEnum(gofakeit.RandomString([]string{"SOLO", "DUO"})),
 		}
-		err := q.InsertEvent(context.Background(), conn, event)
+		err := q.InsertEventQuery(context.Background(), conn, event)
 		if err != nil {
 			fmt.Printf("Error inserting event: %v\n", err)
 			return err
@@ -238,7 +238,7 @@ func SeedEvents(conn *pgx.Conn) error {
 func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventToOrganizerMapping(context.Background(), conn)
+	records, err := q.ListEventToOrganizerMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event to Organizer mappings already seeded, skipping...")
 		return nil
@@ -247,20 +247,20 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 		return fmt.Errorf("failed to list event to organizer mappings: %v", err)
 	}
 
-	events, err := q.ListEvents(context.Background(), conn)
+	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
 		return err
 	}
 
-	organizers, err := q.ListOrganizers(context.Background(), conn)
+	organizers, err := q.ListOrganizersQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing organizers: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to organizers
-	manualMappings := []db.InsertEventToOrganizerMappingParams{
+	manualMappings := []db.InsertEventToOrganizerMappingQueryParams{
 		{
 			EventID:     events[0].ID,
 			OrganizerID: organizers[0].ID,
@@ -271,7 +271,7 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertEventToOrganizerMapping(context.Background(), conn, mapping)
+		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting manual event to organizer mapping: %v\n", err)
 			return err
@@ -282,11 +282,11 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		organizer := organizers[i%len(organizers)]
-		mapping := db.InsertEventToOrganizerMappingParams{
+		mapping := db.InsertEventToOrganizerMappingQueryParams{
 			EventID:     event.ID,
 			OrganizerID: organizer.ID,
 		}
-		err := q.InsertEventToOrganizerMapping(context.Background(), conn, mapping)
+		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting event to organizer mapping: %v\n", err)
 			return err
@@ -300,7 +300,7 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 func SeedEventSchedule(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventSchedule(context.Background(), conn)
+	records, err := q.ListEventScheduleQuery(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event schedules already seeded, skipping...")
 		return nil
@@ -309,14 +309,14 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		return fmt.Errorf("failed to list event schedules: %v", err)
 	}
 
-	events, err := q.ListEvents(context.Background(), conn)
+	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
 		return err
 	}
 
 	// Manually schedule the first two events
-	manualSchedules := []db.InsertEventScheduleParams{
+	manualSchedules := []db.InsertEventScheduleQueryParams{
 		{
 			EventID: events[0].ID,
 			EventDate: pgtype.Date{
@@ -351,7 +351,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		},
 	}
 	for _, schedule := range manualSchedules {
-		err := q.InsertEventSchedule(context.Background(), conn, schedule)
+		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
 			fmt.Printf("Error inserting manual event schedule: %v\n", err)
 			return err
@@ -360,7 +360,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 
 	// Seed additional schedules with random data
 	for i := 2; i < len(events); i++ {
-		schedule := db.InsertEventScheduleParams{
+		schedule := db.InsertEventScheduleQueryParams{
 			EventID: events[i].ID,
 			EventDate: pgtype.Date{
 				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour),
@@ -376,7 +376,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 			},
 			Venue: gofakeit.City(),
 		}
-		err := q.InsertEventSchedule(context.Background(), conn, schedule)
+		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
 			fmt.Printf("Error inserting event schedule: %v\n", err)
 			return err
@@ -390,7 +390,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListPeopleToEventMapping(context.Background(), conn)
+	records, err := q.ListPeopleToEventMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("People to Event mappings already seeded, skipping...")
 		return nil
@@ -399,20 +399,20 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		return fmt.Errorf("failed to list people to event mappings: %v", err)
 	}
 
-	events, err := q.ListEvents(context.Background(), conn)
+	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
 		return err
 	}
 
-	people, err := q.ListPeople(context.Background(), conn)
+	people, err := q.ListPeopleQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing people: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to people
-	manualMappings := []db.InsertPeopleToEventMappingParams{
+	manualMappings := []db.InsertPeopleToEventMappingQueryParams{
 		{
 			EventID:  events[0].ID,
 			PersonID: people[0].ID,
@@ -423,7 +423,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertPeopleToEventMapping(context.Background(), conn, mapping)
+		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting manual people to event mapping: %v\n", err)
 			return err
@@ -434,11 +434,11 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		person := people[i%len(people)]
-		mapping := db.InsertPeopleToEventMappingParams{
+		mapping := db.InsertPeopleToEventMappingQueryParams{
 			EventID:  event.ID,
 			PersonID: person.ID,
 		}
-		err := q.InsertPeopleToEventMapping(context.Background(), conn, mapping)
+		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting people to event mapping: %v\n", err)
 			return err
@@ -452,7 +452,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 func SeedEventTagMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventTagMapping(context.Background(), conn)
+	records, err := q.ListEventTagMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
 		fmt.Println("Event to Tag mappings already seeded, skipping...")
 		return nil
@@ -461,20 +461,20 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 		return fmt.Errorf("failed to list event to tag mappings: %v", err)
 	}
 
-	events, err := q.ListEvents(context.Background(), conn)
+	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing events: %v\n", err)
 		return err
 	}
 
-	tags, err := q.ListTags(context.Background(), conn)
+	tags, err := q.ListTagsQuery(context.Background(), conn)
 	if err != nil {
 		fmt.Printf("Error listing tags: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to tags
-	manualMappings := []db.InsertEventTagMappingParams{
+	manualMappings := []db.InsertEventTagMappingQueryParams{
 		{
 			EventID: events[0].ID,
 			TagID:   tags[0].ID,
@@ -485,7 +485,7 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertEventTagMapping(context.Background(), conn, mapping)
+		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting manual event tag mapping: %v\n", err)
 			return err
@@ -496,11 +496,11 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		tag := tags[i%len(tags)]
-		mapping := db.InsertEventTagMappingParams{
+		mapping := db.InsertEventTagMappingQueryParams{
 			TagID:   tag.ID,
 			EventID: event.ID,
 		}
-		err := q.InsertEventTagMapping(context.Background(), conn, mapping)
+		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			fmt.Printf("Error inserting event tag mapping: %v\n", err)
 			return err

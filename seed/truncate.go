@@ -20,7 +20,7 @@ func truncate() {
 
 	q := db.New()
 
-	if err := q.TruncateAllTables(context.Background(), conn); err != nil {
+	if err := q.TruncateAllTablesQuery(context.Background(), conn); err != nil {
 		fmt.Printf("Error truncating tables: %v\n", err)
 		return
 	}
