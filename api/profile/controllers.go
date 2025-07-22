@@ -8,8 +8,6 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,12 +16,6 @@ func FetchUserProfile(c *gin.Context) {
 
 	// TODO - Replace with email retireved from auth token
 	email := "sample@gmail.com" // For testing purposes
-
-	err := validation.Validate(email, validation.Required, is.Email)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Internal server error"})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Invalid email format", err)
-	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
