@@ -3,7 +3,7 @@
 SELECT
   name,
   abbr,
-  type,
+  org_type,
   student_head,
   student_co_head,
   faculty_head
