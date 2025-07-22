@@ -8,18 +8,26 @@ package db
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listProfileInfo = `-- name: ListProfileInfo :one
-SELECT name, department_name, email, phone_number, is_amrita_student, 
-amrita_roll_number, college_name, college_city, academic_year, account_status 
+const fetchUserProfileQuery = `-- name: FetchUserProfileQuery :one
+SELECT 
+  name, 
+  department_name,
+  email,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  academic_year,
+  account_status 
 FROM student 
-WHERE id = $1
+WHERE email = $1
 `
 
-type ListProfileInfoRow struct {
+type FetchUserProfileQueryRow struct {
 	Name             string            `json:"name"`
 	DepartmentName   string            `json:"department_name"`
 	Email            string            `json:"email"`
@@ -32,9 +40,9 @@ type ListProfileInfoRow struct {
 	AccountStatus    AccountStatusEnum `json:"account_status"`
 }
 
-func (q *Queries) ListProfileInfo(ctx context.Context, db DBTX, id uuid.UUID) (ListProfileInfoRow, error) {
-	row := db.QueryRow(ctx, listProfileInfo, id)
-	var i ListProfileInfoRow
+func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email string) (FetchUserProfileQueryRow, error) {
+	row := db.QueryRow(ctx, fetchUserProfileQuery, email)
+	var i FetchUserProfileQueryRow
 	err := row.Scan(
 		&i.Name,
 		&i.DepartmentName,

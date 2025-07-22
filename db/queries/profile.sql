@@ -1,5 +1,14 @@
--- name: ListProfileInfo :one
-SELECT name, department_name, email, phone_number, is_amrita_student, 
-amrita_roll_number, college_name, college_city, academic_year, account_status 
+-- name: FetchUserProfileQuery :one
+SELECT 
+  name, 
+  department_name,
+  email,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  academic_year,
+  account_status 
 FROM student 
-WHERE id = $1;
+WHERE email = $1;

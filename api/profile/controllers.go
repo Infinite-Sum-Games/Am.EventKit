@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
@@ -11,52 +10,40 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 func FetchUserProfile(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
-	idStr := c.Param("id")
-	if err := validation.Validate(idStr, validation.Required, is.UUID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid user ID format"})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid user ID format", err)
-		return
-	}
+	// TODO - Replace with email retireved from auth token
+	email := "sample@gmail.com" // For testing purposes
 
-	id, err := uuid.Parse(idStr)
+	err := validation.Validate(email, validation.Required, is.Email)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid user ID format"})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid user ID format", err)
-		return
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Internal server error"})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Invalid email format", err)
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
 
-	profile, err := q.ListProfileInfo(ctx, conn, id)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{"message": "User profile not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch user profile"})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to fetch user profile", err)
+	profile, err := q.FetchUserProfileQuery(ctx, conn, email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"message": "User profile does not exist"})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist", nil)
 		return
 	}
-
-	if profile.AccountStatus != db.AccountStatusEnumVERIFIED {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User profile is not verified"})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: User profile is not verified", nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch user profile"})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to fetch user profile", err)
 		return
 	}
 
