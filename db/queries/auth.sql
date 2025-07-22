@@ -84,4 +84,4 @@ SELECT
   academic_year,
   'VERIFIED'
 FROM student_onboarding
-WHERE email = $1;
+WHERE student_onboarding.email = $1;
