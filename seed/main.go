@@ -6,16 +6,10 @@ import (
 	"fmt"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"os"
 )
 
 func initDB() (*pgx.Conn, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("error loading .env file: %v", err)
-	}
-
 	conn, err := pgx.Connect(context.Background(), cmd.Env.DatabaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %v", err)
