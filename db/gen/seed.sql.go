@@ -418,31 +418,6 @@ func (q *Queries) ListPeopleToEventMappingQuery(ctx context.Context, db DBTX) ([
 	return items, nil
 }
 
-const listTagsQuery = `-- name: ListTagsQuery :many
-SELECT id, name, abbreviation
-FROM tags
-`
-
-func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
-	rows, err := db.Query(ctx, listTagsQuery)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Tag
-	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE organizer, people, tags, event, event_to_organizer_mapping, event_schedule, people_to_event_mapping, event_tag_mapping CASCADE
 `

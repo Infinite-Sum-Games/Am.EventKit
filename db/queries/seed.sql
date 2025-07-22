@@ -46,10 +46,6 @@ FROM organizer;
 SELECT id, name, phone_number, profession, email
 FROM people;
 
--- name: ListTagsQuery :many
-SELECT id, name, abbreviation
-FROM tags;
-
 -- name: ListEventToOrganizerMappingQuery :many
 SELECT id, event_id, organizer_id
 FROM event_to_organizer_mapping;
