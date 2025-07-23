@@ -1,0 +1,15 @@
+meta {
+  name: getEventbyId
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/events/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
