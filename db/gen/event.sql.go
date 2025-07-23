@@ -7,14 +7,88 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
-const listEvents = `-- name: ListEvents :many
-SELECT id, name, blurb, description, cover_image_url, price, is_per_head, rules, event_type, is_group, max_teamsize, min_teamsize, total_seats, seats_filled, event_status, event_mode, attendance_mode, created_at, updated_at FROM event
+const getEventByIdQuery = `-- name: GetEventByIdQuery :one
+SELECT
+    id,
+    name,
+    blurb,
+    description,
+    cover_image_url,
+    price,
+    is_per_head,
+    rules,
+    event_type,
+    is_group,
+    max_teamsize,
+    min_teamsize,
+    total_seats,
+    seats_filled,
+    event_status,
+    event_mode,
+    attendance_mode,
+    created_at,
+    updated_at
+FROM event
+WHERE id = $1
 `
 
-func (q *Queries) ListEvents(ctx context.Context, db DBTX) ([]Event, error) {
-	rows, err := db.Query(ctx, listEvents)
+func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (Event, error) {
+	row := db.QueryRow(ctx, getEventByIdQuery, id)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Blurb,
+		&i.Description,
+		&i.CoverImageUrl,
+		&i.Price,
+		&i.IsPerHead,
+		&i.Rules,
+		&i.EventType,
+		&i.IsGroup,
+		&i.MaxTeamsize,
+		&i.MinTeamsize,
+		&i.TotalSeats,
+		&i.SeatsFilled,
+		&i.EventStatus,
+		&i.EventMode,
+		&i.AttendanceMode,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listEventsQuery = `-- name: ListEventsQuery :many
+SELECT
+    id,
+    name,
+    blurb,
+    description,
+    cover_image_url,
+    price,
+    is_per_head,
+    rules,
+    event_type,
+    is_group,
+    max_teamsize,
+    min_teamsize,
+    total_seats,
+    seats_filled,
+    event_status,
+    event_mode,
+    attendance_mode,
+    created_at,
+    updated_at
+FROM event
+`
+
+func (q *Queries) ListEventsQuery(ctx context.Context, db DBTX) ([]Event, error) {
+	rows, err := db.Query(ctx, listEventsQuery)
 	if err != nil {
 		return nil, err
 	}
