@@ -58,7 +58,7 @@ func SetupRouter() *gin.Engine {
 	apiStaff.AttendanceRoutes(staffRouter)
 	apiTag.TagRoutes(userRouter)
 	apiOrganizer.OrganizerRoutes(userRouter)
-	
+
 	return r
 }
 
