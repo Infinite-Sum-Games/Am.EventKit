@@ -9,10 +9,12 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"time"
 )
 
 func FetchUserProfile(c *gin.Context) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	// TODO - Replace with email retireved from auth token
 	email := "sample@gmail.com" // For testing purposes
