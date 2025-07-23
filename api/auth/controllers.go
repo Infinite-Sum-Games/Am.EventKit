@@ -80,6 +80,12 @@ func RegisterUserAccount(c *gin.Context) {
 		})
 		return
 	}
+	otpStr := strconv.Itoa(otp)
+	otpSlice := make([]string, len(otpStr))
+	for i, ch := range otpStr {
+		otpSlice[i] = string(ch)
+	}
+
 	var expiry pgtype.Timestamp
 	expiry.Time = time.Now().Add(10 * time.Minute)
 	expiry.Valid = true
@@ -117,7 +123,7 @@ func RegisterUserAccount(c *gin.Context) {
 		CollegeName:  req.CollegeName,
 		CollegeCity:  req.CollegeCity,
 		AcademicYear: req.AcademicYear,
-		Otp:          strconv.Itoa(otp),
+		Otp:          otpStr,
 		ExpiryAt:     expiry,
 	})
 	if err != nil {
@@ -130,14 +136,14 @@ func RegisterUserAccount(c *gin.Context) {
 	// also there is no function to set temp token, so i wrote a new one
 	pkg.SetTempCookie(c, tempToken)
 
-	// TODO: should use mailer and send email here!
 	mail.Mail.Enqueue(mail.EmailRequest{
 		To:      []string{req.Email},
 		Subject: "Welcome to Anokha 2025",
 		Type:    "otp",
-		Data: mail.OTPTemplateData{
+		// should pass this as pointer (IMPORTANT)
+		Data: &mail.OTPTemplateData{
 			UserName: req.Name,
-			OTP:      []string{strconv.Itoa(otp)},
+			OTP:      otpSlice,
 		},
 	})
 

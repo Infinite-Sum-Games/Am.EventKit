@@ -2,6 +2,7 @@ package mail
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"os"
 	"sync"
@@ -9,6 +10,13 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/joncrlsn/dque"
 )
+
+func init() {
+	gob.Register(OTPTemplateData{})
+	gob.Register(WelcomeTemplateData{})
+	gob.Register(RegistrationData{})
+	gob.Register(EmailRequest{})
+}
 
 type MailerService struct {
 	queue   *dque.DQue
@@ -55,6 +63,7 @@ func (m *MailerService) Enqueue(req EmailRequest) error {
 
 func (m *MailerService) worker(id int) {
 	sender := NewMailer()
+	pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: started", id))
 
 	for {
 		select {
@@ -71,7 +80,11 @@ func (m *MailerService) worker(id int) {
 				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to dequeue", id), err)
 				continue
 			}
-			req := item.(*EmailRequest)
+			req, ok := item.(EmailRequest)
+			if !ok {
+				pkg.Log.Error(fmt.Sprintf("type assertion failed for EmailRequest, got: %#v", item), nil)
+				continue
+			}
 
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
