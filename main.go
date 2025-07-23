@@ -7,6 +7,7 @@ import (
 
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
+	apiOrganizer "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
@@ -49,6 +50,7 @@ func SetupRouter() *gin.Engine {
 	authRouter := v1.Group("/auth")
 	staffRouter := v1.Group("/staff")
 	userRouter := v1.Group("/user")
+	organizerRouter := v1.Group("/organizer")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.StaffAuthRoutes(authRouter)
@@ -56,7 +58,7 @@ func SetupRouter() *gin.Engine {
 	apiEvent.EventRoutes(userRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
 	apiTag.TagRoutes(userRouter)
-
+	apiOrganizer.OrganizerRoutes(organizerRouter)
 	return r
 }
 
