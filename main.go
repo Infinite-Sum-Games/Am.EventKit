@@ -22,7 +22,7 @@ import (
 func SetupRouter() *gin.Engine {
 
 	config := cors.Config{
-		AllowOrigins:              []string{cmd.Env.Domain},
+		AllowOrigins:              []string{cmd.Env.ClientDomain},
 		AllowWildcard:             true,
 		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
