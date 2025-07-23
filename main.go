@@ -11,6 +11,7 @@ import (
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 
@@ -111,6 +112,13 @@ func StartApp() {
 		return
 	}
 	pkg.Log.Info("[OK]: Valkey initialized successfully")
+
+	mailer, err := mail.NewMailerService("./mail", 3)
+	if err != nil {
+		pkg.Log.Error("Unable to initialize mail!", err)
+	}
+	mail.Mail = mailer
+	mail.Mail.Start()
 
 	// Initialize server
 	pkg.Log.Info("[OK]: Start the server on port 9000")

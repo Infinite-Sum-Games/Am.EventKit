@@ -18,6 +18,8 @@ type MailerService struct {
 	wg      *sync.WaitGroup
 }
 
+var Mail *MailerService
+
 func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return nil, fmt.Errorf("[MAIL-SERVICE]: queue path creation failed: %w", err)
@@ -44,6 +46,7 @@ func (m *MailerService) Start() {
 	for i := range m.workers {
 		go m.worker(i)
 	}
+	pkg.Log.Info(fmt.Sprintf("[OK]: Mail service initialized successfully with %d workers", m.workers))
 }
 
 func (m *MailerService) Enqueue(req EmailRequest) error {

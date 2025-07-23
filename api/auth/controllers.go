@@ -8,6 +8,7 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -130,6 +131,15 @@ func RegisterUserAccount(c *gin.Context) {
 	pkg.SetTempCookie(c, tempToken)
 
 	// TODO: should use mailer and send email here!
+	mail.Mail.Enqueue(mail.EmailRequest{
+		To:      []string{req.Email},
+		Subject: "Welcome to Anokha 2025",
+		Type:    "otp",
+		Data: mail.OTPTemplateData{
+			UserName: req.Name,
+			OTP:      []string{strconv.Itoa(otp)},
+		},
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully!\nkindly check mail for OTP - Check SPAM too :)",
