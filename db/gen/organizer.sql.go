@@ -14,9 +14,9 @@ import (
 const listOrganizersQuery = `-- name: ListOrganizersQuery :many
 
 SELECT
-  name,
-  abbr,
-  org_type,
+  name as organizer_name,
+  abbr as abbreviation,
+  org_type as organizer_type,
   student_head,
   student_co_head,
   faculty_head
@@ -24,9 +24,9 @@ FROM organizer
 `
 
 type ListOrganizersQueryRow struct {
-	Name          string            `json:"name"`
-	Abbr          string            `json:"abbr"`
-	OrgType       OrganizerTypeEnum `json:"org_type"`
+	OrganizerName string            `json:"organizer_name"`
+	Abbreviation  string            `json:"abbreviation"`
+	OrganizerType OrganizerTypeEnum `json:"organizer_type"`
 	StudentHead   string            `json:"student_head"`
 	StudentCoHead pgtype.Text       `json:"student_co_head"`
 	FacultyHead   string            `json:"faculty_head"`
@@ -42,9 +42,9 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 	for rows.Next() {
 		var i ListOrganizersQueryRow
 		if err := rows.Scan(
-			&i.Name,
-			&i.Abbr,
-			&i.OrgType,
+			&i.OrganizerName,
+			&i.Abbreviation,
+			&i.OrganizerType,
 			&i.StudentHead,
 			&i.StudentCoHead,
 			&i.FacultyHead,
