@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -72,6 +74,28 @@ func RegisterUserAccount(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// checking if user already registered successfully!
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.CheckStudentVerifiedQuery(ctx, conn, req.Email)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: DB error while checking student", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+	if err == nil {
+		// Student already exists
+		c.JSON(http.StatusConflict, gin.H{"message": "Student is already registered"})
+		return
+	}
+
 	otp, err := pkg.GenerateOTP()
 	if err != nil {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to generate OTP", err)
@@ -90,30 +114,11 @@ func RegisterUserAccount(c *gin.Context) {
 	expiry.Time = time.Now().Add(10 * time.Minute)
 	expiry.Valid = true
 
-	//TODO: hashing the password or will the password sent from frontend be hashes?
-	hashedPassword, err := pkg.Hash(req.Password)
-	if err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to hash password", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		return
-	}
-
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
-
-	q := db.New()
-	err = q.UpsertStudentOnboarding(ctx, conn, db.UpsertStudentOnboardingParams{
+	err = q.UpsertStudentOnboardingQuery(ctx, conn, db.UpsertStudentOnboardingQueryParams{
 		Name:            req.Name,
 		DepartmentName:  req.DepartmentName,
 		Email:           req.Email,
-		Password:        hashedPassword,
+		Password:        req.Password, // assuming password is hashed in frontend
 		PhoneNumber:     req.PhoneNumber,
 		IsAmritaStudent: req.IsAmritaStudent,
 		AmritaRollNumber: pgtype.Text{

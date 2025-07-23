@@ -14,7 +14,10 @@ WHERE
 RETURNING
 	refresh_token;
 
--- name: UpsertStudentOnboarding :exec
+-- name: CheckStudentVerifiedQuery :one
+SELECT email FROM student WHERE email = $1;
+
+-- name: UpsertStudentOnboardingQuery :exec
 INSERT INTO student_onboarding (
   name,
   department_name,
@@ -46,18 +49,18 @@ DO UPDATE SET
   otp = EXCLUDED.otp,
   expiry_at = EXCLUDED.expiry_at;
 
--- name: UpdateStudentPassword :exec
+-- name: UpdateStudentPasswordQuery :exec
 UPDATE student
 SET password = $2
 WHERE email = $1;
 
--- name: UpdateStudentOTP :exec
+-- name: UpdateStudentOTPQuery :exec
 UPDATE student_onboarding
 SET otp = $2,
     expiry_at = $3
 WHERE email = $1;
 
--- name: FinalizeStudentSignUp :exec
+-- name: FinalizeStudentSignUpQuery :exec
 INSERT INTO student (
   name,
   department_name,
