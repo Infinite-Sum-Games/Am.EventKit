@@ -115,7 +115,7 @@ func StartApp() {
 
 	mailer, err := mail.NewMailerService("./mail", 3)
 	if err != nil {
-		pkg.Log.Error("Unable to initialize mail!", err)
+		pkg.Log.Fatal("Unable to initialize mail!", err)
 	}
 	mail.Mail = mailer
 	mail.Mail.Start()
