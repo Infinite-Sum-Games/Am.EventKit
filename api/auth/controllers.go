@@ -135,7 +135,7 @@ func RegisterUserAccount(c *gin.Context) {
 	// also there is no function to set temp token, so i wrote a new one
 	pkg.SetTempCookie(c, tempToken)
 
-	mail.Mail.Enqueue(mail.EmailRequest{
+	err = mail.Mail.Enqueue(mail.EmailRequest{
 		To:      []string{req.Email},
 		Subject: "Welcome to Anokha 2025",
 		Type:    "otp",
@@ -145,6 +145,11 @@ func RegisterUserAccount(c *gin.Context) {
 			OTP:      otpSlice,
 		},
 	})
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[MAIL-ERROR]: Failed to add request to email queue", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully!\nkindly check mail for OTP - Check SPAM too :)",
