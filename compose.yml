@@ -1,11 +1,12 @@
 services:
   # Primary database
   postgres:
-    image: postgres:16.3-alpine
+    image: postgres:17-alpine
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: metabase
     ports:
       - "5432:5432"
     restart: on-failure
@@ -83,7 +84,7 @@ services:
     container_name: anokha-redis-exporter
     restart: on-failure
     environment:
-      - REDIS_ADDR=redis://valkey:6379
+      REDIS_ADDR: redis://valkey:6379
     ports:
       - "9121:9121"
     depends_on:
@@ -115,8 +116,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
@@ -132,41 +133,40 @@ services:
     environment:
       MB_DB_TYPE: postgres
       MB_DB_HOST: postgres
+      MB_DB_DBNAME: metabase
       MB_DB_PORT: 5432
-      MB_DB_NAME: metabase
       MB_DB_USER: postgres
       MB_DB_PASS: 1234
-      MB_SITE_URL: http://localhost:3000
     depends_on:
       - postgres
     networks:
       - app_network
 
   # Loki for log aggregation
-  loki:
-    image: grafana/loki:2.9.5
-    container_name: anokha-loki
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - monitoring_network
-    volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
+  # loki:
+  #   image: grafana/loki:2.9.5
+  #   container_name: anokha-loki
+  #   ports:
+  #     - "3100:3100"
+  #   command: -config.file=/etc/loki/local-config.yaml
+  #   networks:
+  #     - monitoring_network
+  #   volumes:
+  #     - ./loki-config.yaml:/etc/loki/local-config.yaml
 
   # Vector for log collection
-  vector:
-    image: timberio/vector:0.48.0-alpine
-    container_name: anokha-vector
-    restart: on-failure
-    volumes:
-      - ./vector.yaml:/etc/vector/vector.yaml:ro
-      - ./dev.log:/logs/dev.log:ro
-      - ./prod.log:/logs/prod.log:ro
-    depends_on:
-      - loki
-    networks:
-        - monitoring_network
+  # vector:
+  #   image: timberio/vector:0.48.0-alpine
+  #   container_name: anokha-vector
+  #   restart: on-failure
+  #   volumes:
+  #     - ./vector.yaml:/etc/vector/vector.yaml:ro
+  #     - ./dev.log:/logs/dev.log:ro
+  #     - ./prod.log:/logs/prod.log:ro
+  #   depends_on:
+  #     - loki
+  #   networks:
+  #       - monitoring_network
 
 networks:
   app_network:
