@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
@@ -96,18 +95,13 @@ func RegisterUserAccount(c *gin.Context) {
 		return
 	}
 
-	otp, err := pkg.GenerateOTP()
+	otpStr, otpSlice, err := pkg.GenerateOTP()
 	if err != nil {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to generate OTP", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
 		return
-	}
-	otpStr := strconv.Itoa(otp)
-	otpSlice := make([]string, len(otpStr))
-	for i, ch := range otpStr {
-		otpSlice[i] = string(ch)
 	}
 
 	var expiry pgtype.Timestamp
