@@ -10,7 +10,7 @@ import (
 func Auth(c *gin.Context) {
 
 	// Extract refresh token
-	RefreshToken, refErr := c.Cookie("refresh_token")
+	refreshToken, refErr := c.Cookie("refresh_token")
 	if refErr == http.ErrNoCookie {
 		pkg.NullifyCookies(c)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
@@ -25,15 +25,28 @@ func Auth(c *gin.Context) {
 	// exists there and if it is a valid one or not
 	// 3. If the token is valid then new authToken can be minted, added to
 	// the cookie
-	_, authErr := c.Cookie("access_token")
+	accessToken, authErr := c.Cookie("access_token")
+	if authErr == nil && pkg.VerifyTokens(c, accessToken, refreshToken) {
+		c.Next()
+		return
+	}
 	if authErr == http.ErrNoCookie {
-		_, err := pkg.VerifyRefreshToken(c, RefreshToken)
+		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": "Acess denied.",
 			})
 			return
 		}
+		refreshTokenClaims := validToken.Claims()
+		userID, _ := refreshTokenClaims["USER-ID"].(string)
+		username, _ := refreshTokenClaims["audience"].(string)
+		email, _ := refreshTokenClaims["jti"].(string)
+		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
+		isStaff, _ := refreshTokenClaims["STAFF-ROLE"].(bool)
+		// Creating and setting auth token, so it can be used for future requests
+		authToken := pkg.CreateAuthToken(userID, username, email, isStudent, false, isStaff)
+		pkg.SetAuthCookie(c, authToken)
 	}
 
 	c.Next()
