@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -44,7 +45,7 @@ func (q *Queries) DeleteOnboardingQuery(ctx context.Context, db DBTX, email stri
 	return err
 }
 
-const finalizeStudentSignUpQuery = `-- name: FinalizeStudentSignUpQuery :exec
+const finalizeStudentSignUpQuery = `-- name: FinalizeStudentSignUpQuery :one
 INSERT INTO student (
   name,
   department_name,
@@ -56,8 +57,7 @@ INSERT INTO student (
   college_name,
   college_city,
   academic_year,
-  account_status,
-  refresh_token
+  account_status
 )
 SELECT
   name,
@@ -70,20 +70,17 @@ SELECT
   college_name,
   college_city,
   academic_year,
-  'VERIFIED',
-  $2
+  'VERIFIED'
 FROM student_onboarding
 WHERE student_onboarding.email = $1
+RETURNING id
 `
 
-type FinalizeStudentSignUpQueryParams struct {
-	Email        string      `json:"email"`
-	RefreshToken pgtype.Text `json:"refresh_token"`
-}
-
-func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, arg FinalizeStudentSignUpQueryParams) error {
-	_, err := db.Exec(ctx, finalizeStudentSignUpQuery, arg.Email, arg.RefreshToken)
-	return err
+func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email string) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, finalizeStudentSignUpQuery, email)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
@@ -123,6 +120,22 @@ func (q *Queries) RevokeRefreshTokenQuery(ctx context.Context, db DBTX, email st
 	var refresh_token pgtype.Text
 	err := row.Scan(&refresh_token)
 	return refresh_token, err
+}
+
+const updateRefreshTokenQuery = `-- name: UpdateRefreshTokenQuery :exec
+UPDATE student 
+SET refresh_token = $1 
+WHERE id = $2
+`
+
+type UpdateRefreshTokenQueryParams struct {
+	RefreshToken pgtype.Text `json:"refresh_token"`
+	ID           uuid.UUID   `json:"id"`
+}
+
+func (q *Queries) UpdateRefreshTokenQuery(ctx context.Context, db DBTX, arg UpdateRefreshTokenQueryParams) error {
+	_, err := db.Exec(ctx, updateRefreshTokenQuery, arg.RefreshToken, arg.ID)
+	return err
 }
 
 const updateStudentOTPQuery = `-- name: UpdateStudentOTPQuery :exec
