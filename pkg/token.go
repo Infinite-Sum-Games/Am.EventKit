@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -111,6 +113,17 @@ func CreateTempToken(username, email string) string {
 
 	signed := token.V4Sign(SignKey, nil)
 	return signed
+}
+
+func CreateCsrfToken() string {
+	const tokenSize = 32
+	b := make([]byte, tokenSize)
+	_, err := rand.Read(b)
+	if err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to generate CSRF token", err)
+		return ""
+	}
+	return base64.RawURLEncoding.EncodeToString(b)
 }
 
 func ParseToken(token, tokeType string) (bool, *paseto.Token) {
