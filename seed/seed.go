@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	pkg "github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -18,7 +18,7 @@ func SeedOrganizers(conn *pgx.Conn) error {
 
 	organizers, _ := q.ListOrganizersQuery(context.Background(), conn)
 	if len(organizers) > 0 {
-		fmt.Println("Organizers already seeded, skipping...")
+		pkg.Log.Info("Organizers already seeded, skipping...")
 		return nil
 	}
 
@@ -42,7 +42,7 @@ func SeedOrganizers(conn *pgx.Conn) error {
 	for _, organizer := range manualOrganizers {
 		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
 		if err != nil {
-			fmt.Printf("Error inserting manual organizer: %v\n", err)
+			pkg.Log.Error("Error inserting manual organizer: %v\n", err)
 			return err
 		}
 	}
@@ -58,12 +58,12 @@ func SeedOrganizers(conn *pgx.Conn) error {
 		}
 		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
 		if err != nil {
-			fmt.Printf("Error inserting organizer: %v\n", err)
+			pkg.Log.Error("Error inserting organizer: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded 5 organizers.")
+	pkg.Log.Info("Successfully seeded 5 organizers.")
 	return nil
 }
 
@@ -72,7 +72,7 @@ func SeedPeople(conn *pgx.Conn) error {
 
 	people, _ := q.ListPeopleQuery(context.Background(), conn)
 	if len(people) > 0 {
-		fmt.Println("People already seeded, skipping...")
+		pkg.Log.Info("People already seeded, skipping...")
 		return nil
 	}
 
@@ -90,7 +90,7 @@ func SeedPeople(conn *pgx.Conn) error {
 	for _, person := range manualPeople {
 		err := q.InsertPeopleQuery(context.Background(), conn, person)
 		if err != nil {
-			fmt.Printf("Error inserting manual person: %v\n", err)
+			pkg.Log.Error("Error inserting manual person: %v\n", err)
 			return err
 		}
 	}
@@ -103,12 +103,12 @@ func SeedPeople(conn *pgx.Conn) error {
 		}
 		err := q.InsertPeopleQuery(context.Background(), conn, person)
 		if err != nil {
-			fmt.Printf("Error inserting person: %v\n", err)
+			pkg.Log.Error("Error inserting person: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded 20 people.")
+	pkg.Log.Info("Successfully seeded 20 people.")
 	return nil
 }
 
@@ -117,7 +117,7 @@ func SeedTags(conn *pgx.Conn) error {
 
 	tags, _ := q.ListTagsQuery(context.Background(), conn)
 	if len(tags) > 0 {
-		fmt.Println("Tags already seeded, skipping...")
+		pkg.Log.Info("Tags already seeded, skipping...")
 		return nil
 	}
 
@@ -135,7 +135,7 @@ func SeedTags(conn *pgx.Conn) error {
 	for _, tag := range manualTags {
 		err := q.InsertTagsQuery(context.Background(), conn, tag)
 		if err != nil {
-			fmt.Printf("Error inserting manual tag: %v\n", err)
+			pkg.Log.Error("Error inserting manual tag: %v\n", err)
 			return err
 		}
 	}
@@ -148,12 +148,12 @@ func SeedTags(conn *pgx.Conn) error {
 		}
 		err := q.InsertTagsQuery(context.Background(), conn, tag)
 		if err != nil {
-			fmt.Printf("Error inserting tag: %v\n", err)
+			pkg.Log.Error("Error inserting tag: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded 10 tags.")
+	pkg.Log.Info("Successfully seeded 10 tags.")
 	return nil
 }
 
@@ -162,7 +162,7 @@ func SeedEvents(conn *pgx.Conn) error {
 
 	events, _ := q.ListEventsQuery(context.Background(), conn)
 	if len(events) > 0 {
-		fmt.Println("Events already seeded, skipping...")
+		pkg.Log.Info("Events already seeded, skipping...")
 		return nil
 	}
 
@@ -202,7 +202,7 @@ func SeedEvents(conn *pgx.Conn) error {
 	for _, event := range manualEvents {
 		err := q.InsertEventQuery(context.Background(), conn, event)
 		if err != nil {
-			fmt.Printf("Error inserting manual event: %v\n", err)
+			pkg.Log.Error("Error inserting manual event: %v\n", err)
 			return err
 		}
 	}
@@ -226,12 +226,12 @@ func SeedEvents(conn *pgx.Conn) error {
 		}
 		err := q.InsertEventQuery(context.Background(), conn, event)
 		if err != nil {
-			fmt.Printf("Error inserting event: %v\n", err)
+			pkg.Log.Error("Error inserting event: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded 10 events.")
+	pkg.Log.Info("Successfully seeded 10 events.")
 	return nil
 }
 
@@ -240,22 +240,22 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 
 	records, err := q.ListEventToOrganizerMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
-		fmt.Println("Event to Organizer mappings already seeded, skipping...")
+		pkg.Log.Info("Event to Organizer mappings already seeded, skipping...")
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to list event to organizer mappings: %v", err)
+		pkg.Log.Error("failed to list event to organizer mappings: %v", err)
 	}
 
 	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing events: %v\n", err)
+		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
 	organizers, err := q.ListOrganizersQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing organizers: %v\n", err)
+		pkg.Log.Error("Error listing organizers: %v\n", err)
 		return err
 	}
 
@@ -273,7 +273,7 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	for _, mapping := range manualMappings {
 		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting manual event to organizer mapping: %v\n", err)
+			pkg.Log.Error("Error inserting manual event to organizer mapping: %v\n", err)
 			return err
 		}
 	}
@@ -288,12 +288,12 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 		}
 		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting event to organizer mapping: %v\n", err)
+			pkg.Log.Error("Error inserting event to organizer mapping: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded event to organizer mappings.")
+	pkg.Log.Info("Successfully seeded event to organizer mappings.")
 	return nil
 }
 
@@ -302,16 +302,16 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 
 	records, err := q.ListEventScheduleQuery(context.Background(), conn)
 	if len(records) > 0 {
-		fmt.Println("Event schedules already seeded, skipping...")
+		pkg.Log.Info("Event schedules already seeded, skipping...")
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to list event schedules: %v", err)
+		pkg.Log.Error("failed to list event schedules: %v", err)
 	}
 
 	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing events: %v\n", err)
+		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
@@ -353,7 +353,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 	for _, schedule := range manualSchedules {
 		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
-			fmt.Printf("Error inserting manual event schedule: %v\n", err)
+			pkg.Log.Error("Error inserting manual event schedule: %v\n", err)
 			return err
 		}
 	}
@@ -378,12 +378,12 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		}
 		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
-			fmt.Printf("Error inserting event schedule: %v\n", err)
+			pkg.Log.Error("Error inserting event schedule: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded event schedules.")
+	pkg.Log.Info("Successfully seeded event schedules.")
 	return nil
 }
 
@@ -392,22 +392,22 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 
 	records, err := q.ListPeopleToEventMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
-		fmt.Println("People to Event mappings already seeded, skipping...")
+		pkg.Log.Info("People to Event mappings already seeded, skipping...")
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to list people to event mappings: %v", err)
+		pkg.Log.Error("failed to list people to event mappings: %v", err)
 	}
 
 	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing events: %v\n", err)
+		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
 	people, err := q.ListPeopleQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing people: %v\n", err)
+		pkg.Log.Error("Error listing people: %v\n", err)
 		return err
 	}
 
@@ -425,7 +425,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	for _, mapping := range manualMappings {
 		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting manual people to event mapping: %v\n", err)
+			pkg.Log.Error("Error inserting manual people to event mapping: %v\n", err)
 			return err
 		}
 	}
@@ -440,12 +440,12 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		}
 		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting people to event mapping: %v\n", err)
+			pkg.Log.Error("Error inserting people to event mapping: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded people to event mappings.")
+	pkg.Log.Info("Successfully seeded people to event mappings.")
 	return nil
 }
 
@@ -454,22 +454,22 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 
 	records, err := q.ListEventTagMappingQuery(context.Background(), conn)
 	if len(records) > 0 {
-		fmt.Println("Event to Tag mappings already seeded, skipping...")
+		pkg.Log.Info("Event to Tag mappings already seeded, skipping...")
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to list event to tag mappings: %v", err)
+		pkg.Log.Error("failed to list event to tag mappings: %v", err)
 	}
 
 	events, err := q.ListEventsQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing events: %v\n", err)
+		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
 	tags, err := q.ListTagsQuery(context.Background(), conn)
 	if err != nil {
-		fmt.Printf("Error listing tags: %v\n", err)
+		pkg.Log.Error("Error listing tags: %v\n", err)
 		return err
 	}
 
@@ -487,7 +487,7 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	for _, mapping := range manualMappings {
 		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting manual event tag mapping: %v\n", err)
+			pkg.Log.Error("Error inserting manual event tag mapping: %v\n", err)
 			return err
 		}
 	}
@@ -502,61 +502,61 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 		}
 		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
-			fmt.Printf("Error inserting event tag mapping: %v\n", err)
+			pkg.Log.Error("Error inserting event tag mapping: %v\n", err)
 			return err
 		}
 	}
 
-	fmt.Println("Successfully seeded event tag mappings.")
+	pkg.Log.Info("Successfully seeded event tag mappings.")
 	return nil
 }
 
 func seed() {
 	conn, err := initDB()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Database initialization failed: %v\n", err)
+		pkg.Log.Error("Database initialization failed: %v\n", err)
 		os.Exit(1)
 	}
 	defer func() {
 		if err := conn.Close(context.Background()); err != nil {
-			fmt.Fprintf(os.Stderr, "Error closing database connection: %v\n", err)
+			pkg.Log.Error("Error closing database connection: %v\n", err)
 		}
 	}()
 
 	if err := SeedOrganizers(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 	if err := SeedPeople(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 
 	if err := SeedTags(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 
 	if err := SeedEvents(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 	if err := SeedEventToOrganizerMapping(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 	if err := SeedEventSchedule(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 	if err := SeedPeopleToEventMapping(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 	if err := SeedEventTagMapping(conn); err != nil {
-		fmt.Fprintf(os.Stderr, "Seeding failed: %v\n", err)
+		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Println("Database seeding completed successfully.")
+	pkg.Log.Info("Database seeding completed successfully.")
 }

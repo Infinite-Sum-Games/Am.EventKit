@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/jackc/pgx/v5"
 	"os"
 )
@@ -12,7 +12,8 @@ import (
 func initDB() (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), cmd.Env.DatabaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %v", err)
+		pkg.Log.Error("Failed to connect to the database", err)
+		return nil, err
 	}
 	return conn, nil
 }
@@ -23,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if *clearFlag && *seedFlag {
-		fmt.Fprintf(os.Stderr, "Error: Cannot run both seeding (-s) and clearing (-c) together\n")
+		pkg.Log.Info("Error: Cannot run both seeding (-s) and clearing (-c) together\n,")
 		os.Exit(1)
 	}
 
@@ -32,7 +33,7 @@ func main() {
 	} else if *seedFlag {
 		seed()
 	} else {
-		fmt.Fprintf(os.Stderr, "Error: Please specify either -s (seed) or -c (clear)\n")
+		pkg.Log.Info("Error: Please specify either -s (seed) or -c (clear)\n")
 		flag.Usage()
 		os.Exit(1)
 	}

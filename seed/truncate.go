@@ -2,28 +2,28 @@ package main
 
 import (
 	"context"
-	"fmt"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 )
 
 func truncate() {
 	conn, err := initDB()
 	if err != nil {
-		fmt.Println(err)
+		pkg.Log.Error("Failed to connect to the database", err)
 		return
 	}
 	defer func() {
 		if err := conn.Close(context.Background()); err != nil {
-			fmt.Printf("Error closing connection: %v\n", err)
+			pkg.Log.Error("Error closing connection: %v\n", err)
 		}
 	}()
 
 	q := db.New()
 
 	if err := q.TruncateAllTablesQuery(context.Background(), conn); err != nil {
-		fmt.Printf("Error truncating tables: %v\n", err)
+		pkg.Log.Error("Error truncating tables: %v\n", err)
 		return
 	}
 
-	fmt.Println("All tables truncated successfully.")
+	pkg.Log.Info("All tables truncated successfully.")
 }
