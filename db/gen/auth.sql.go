@@ -69,6 +69,26 @@ func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email
 	return err
 }
 
+const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
+SELECT 
+    otp, 
+    expiry_at 
+FROM student_onboarding 
+WHERE email = $1
+`
+
+type GetStudentOtpQueryRow struct {
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+}
+
+func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, email string) (GetStudentOtpQueryRow, error) {
+	row := db.QueryRow(ctx, getStudentOtpQuery, email)
+	var i GetStudentOtpQueryRow
+	err := row.Scan(&i.Otp, &i.ExpiryAt)
+	return i, err
+}
+
 const revokeRefreshTokenQuery = `-- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student

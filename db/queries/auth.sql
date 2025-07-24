@@ -49,6 +49,13 @@ DO UPDATE SET
   otp = EXCLUDED.otp,
   expiry_at = EXCLUDED.expiry_at;
 
+-- name: GetStudentOtpQuery :one
+SELECT 
+    otp, 
+    expiry_at 
+FROM student_onboarding 
+WHERE email = $1;
+
 -- name: UpdateStudentPasswordQuery :exec
 UPDATE student
 SET password = $2
