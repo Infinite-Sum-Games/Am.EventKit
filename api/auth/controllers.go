@@ -77,7 +77,7 @@ func RegisterUserAccount(c *gin.Context) {
 	// checking if user already registered successfully!
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
@@ -87,7 +87,7 @@ func RegisterUserAccount(c *gin.Context) {
 	_, err = q.CheckStudentVerifiedQuery(ctx, conn, req.Email)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: DB error while checking student", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
 	if err == nil {
@@ -133,7 +133,7 @@ func RegisterUserAccount(c *gin.Context) {
 	})
 	if err != nil {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to insert onboarding data", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
 	// QUESTION: CreateToken functions are not returning any errors, is that fine?
