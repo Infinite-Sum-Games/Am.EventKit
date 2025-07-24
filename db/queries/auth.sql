@@ -79,7 +79,8 @@ INSERT INTO student (
   college_name,
   college_city,
   academic_year,
-  account_status
+  account_status,
+  refresh_token
 )
 SELECT
   name,
@@ -92,6 +93,11 @@ SELECT
   college_name,
   college_city,
   academic_year,
-  'VERIFIED'
+  'VERIFIED',
+  $2
 FROM student_onboarding
 WHERE student_onboarding.email = $1;
+
+-- name: DeleteOnboardingQuery :exec
+DELETE FROM student_onboarding 
+WHERE email = $1;
