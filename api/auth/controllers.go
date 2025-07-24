@@ -144,6 +144,39 @@ func RegisterUserAccount(c *gin.Context) {
 }
 
 func VerifyUserOtp(c *gin.Context) {
+	var req struct {
+		Otp string `json:"otp" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid OTP request"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+
+	q := db.New()
+	row, err := q.GetStudentOtpQuery(ctx, conn, c.GetString("email"))
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to get otp from table", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
+	if req.Otp != row.Otp {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid OTP"})
+		return
+	}
+	if !row.ExpiryAt.Valid || row.ExpiryAt.Time.Before(time.Now()) {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "OTP has expired"})
+		return
+	}
+	// TODO: should migrate data from onboarding table to original table with tokens generated!
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OTP verification completed successfully",
 	})
