@@ -152,7 +152,7 @@ func VerifyUserOtp(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
 	defer cancel()
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
@@ -160,6 +160,7 @@ func VerifyUserOtp(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
+	defer conn.Release()
 
 	q := db.New()
 	row, err := q.GetStudentOtpQuery(ctx, conn, c.GetString("email"))
@@ -176,7 +177,42 @@ func VerifyUserOtp(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "OTP has expired"})
 		return
 	}
-	// TODO: should migrate data from onboarding table to original table with tokens generated!
+
+	authToken := pkg.CreateAuthToken(c.GetString("username"), c.GetString("email"), true, false, false)
+	refreshToken := pkg.CreateRefreshToken(c.GetString("username"), c.GetString("email"), true, false, false)
+
+	pkg.SetAuthCookie(c, authToken)
+	pkg.SetRefreshCookie(c, refreshToken)
+
+	// Migration of data from onboarding table to original table
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to start transaction", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
+	defer tx.Rollback(ctx)
+	if err = q.FinalizeStudentSignUpQuery(ctx, tx, db.FinalizeStudentSignUpQueryParams{
+		Email: c.GetString("email"),
+		RefreshToken: pgtype.Text{
+			String: refreshToken,
+			Valid:  refreshToken != "",
+		},
+	}); err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Migration of student from onboarding failed!", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
+	if err = q.DeleteOnboardingQuery(ctx, tx, c.GetString("email")); err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to delete onboarding record", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OTP verification completed successfully",
 	})

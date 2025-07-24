@@ -34,6 +34,16 @@ func (q *Queries) CheckStudentVerifiedQuery(ctx context.Context, db DBTX, email 
 	return email, err
 }
 
+const deleteOnboardingQuery = `-- name: DeleteOnboardingQuery :exec
+DELETE FROM student_onboarding 
+WHERE email = $1
+`
+
+func (q *Queries) DeleteOnboardingQuery(ctx context.Context, db DBTX, email string) error {
+	_, err := db.Exec(ctx, deleteOnboardingQuery, email)
+	return err
+}
+
 const finalizeStudentSignUpQuery = `-- name: FinalizeStudentSignUpQuery :exec
 INSERT INTO student (
   name,
@@ -46,7 +56,8 @@ INSERT INTO student (
   college_name,
   college_city,
   academic_year,
-  account_status
+  account_status,
+  refresh_token
 )
 SELECT
   name,
@@ -59,13 +70,19 @@ SELECT
   college_name,
   college_city,
   academic_year,
-  'VERIFIED'
+  'VERIFIED',
+  $2
 FROM student_onboarding
 WHERE student_onboarding.email = $1
 `
 
-func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email string) error {
-	_, err := db.Exec(ctx, finalizeStudentSignUpQuery, email)
+type FinalizeStudentSignUpQueryParams struct {
+	Email        string      `json:"email"`
+	RefreshToken pgtype.Text `json:"refresh_token"`
+}
+
+func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, arg FinalizeStudentSignUpQueryParams) error {
+	_, err := db.Exec(ctx, finalizeStudentSignUpQuery, arg.Email, arg.RefreshToken)
 	return err
 }
 
