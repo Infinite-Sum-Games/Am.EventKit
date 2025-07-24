@@ -3,6 +3,7 @@ ifneq (,$(wildcard .env))
     export $(shell sed 's/=.*//' .env)
 endif
 
+DB_URL := "postgresql://postgres:1234@localhost:5432/postgres"
 GO_BIN := $(shell go env GOPATH)/bin
 GOOSE_DRIVER := postgres
 GOOSE_DBSTRING := $(DB_URL)
