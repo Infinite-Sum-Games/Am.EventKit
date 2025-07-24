@@ -25,12 +25,21 @@ func FetchAllEvents(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	events, err := q.ListEventsQuery(ctx, conn)
+
+	// Optional query param for filtering by organizerId
+	organizerId := c.Query("organizerId")
+	var filter interface{} = nil
+	if organizerId != "" {
+		filter = organizerId
+	}
+
+	events, err := q.ListEventsQuery(ctx, conn, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch events"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Events list fetched successfully",
 		"events":  events,
