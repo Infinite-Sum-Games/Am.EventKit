@@ -37,20 +37,6 @@ func RegisterUserAccountCsrf(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func VerifyUserOtpCsrf(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "OTP verification action initiated successfully",
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
-func ResendUserOtpCsrf(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Resend OTP action initiated successfully",
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
