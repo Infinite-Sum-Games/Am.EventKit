@@ -50,11 +50,12 @@ func SetupRouter() *gin.Engine {
 	authRouter := v1.Group("/auth")
 	staffRouter := v1.Group("/staff")
 	userRouter := v1.Group("/user")
+	eventRouter := v1.Group("/events")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.StaffAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
-	apiEvent.EventRoutes(userRouter)
+	apiEvent.EventRoutes(eventRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
 	apiTag.TagRoutes(userRouter)
 	apiOrganizer.OrganizerRoutes(userRouter)

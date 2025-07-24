@@ -5,6 +5,6 @@ import (
 )
 
 func EventRoutes(r *gin.RouterGroup) {
-	r.GET("/events/", FetchAllEvents)
-	r.GET("/events/:eventId", FetchEventById)
+	r.GET("/", FetchAllEvents)
+	r.GET("/:eventId", FetchEventById)
 }
