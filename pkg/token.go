@@ -60,7 +60,7 @@ func InitPaseto() error {
 	return nil
 }
 
-func CreateAuthToken(username, email string, user, host, staff bool) string {
+func CreateAuthToken(id, username, email string, user, host, staff bool) string {
 	token := paseto.NewToken()
 	token.SetJti(email)
 	token.SetAudience(username)
@@ -69,10 +69,12 @@ func CreateAuthToken(username, email string, user, host, staff bool) string {
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
+	if err := token.Set("USER-ID", id); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set USER-ID claim", err)
+	}
 	if err := token.Set("STUDENT-ROLE", user); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 	}
-
 	if err := token.Set("STAFF-ROLE", staff); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
 	}
@@ -81,7 +83,7 @@ func CreateAuthToken(username, email string, user, host, staff bool) string {
 	return signed
 }
 
-func CreateRefreshToken(username, email string, user, host, staff bool) string {
+func CreateRefreshToken(id, username, email string, user, host, staff bool) string {
 	token := paseto.NewToken()
 	token.SetJti(email)
 	token.SetAudience(username)
@@ -90,10 +92,12 @@ func CreateRefreshToken(username, email string, user, host, staff bool) string {
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
+	if err := token.Set("USER-ID", id); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set USER-ID claim", err)
+	}
 	if err := token.Set("STUDENT-ROLE", user); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 	}
-
 	if err := token.Set("STAFF-ROLE", staff); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
 	}
@@ -150,6 +154,7 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 		if _, err := VerifyRefreshToken(c, refreshToken); err != nil {
 			return false
 		}
+		return false
 	}
 	ok, parsedRefToken := ParseToken(refreshToken, "refresh_token")
 	if !ok {
@@ -164,12 +169,14 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c2 := authData["jti"] != refData["jti"]
 	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
 	c4 := authData["STAFF-ROLE"] != refData["STAFF-ROLE"]
+	c5 := authData["USER-ID"] != refData["USER-ID"]
 
-	if !c1 || !c2 || !c3 || !c4 {
+	if c1 || c2 || c3 || c4 || c5 {
 		return false
 	}
 
 	// Setting up variables in *gin.Context for passing around in handlers
+	c.Set("userId", authData["USER-ID"])
 	c.Set("username", authData["audience"])
 	c.Set("email", authData["jti"])
 	c.Set("USER-ROLE", authData["USER-ROLE"])

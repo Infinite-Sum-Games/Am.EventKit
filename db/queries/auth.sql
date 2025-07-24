@@ -67,7 +67,7 @@ SET otp = $2,
     expiry_at = $3
 WHERE email = $1;
 
--- name: FinalizeStudentSignUpQuery :exec
+-- name: FinalizeStudentSignUpQuery :one
 INSERT INTO student (
   name,
   department_name,
@@ -79,8 +79,7 @@ INSERT INTO student (
   college_name,
   college_city,
   academic_year,
-  account_status,
-  refresh_token
+  account_status
 )
 SELECT
   name,
@@ -93,10 +92,15 @@ SELECT
   college_name,
   college_city,
   academic_year,
-  'VERIFIED',
-  $2
+  'VERIFIED'
 FROM student_onboarding
-WHERE student_onboarding.email = $1;
+WHERE student_onboarding.email = $1
+RETURNING id;
+
+-- name: UpdateRefreshTokenQuery :exec
+UPDATE student 
+SET refresh_token = $1 
+WHERE id = $2;
 
 -- name: DeleteOnboardingQuery :exec
 DELETE FROM student_onboarding 

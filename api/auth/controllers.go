@@ -178,12 +178,6 @@ func VerifyUserOtp(c *gin.Context) {
 		return
 	}
 
-	authToken := pkg.CreateAuthToken(c.GetString("username"), c.GetString("email"), true, false, false)
-	refreshToken := pkg.CreateRefreshToken(c.GetString("username"), c.GetString("email"), true, false, false)
-
-	pkg.SetAuthCookie(c, authToken)
-	pkg.SetRefreshCookie(c, refreshToken)
-
 	// Migration of data from onboarding table to original table
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -192,13 +186,8 @@ func VerifyUserOtp(c *gin.Context) {
 		return
 	}
 	defer tx.Rollback(ctx)
-	if err = q.FinalizeStudentSignUpQuery(ctx, tx, db.FinalizeStudentSignUpQueryParams{
-		Email: c.GetString("email"),
-		RefreshToken: pgtype.Text{
-			String: refreshToken,
-			Valid:  refreshToken != "",
-		},
-	}); err != nil {
+	userID, err := q.FinalizeStudentSignUpQuery(ctx, tx, c.GetString("email"))
+	if err != nil {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Migration of student from onboarding failed!", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
@@ -208,6 +197,26 @@ func VerifyUserOtp(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
+
+	// token generation and setting cookie
+	authToken := pkg.CreateAuthToken(userID.String(), c.GetString("username"), c.GetString("email"), true, false, false)
+	refreshToken := pkg.CreateRefreshToken(userID.String(), c.GetString("username"), c.GetString("email"), true, false, false)
+	pkg.SetAuthCookie(c, authToken)
+	pkg.SetRefreshCookie(c, refreshToken)
+
+	// Adding token to database
+	if err = q.UpdateRefreshTokenQuery(ctx, tx, db.UpdateRefreshTokenQueryParams{
+		RefreshToken: pgtype.Text{
+			String: refreshToken,
+			Valid:  refreshToken != "",
+		},
+		ID: userID,
+	}); err != nil {
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to add refresh token", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		return
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
