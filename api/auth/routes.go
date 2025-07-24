@@ -18,8 +18,8 @@ func StudentAuthRoutes(r *gin.RouterGroup) {
 	// Actual requests
 	r.POST("/user/login", LoginUser)
 	r.POST("/user/register", RegisterUserAccount)
-	r.POST("/user/register/otp/verify", mw.VerifyCsrf, VerifyUserOtp)
-	r.POST("/user/register/otp/resend", mw.VerifyCsrf, ResendUserOtp)
+	r.POST("/user/register/otp/verify", mw.VerifyCsrf, mw.TempTokenAuth, VerifyUserOtp)
+	r.POST("/user/register/otp/resend", mw.VerifyCsrf, mw.TempTokenAuth, ResendUserOtp)
 
 	r.GET("/user/session", mw.Auth, FetchUserSession)
 	r.GET("/user/logout", mw.Auth, LogoutUser)
