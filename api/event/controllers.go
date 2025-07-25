@@ -2,6 +2,8 @@ package event
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
 	"net/http"
 	"time"
 
@@ -26,14 +28,22 @@ func FetchAllEvents(c *gin.Context) {
 
 	q := db.New()
 
-	// Optional query param for filtering by organizerId
-	organizerId := c.Query("organizerId")
-	var filter interface{} = nil
-	if organizerId != "" {
-		filter = organizerId
+	organizerIdStr := c.Query("organizerId")
+	var organizerId uuid.NullUUID
+
+	if organizerIdStr != "" {
+		parsedId, err := uuid.Parse(organizerIdStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid organizer ID"})
+			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid organizer ID", err)
+			return
+		}
+		organizerId = uuid.NullUUID{UUID: parsedId, Valid: true}
+	} else {
+		organizerId = uuid.NullUUID{Valid: false}
 	}
 
-	events, err := q.ListEventsQuery(ctx, conn, filter)
+	events, err := q.ListEventsQuery(ctx, conn, organizerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch events"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)
@@ -70,6 +80,11 @@ func FetchEventById(c *gin.Context) {
 	q := db.New()
 	event, err := q.GetEventByIdQuery(ctx, conn, eventId)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Event not found"})
+			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Event not found", err)
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch event"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch event", err)
 		return
