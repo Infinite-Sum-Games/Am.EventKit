@@ -329,39 +329,6 @@ func (q *Queries) ListEventsQuery(ctx context.Context, db DBTX) ([]ListEventsQue
 	return items, nil
 }
 
-const listOrganizersQuery = `-- name: ListOrganizersQuery :many
-SELECT id, name, abbr, org_type, student_head, student_co_head, faculty_head
-FROM organizer
-`
-
-func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]Organizer, error) {
-	rows, err := db.Query(ctx, listOrganizersQuery)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Organizer
-	for rows.Next() {
-		var i Organizer
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Abbr,
-			&i.OrgType,
-			&i.StudentHead,
-			&i.StudentCoHead,
-			&i.FacultyHead,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listPeopleQuery = `-- name: ListPeopleQuery :many
 SELECT id, name, phone_number, profession, email
 FROM people

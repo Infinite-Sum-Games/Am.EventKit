@@ -1,6 +1,7 @@
 -- name: ListOrganizersQuery :many
 
 SELECT
+  id,
   name as organizer_name,
   abbr as abbreviation,
   org_type as organizer_type,

@@ -38,10 +38,6 @@ SELECT id, name, blurb, description, price, is_per_head, rules, event_type, is_g
        total_seats, seats_filled, event_status, event_mode, attendance_mode
 FROM event;
 
--- name: ListOrganizersQuery :many
-SELECT id, name, abbr, org_type, student_head, student_co_head, faculty_head
-FROM organizer;
-
 -- name: ListPeopleQuery :many
 SELECT id, name, phone_number, profession, email
 FROM people;
