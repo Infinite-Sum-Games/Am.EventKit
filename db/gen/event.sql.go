@@ -125,7 +125,7 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 	return i, err
 }
 
-const listEventsQuery = `-- name: ListEventsQuery :many
+const getEventsQuery = `-- name: GetEventsQuery :many
 SELECT
     e.id,
     e.name,
@@ -185,7 +185,7 @@ WHERE ($1 IS NULL OR m.organizer_id = $1)
 GROUP BY e.id
 `
 
-type ListEventsQueryRow struct {
+type GetEventsQueryRow struct {
 	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
@@ -210,15 +210,15 @@ type ListEventsQueryRow struct {
 	Tags           []byte             `json:"tags"`
 }
 
-func (q *Queries) ListEventsQuery(ctx context.Context, db DBTX, dollar_1 interface{}) ([]ListEventsQueryRow, error) {
-	rows, err := db.Query(ctx, listEventsQuery, dollar_1)
+func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX, dollar_1 interface{}) ([]GetEventsQueryRow, error) {
+	rows, err := db.Query(ctx, getEventsQuery, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListEventsQueryRow
+	var items []GetEventsQueryRow
 	for rows.Next() {
-		var i ListEventsQueryRow
+		var i GetEventsQueryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

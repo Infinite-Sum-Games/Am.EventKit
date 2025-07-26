@@ -43,7 +43,7 @@ func FetchAllEvents(c *gin.Context) {
 		organizerId = uuid.NullUUID{Valid: false}
 	}
 
-	events, err := q.ListEventsQuery(ctx, conn, organizerId)
+	events, err := q.GetEventsQuery(ctx, conn, organizerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch events"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)

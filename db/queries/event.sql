@@ -1,4 +1,4 @@
--- name: ListEventsQuery :many
+-- name: GetEventsQuery :many
 SELECT
     e.id,
     e.name,
