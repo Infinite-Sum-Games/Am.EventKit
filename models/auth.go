@@ -29,3 +29,14 @@ func (s StudentOnboardingRequest) Validate() error {
 		v.Field(&s.CollegeCity, v.Required),
 		v.Field(&s.AcademicYear, v.Required))
 }
+
+type LoginRequest struct {
+	Email          string `json:"email" binding:"required"`
+	HashedPassword string `json:"password" binding:"required"`
+}
+
+func (l LoginRequest) Validate() error {
+	return v.ValidateStruct(&l,
+		v.Field(&l.Email, v.Required, is.Email),
+		v.Field(&l.HashedPassword, v.Required))
+}
