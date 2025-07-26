@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	aidanwoods.dev/go-paseto v1.5.4
+	github.com/brianvoe/gofakeit/v7 v7.3.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/google/uuid v1.6.0

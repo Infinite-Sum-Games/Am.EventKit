@@ -8,12 +8,14 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const listOrganizersQuery = `-- name: ListOrganizersQuery :many
 
 SELECT
+  id,
   name as organizer_name,
   abbr as abbreviation,
   org_type as organizer_type,
@@ -24,6 +26,7 @@ FROM organizer
 `
 
 type ListOrganizersQueryRow struct {
+	ID            uuid.UUID         `json:"id"`
 	OrganizerName string            `json:"organizer_name"`
 	Abbreviation  string            `json:"abbreviation"`
 	OrganizerType OrganizerTypeEnum `json:"organizer_type"`
@@ -42,6 +45,7 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 	for rows.Next() {
 		var i ListOrganizersQueryRow
 		if err := rows.Scan(
+			&i.ID,
 			&i.OrganizerName,
 			&i.Abbreviation,
 			&i.OrganizerType,

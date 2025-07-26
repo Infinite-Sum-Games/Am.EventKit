@@ -59,11 +59,14 @@ test:
 up:
 	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
 
-seed:
-	@goose -dir ./db/seed/ -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+seed: build
+	@go run seed/seed.go seed/truncate.go seed/main.go -s
 
 down:
 	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
+
+clean:
+	@go run seed/seed.go seed/truncate.go seed/main.go -c
 
 # For docker users
 doc:
