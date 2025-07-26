@@ -26,13 +26,40 @@ func (q *Queries) CheckRefreshTokenQuery(ctx context.Context, db DBTX, email str
 }
 
 const checkStudentVerifiedQuery = `-- name: CheckStudentVerifiedQuery :one
-SELECT email FROM student WHERE email = $1
+SELECT 
+  id,
+  email, 
+  password, 
+  name,
+  department_name, 
+  amrita_roll_number, refresh_token
+FROM student 
+WHERE email = $1
 `
 
-func (q *Queries) CheckStudentVerifiedQuery(ctx context.Context, db DBTX, email string) (string, error) {
+type CheckStudentVerifiedQueryRow struct {
+	ID               uuid.UUID   `json:"id"`
+	Email            string      `json:"email"`
+	Password         string      `json:"password"`
+	Name             string      `json:"name"`
+	DepartmentName   string      `json:"department_name"`
+	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
+	RefreshToken     pgtype.Text `json:"refresh_token"`
+}
+
+func (q *Queries) CheckStudentVerifiedQuery(ctx context.Context, db DBTX, email string) (CheckStudentVerifiedQueryRow, error) {
 	row := db.QueryRow(ctx, checkStudentVerifiedQuery, email)
-	err := row.Scan(&email)
-	return email, err
+	var i CheckStudentVerifiedQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Name,
+		&i.DepartmentName,
+		&i.AmritaRollNumber,
+		&i.RefreshToken,
+	)
+	return i, err
 }
 
 const deleteOnboardingQuery = `-- name: DeleteOnboardingQuery :exec
