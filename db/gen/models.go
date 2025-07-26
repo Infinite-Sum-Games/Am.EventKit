@@ -393,6 +393,7 @@ type Student struct {
 type StudentOnboarding struct {
 	ID               int32            `json:"id"`
 	Name             string           `json:"name"`
+	DepartmentName   string           `json:"department_name"`
 	Email            string           `json:"email"`
 	Password         string           `json:"password"`
 	PhoneNumber      string           `json:"phone_number"`

@@ -12,6 +12,7 @@ import (
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 
@@ -22,7 +23,7 @@ import (
 func SetupRouter() *gin.Engine {
 
 	config := cors.Config{
-		AllowOrigins:              []string{cmd.Env.Domain},
+		AllowOrigins:              []string{cmd.Env.ClientDomain},
 		AllowWildcard:             true,
 		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
@@ -113,6 +114,13 @@ func StartApp() {
 		return
 	}
 	pkg.Log.Info("[OK]: Valkey initialized successfully")
+
+	mailer, err := mail.NewMailerService("./mail", 3)
+	if err != nil {
+		pkg.Log.Fatal("Unable to initialize mail!", err)
+	}
+	mail.Mail = mailer
+	mail.Mail.Start()
 
 	// Initialize server
 	pkg.Log.Info("[OK]: Start the server on port 9000")
