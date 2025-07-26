@@ -54,7 +54,6 @@ LEFT JOIN organizer o ON m.organizer_id = o.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
-WHERE ($1 IS NULL OR m.organizer_id = $1)
 GROUP BY e.id;
 
 -- name: GetEventByIdQuery :one
@@ -102,7 +101,8 @@ SELECT
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'id', t.id,
-        'name', t.name
+        'name', t.name,
+        'abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
 
 FROM event e

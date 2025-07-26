@@ -28,22 +28,7 @@ func FetchAllEvents(c *gin.Context) {
 
 	q := db.New()
 
-	organizerIdStr := c.Query("organizerId")
-	var organizerId uuid.NullUUID
-
-	if organizerIdStr != "" {
-		parsedId, err := uuid.Parse(organizerIdStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid organizer ID"})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid organizer ID", err)
-			return
-		}
-		organizerId = uuid.NullUUID{UUID: parsedId, Valid: true}
-	} else {
-		organizerId = uuid.NullUUID{Valid: false}
-	}
-
-	events, err := q.GetEventsQuery(ctx, conn, organizerId)
+	events, err := q.GetEventsQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch events"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)
