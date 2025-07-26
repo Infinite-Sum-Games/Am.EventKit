@@ -15,7 +15,15 @@ RETURNING
 	refresh_token;
 
 -- name: CheckStudentVerifiedQuery :one
-SELECT email FROM student WHERE email = $1;
+SELECT 
+  id,
+  email, 
+  password, 
+  name,
+  department_name, 
+  amrita_roll_number, refresh_token
+FROM student 
+WHERE email = $1;
 
 -- name: UpsertStudentOnboardingQuery :exec
 INSERT INTO student_onboarding (
