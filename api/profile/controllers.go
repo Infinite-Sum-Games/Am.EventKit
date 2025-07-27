@@ -21,7 +21,7 @@ func FetchUserProfile(c *gin.Context) {
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
@@ -36,7 +36,7 @@ func FetchUserProfile(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch user profile"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to fetch user profile", err)
 		return
 	}
