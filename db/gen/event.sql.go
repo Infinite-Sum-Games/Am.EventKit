@@ -15,9 +15,9 @@ import (
 const getEventByIdQuery = `-- name: GetEventByIdQuery :one
 SELECT
     e.id,
-    e.name,
+    e.name AS event_name,
     e.blurb,
-    e.description,
+    e.description as event_description,
     e.cover_image_url,
     e.price,
     e.is_per_head,
@@ -36,9 +36,9 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', o.id,
-        'name', o.name,
-        'abbr', o.abbr,
+        'organizer_id', o.id,
+        'organizer_name', o.name,
+        'org_abbreviation', o.abbr,
         'org_type', o.org_type,
         'student_head', o.student_head,
         'student_co_head', o.student_co_head,
@@ -47,7 +47,7 @@ SELECT
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', es.id,
+        'event_schedule_id', es.id,
         'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
@@ -56,9 +56,9 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', t.id,
-        'name', t.name,
-        'abbreviation', t.abbreviation
+        'tag_id', t.id,
+        'tag_name', t.name,
+        'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
 
 FROM event e
@@ -72,28 +72,28 @@ GROUP BY e.id
 `
 
 type GetEventByIdQueryRow struct {
-	ID             uuid.UUID          `json:"id"`
-	Name           string             `json:"name"`
-	Blurb          string             `json:"blurb"`
-	Description    string             `json:"description"`
-	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
-	Price          pgtype.Numeric     `json:"price"`
-	IsPerHead      bool               `json:"is_per_head"`
-	Rules          string             `json:"rules"`
-	EventType      EventTypeEnum      `json:"event_type"`
-	IsGroup        bool               `json:"is_group"`
-	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
-	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
-	TotalSeats     int32              `json:"total_seats"`
-	SeatsFilled    int32              `json:"seats_filled"`
-	EventStatus    EventStatusEnum    `json:"event_status"`
-	EventMode      EventModeEnum      `json:"event_mode"`
-	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
-	CreatedAt      pgtype.Timestamp   `json:"created_at"`
-	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
-	Organizers     []byte             `json:"organizers"`
-	Schedules      []byte             `json:"schedules"`
-	Tags           []byte             `json:"tags"`
+	ID               uuid.UUID          `json:"id"`
+	EventName        string             `json:"event_name"`
+	Blurb            string             `json:"blurb"`
+	EventDescription string             `json:"event_description"`
+	CoverImageUrl    pgtype.Text        `json:"cover_image_url"`
+	Price            pgtype.Numeric     `json:"price"`
+	IsPerHead        bool               `json:"is_per_head"`
+	Rules            string             `json:"rules"`
+	EventType        EventTypeEnum      `json:"event_type"`
+	IsGroup          bool               `json:"is_group"`
+	MaxTeamsize      pgtype.Int4        `json:"max_teamsize"`
+	MinTeamsize      pgtype.Int4        `json:"min_teamsize"`
+	TotalSeats       int32              `json:"total_seats"`
+	SeatsFilled      int32              `json:"seats_filled"`
+	EventStatus      EventStatusEnum    `json:"event_status"`
+	EventMode        EventModeEnum      `json:"event_mode"`
+	AttendanceMode   AttendanceModeEnum `json:"attendance_mode"`
+	CreatedAt        pgtype.Timestamp   `json:"created_at"`
+	UpdatedAt        pgtype.Timestamp   `json:"updated_at"`
+	Organizers       []byte             `json:"organizers"`
+	Schedules        []byte             `json:"schedules"`
+	Tags             []byte             `json:"tags"`
 }
 
 func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetEventByIdQueryRow, error) {
@@ -101,9 +101,9 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 	var i GetEventByIdQueryRow
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
+		&i.EventName,
 		&i.Blurb,
-		&i.Description,
+		&i.EventDescription,
 		&i.CoverImageUrl,
 		&i.Price,
 		&i.IsPerHead,
@@ -129,9 +129,9 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 const getEventsQuery = `-- name: GetEventsQuery :many
 SELECT
     e.id,
-    e.name,
+    e.name AS event_name,
     e.blurb,
-    e.description,
+    e.description AS event_description,
     e.cover_image_url,
     e.price,
     e.is_per_head,
@@ -150,9 +150,9 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', o.id,
-        'name', o.name,
-        'abbr', o.abbr,
+        'organizer_id', o.id,
+        'organizer_name', o.name,
+        'org_abbreviation', o.abbr,
         'org_type', o.org_type,
         'student_head', o.student_head,
         'student_co_head', o.student_co_head,
@@ -161,7 +161,7 @@ SELECT
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', es.id,
+        'event_schedule_id', es.id,
         'event_id', es.event_id,
         'event_date', es.event_date,
         'start_time', es.start_time,
@@ -171,9 +171,9 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', t.id,
-        'name', t.name,
-        'abbreviation', t.abbreviation
+        'tag_id', t.id,
+        'tag_name', t.name,
+        'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
 
 FROM event e
@@ -186,28 +186,28 @@ GROUP BY e.id
 `
 
 type GetEventsQueryRow struct {
-	ID             uuid.UUID          `json:"id"`
-	Name           string             `json:"name"`
-	Blurb          string             `json:"blurb"`
-	Description    string             `json:"description"`
-	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
-	Price          pgtype.Numeric     `json:"price"`
-	IsPerHead      bool               `json:"is_per_head"`
-	Rules          string             `json:"rules"`
-	EventType      EventTypeEnum      `json:"event_type"`
-	IsGroup        bool               `json:"is_group"`
-	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
-	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
-	TotalSeats     int32              `json:"total_seats"`
-	SeatsFilled    int32              `json:"seats_filled"`
-	EventStatus    EventStatusEnum    `json:"event_status"`
-	EventMode      EventModeEnum      `json:"event_mode"`
-	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
-	CreatedAt      pgtype.Timestamp   `json:"created_at"`
-	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
-	Organizers     []byte             `json:"organizers"`
-	Schedules      []byte             `json:"schedules"`
-	Tags           []byte             `json:"tags"`
+	ID               uuid.UUID          `json:"id"`
+	EventName        string             `json:"event_name"`
+	Blurb            string             `json:"blurb"`
+	EventDescription string             `json:"event_description"`
+	CoverImageUrl    pgtype.Text        `json:"cover_image_url"`
+	Price            pgtype.Numeric     `json:"price"`
+	IsPerHead        bool               `json:"is_per_head"`
+	Rules            string             `json:"rules"`
+	EventType        EventTypeEnum      `json:"event_type"`
+	IsGroup          bool               `json:"is_group"`
+	MaxTeamsize      pgtype.Int4        `json:"max_teamsize"`
+	MinTeamsize      pgtype.Int4        `json:"min_teamsize"`
+	TotalSeats       int32              `json:"total_seats"`
+	SeatsFilled      int32              `json:"seats_filled"`
+	EventStatus      EventStatusEnum    `json:"event_status"`
+	EventMode        EventModeEnum      `json:"event_mode"`
+	AttendanceMode   AttendanceModeEnum `json:"attendance_mode"`
+	CreatedAt        pgtype.Timestamp   `json:"created_at"`
+	UpdatedAt        pgtype.Timestamp   `json:"updated_at"`
+	Organizers       []byte             `json:"organizers"`
+	Schedules        []byte             `json:"schedules"`
+	Tags             []byte             `json:"tags"`
 }
 
 func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQueryRow, error) {
@@ -221,9 +221,9 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 		var i GetEventsQueryRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
+			&i.EventName,
 			&i.Blurb,
-			&i.Description,
+			&i.EventDescription,
 			&i.CoverImageUrl,
 			&i.Price,
 			&i.IsPerHead,

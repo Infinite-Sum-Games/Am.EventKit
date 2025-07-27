@@ -1,9 +1,9 @@
 -- name: GetEventsQuery :many
 SELECT
     e.id,
-    e.name,
+    e.name AS event_name,
     e.blurb,
-    e.description,
+    e.description AS event_description,
     e.cover_image_url,
     e.price,
     e.is_per_head,
@@ -22,9 +22,9 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', o.id,
-        'name', o.name,
-        'abbr', o.abbr,
+        'organizer_id', o.id,
+        'organizer_name', o.name,
+        'org_abbreviation', o.abbr,
         'org_type', o.org_type,
         'student_head', o.student_head,
         'student_co_head', o.student_co_head,
@@ -33,7 +33,7 @@ SELECT
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', es.id,
+        'event_schedule_id', es.id,
         'event_id', es.event_id,
         'event_date', es.event_date,
         'start_time', es.start_time,
@@ -43,9 +43,9 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', t.id,
-        'name', t.name,
-        'abbreviation', t.abbreviation
+        'tag_id', t.id,
+        'tag_name', t.name,
+        'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
 
 FROM event e
@@ -59,9 +59,9 @@ GROUP BY e.id;
 -- name: GetEventByIdQuery :one
 SELECT
     e.id,
-    e.name,
+    e.name AS event_name,
     e.blurb,
-    e.description,
+    e.description as event_description,
     e.cover_image_url,
     e.price,
     e.is_per_head,
@@ -80,9 +80,9 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', o.id,
-        'name', o.name,
-        'abbr', o.abbr,
+        'organizer_id', o.id,
+        'organizer_name', o.name,
+        'org_abbreviation', o.abbr,
         'org_type', o.org_type,
         'student_head', o.student_head,
         'student_co_head', o.student_co_head,
@@ -91,7 +91,7 @@ SELECT
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', es.id,
+        'event_schedule_id', es.id,
         'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
@@ -100,9 +100,9 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'id', t.id,
-        'name', t.name,
-        'abbreviation', t.abbreviation
+        'tag_id', t.id,
+        'tag_name', t.name,
+        'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
 
 FROM event e
