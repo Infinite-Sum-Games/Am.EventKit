@@ -8,7 +8,6 @@ SELECT
   amrita_roll_number,
   college_name,
   college_city,
-  academic_year,
-  account_status 
+  academic_year
 FROM student 
 WHERE account_status = 'VERIFIED' and email = $1;

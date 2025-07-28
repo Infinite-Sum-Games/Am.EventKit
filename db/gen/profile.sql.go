@@ -21,23 +21,21 @@ SELECT
   amrita_roll_number,
   college_name,
   college_city,
-  academic_year,
-  account_status 
+  academic_year
 FROM student 
 WHERE account_status = 'VERIFIED' and email = $1
 `
 
 type FetchUserProfileQueryRow struct {
-	Name             string            `json:"name"`
-	DepartmentName   string            `json:"department_name"`
-	Email            string            `json:"email"`
-	PhoneNumber      string            `json:"phone_number"`
-	IsAmritaStudent  bool              `json:"is_amrita_student"`
-	AmritaRollNumber pgtype.Text       `json:"amrita_roll_number"`
-	CollegeName      string            `json:"college_name"`
-	CollegeCity      string            `json:"college_city"`
-	AcademicYear     string            `json:"academic_year"`
-	AccountStatus    AccountStatusEnum `json:"account_status"`
+	Name             string      `json:"name"`
+	DepartmentName   string      `json:"department_name"`
+	Email            string      `json:"email"`
+	PhoneNumber      string      `json:"phone_number"`
+	IsAmritaStudent  bool        `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
+	CollegeName      string      `json:"college_name"`
+	CollegeCity      string      `json:"college_city"`
+	AcademicYear     string      `json:"academic_year"`
 }
 
 func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email string) (FetchUserProfileQueryRow, error) {
@@ -53,7 +51,6 @@ func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email stri
 		&i.CollegeName,
 		&i.CollegeCity,
 		&i.AcademicYear,
-		&i.AccountStatus,
 	)
 	return i, err
 }
