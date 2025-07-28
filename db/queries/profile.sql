@@ -11,4 +11,4 @@ SELECT
   academic_year,
   account_status 
 FROM student 
-WHERE email = $1;
+WHERE account_status = 'VERIFIED' and email = $1;
