@@ -2,10 +2,10 @@ package event
 
 import (
 	"context"
-	"errors"
-	"github.com/jackc/pgx/v5"
 	"net/http"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
@@ -20,7 +20,7 @@ func FetchAllEvents(c *gin.Context) {
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
@@ -30,7 +30,7 @@ func FetchAllEvents(c *gin.Context) {
 
 	events, err := q.GetEventsQuery(ctx, conn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch events"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)
 		return
 	}
@@ -46,7 +46,7 @@ func FetchEventById(c *gin.Context) {
 	eventIdStr := c.Param("eventId")
 	eventId, err := uuid.Parse(eventIdStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid event ID"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Request not processed due to invalid parameters"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID", err)
 		return
 	}
@@ -56,7 +56,7 @@ func FetchEventById(c *gin.Context) {
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to acquire DB connection"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
@@ -64,14 +64,13 @@ func FetchEventById(c *gin.Context) {
 
 	q := db.New()
 	event, err := q.GetEventByIdQuery(ctx, conn, eventId)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Event not found"})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Event not found", err)
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to fetch event"})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch event", err)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Event not found"})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Attempted to fetch event which does not exist", err)
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Request event does not exist", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
