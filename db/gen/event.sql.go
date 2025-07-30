@@ -30,9 +30,6 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
-    e.attendance_mode,
-    e.created_at,
-    e.updated_at,
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -72,28 +69,25 @@ GROUP BY e.id
 `
 
 type GetEventByIdQueryRow struct {
-	ID               uuid.UUID          `json:"id"`
-	EventName        string             `json:"event_name"`
-	Blurb            string             `json:"blurb"`
-	EventDescription string             `json:"event_description"`
-	CoverImageUrl    pgtype.Text        `json:"cover_image_url"`
-	Price            pgtype.Numeric     `json:"price"`
-	IsPerHead        bool               `json:"is_per_head"`
-	Rules            string             `json:"rules"`
-	EventType        EventTypeEnum      `json:"event_type"`
-	IsGroup          bool               `json:"is_group"`
-	MaxTeamsize      pgtype.Int4        `json:"max_teamsize"`
-	MinTeamsize      pgtype.Int4        `json:"min_teamsize"`
-	TotalSeats       int32              `json:"total_seats"`
-	SeatsFilled      int32              `json:"seats_filled"`
-	EventStatus      EventStatusEnum    `json:"event_status"`
-	EventMode        EventModeEnum      `json:"event_mode"`
-	AttendanceMode   AttendanceModeEnum `json:"attendance_mode"`
-	CreatedAt        pgtype.Timestamp   `json:"created_at"`
-	UpdatedAt        pgtype.Timestamp   `json:"updated_at"`
-	Organizers       []byte             `json:"organizers"`
-	Schedules        []byte             `json:"schedules"`
-	Tags             []byte             `json:"tags"`
+	ID               uuid.UUID       `json:"id"`
+	EventName        string          `json:"event_name"`
+	Blurb            string          `json:"blurb"`
+	EventDescription string          `json:"event_description"`
+	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
+	Price            pgtype.Numeric  `json:"price"`
+	IsPerHead        bool            `json:"is_per_head"`
+	Rules            string          `json:"rules"`
+	EventType        EventTypeEnum   `json:"event_type"`
+	IsGroup          bool            `json:"is_group"`
+	MaxTeamsize      pgtype.Int4     `json:"max_teamsize"`
+	MinTeamsize      pgtype.Int4     `json:"min_teamsize"`
+	TotalSeats       int32           `json:"total_seats"`
+	SeatsFilled      int32           `json:"seats_filled"`
+	EventStatus      EventStatusEnum `json:"event_status"`
+	EventMode        EventModeEnum   `json:"event_mode"`
+	Organizers       []byte          `json:"organizers"`
+	Schedules        []byte          `json:"schedules"`
+	Tags             []byte          `json:"tags"`
 }
 
 func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetEventByIdQueryRow, error) {
@@ -116,9 +110,6 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 		&i.SeatsFilled,
 		&i.EventStatus,
 		&i.EventMode,
-		&i.AttendanceMode,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Organizers,
 		&i.Schedules,
 		&i.Tags,
@@ -144,9 +135,6 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
-    e.attendance_mode,
-    e.created_at,
-    e.updated_at,
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -186,28 +174,25 @@ GROUP BY e.id
 `
 
 type GetEventsQueryRow struct {
-	ID               uuid.UUID          `json:"id"`
-	EventName        string             `json:"event_name"`
-	Blurb            string             `json:"blurb"`
-	EventDescription string             `json:"event_description"`
-	CoverImageUrl    pgtype.Text        `json:"cover_image_url"`
-	Price            pgtype.Numeric     `json:"price"`
-	IsPerHead        bool               `json:"is_per_head"`
-	Rules            string             `json:"rules"`
-	EventType        EventTypeEnum      `json:"event_type"`
-	IsGroup          bool               `json:"is_group"`
-	MaxTeamsize      pgtype.Int4        `json:"max_teamsize"`
-	MinTeamsize      pgtype.Int4        `json:"min_teamsize"`
-	TotalSeats       int32              `json:"total_seats"`
-	SeatsFilled      int32              `json:"seats_filled"`
-	EventStatus      EventStatusEnum    `json:"event_status"`
-	EventMode        EventModeEnum      `json:"event_mode"`
-	AttendanceMode   AttendanceModeEnum `json:"attendance_mode"`
-	CreatedAt        pgtype.Timestamp   `json:"created_at"`
-	UpdatedAt        pgtype.Timestamp   `json:"updated_at"`
-	Organizers       []byte             `json:"organizers"`
-	Schedules        []byte             `json:"schedules"`
-	Tags             []byte             `json:"tags"`
+	ID               uuid.UUID       `json:"id"`
+	EventName        string          `json:"event_name"`
+	Blurb            string          `json:"blurb"`
+	EventDescription string          `json:"event_description"`
+	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
+	Price            pgtype.Numeric  `json:"price"`
+	IsPerHead        bool            `json:"is_per_head"`
+	Rules            string          `json:"rules"`
+	EventType        EventTypeEnum   `json:"event_type"`
+	IsGroup          bool            `json:"is_group"`
+	MaxTeamsize      pgtype.Int4     `json:"max_teamsize"`
+	MinTeamsize      pgtype.Int4     `json:"min_teamsize"`
+	TotalSeats       int32           `json:"total_seats"`
+	SeatsFilled      int32           `json:"seats_filled"`
+	EventStatus      EventStatusEnum `json:"event_status"`
+	EventMode        EventModeEnum   `json:"event_mode"`
+	Organizers       []byte          `json:"organizers"`
+	Schedules        []byte          `json:"schedules"`
+	Tags             []byte          `json:"tags"`
 }
 
 func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQueryRow, error) {
@@ -236,9 +221,6 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 			&i.SeatsFilled,
 			&i.EventStatus,
 			&i.EventMode,
-			&i.AttendanceMode,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.Organizers,
 			&i.Schedules,
 			&i.Tags,
