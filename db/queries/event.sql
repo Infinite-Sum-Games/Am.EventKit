@@ -16,9 +16,6 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
-    e.attendance_mode,
-    e.created_at,
-    e.updated_at,
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -74,9 +71,6 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
-    e.attendance_mode,
-    e.created_at,
-    e.updated_at,
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
