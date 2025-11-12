@@ -33,18 +33,13 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'organizer_id', o.id,
         'organizer_name', o.name,
         'org_abbreviation', o.abbr,
-        'org_type', o.org_type,
-        'student_head', o.student_head,
-        'student_co_head', o.student_co_head,
-        'faculty_head', o.faculty_head
+        'org_type', o.org_type
     )) FILTER (WHERE o.id IS NOT NULL) AS organizers,
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'event_schedule_id', es.id,
         'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
@@ -53,7 +48,6 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_id', t.id,
         'tag_name', t.name,
         'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
@@ -138,18 +132,13 @@ SELECT
 
     -- Organizer details
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'organizer_id', o.id,
         'organizer_name', o.name,
         'org_abbreviation', o.abbr,
-        'org_type', o.org_type,
-        'student_head', o.student_head,
-        'student_co_head', o.student_co_head,
-        'faculty_head', o.faculty_head
+        'org_type', o.org_type
     )) FILTER (WHERE o.id IS NOT NULL) AS organizers,
 
     -- Event schedule
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'event_schedule_id', es.id,
         'event_id', es.event_id,
         'event_date', es.event_date,
         'start_time', es.start_time,
@@ -159,7 +148,6 @@ SELECT
 
     -- Tags 
     JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_id', t.id,
         'tag_name', t.name,
         'tag_abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL) AS tags
