@@ -15,33 +15,27 @@ const editUserProfileQuery = `-- name: EditUserProfileQuery :execrows
 UPDATE student
 SET 
   name = $2,
-  department_name = $3,
-  phone_number = $4,
-  college_name = $5,
-  college_city = $6,
-  academic_year = $7
+  phone_number = $3,
+  college_name = $4,
+  college_city = $5
 WHERE email = $1 AND account_status = 'VERIFIED'
 `
 
 type EditUserProfileQueryParams struct {
-	Email          string `json:"email"`
-	Name           string `json:"name"`
-	DepartmentName string `json:"department_name"`
-	PhoneNumber    string `json:"phone_number"`
-	CollegeName    string `json:"college_name"`
-	CollegeCity    string `json:"college_city"`
-	AcademicYear   string `json:"academic_year"`
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone_number"`
+	CollegeName string `json:"college_name"`
+	CollegeCity string `json:"college_city"`
 }
 
 func (q *Queries) EditUserProfileQuery(ctx context.Context, db DBTX, arg EditUserProfileQueryParams) (int64, error) {
 	result, err := db.Exec(ctx, editUserProfileQuery,
 		arg.Email,
 		arg.Name,
-		arg.DepartmentName,
 		arg.PhoneNumber,
 		arg.CollegeName,
 		arg.CollegeCity,
-		arg.AcademicYear,
 	)
 	if err != nil {
 		return 0, err

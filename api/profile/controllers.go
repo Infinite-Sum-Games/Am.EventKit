@@ -100,13 +100,11 @@ func EditUserProfile(c *gin.Context) {
 	q := db.New()
 
 	row, err := q.EditUserProfileQuery(ctx, conn, db.EditUserProfileQueryParams{
-		Email:          email,
-		Name:           req.Name,
-		DepartmentName: req.DepartmentName,
-		PhoneNumber:    req.PhoneNumber,
-		CollegeName:    req.CollegeName,
-		CollegeCity:    req.CollegeCity,
-		AcademicYear:   req.AcademicYear,
+		Email:       email,
+		Name:        req.Name,
+		PhoneNumber: req.PhoneNumber,
+		CollegeName: req.CollegeName,
+		CollegeCity: req.CollegeCity,
 	})
 
 	if err != nil {
