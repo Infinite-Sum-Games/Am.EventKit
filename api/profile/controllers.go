@@ -96,7 +96,12 @@ func EditUserProfile(c *gin.Context) {
 		return
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to rollback DB transaction", err)
+			return
+		}
+	}()
 
 	q := db.New()
 
