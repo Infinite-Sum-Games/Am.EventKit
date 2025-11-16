@@ -89,17 +89,18 @@ func EditUserProfile(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	conn, err := cmd.DBPool.Acquire(ctx)
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to begin DB transaction", err)
 		return
 	}
-	defer conn.Release()
+
+	defer tx.Rollback(ctx)
 
 	q := db.New()
 
-	row, err := q.EditUserProfileQuery(ctx, conn, db.EditUserProfileQueryParams{
+	rowAffected, err := q.EditUserProfileQuery(ctx, tx, db.EditUserProfileQueryParams{
 		Email:       email,
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
@@ -111,9 +112,15 @@ func EditUserProfile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to edit user profile", err)
 		return
-	} else if row == 0 {
+	} else if rowAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User profile does not exist"})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist", nil)
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
 
