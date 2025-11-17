@@ -13,3 +13,60 @@ get {
 params:path {
   eventId: 38af44d1-f2e1-408a-ba2a-9ca7672ce9f2
 }
+
+docs {
+  # GET /api/v1/events/:eventId
+  
+    - Input JSON: none
+    - Path params:
+      - `eventId` (UUID)
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Event fetched successfully",
+      "event": {
+        "id": "38af44d1-f2e1-408a-ba2a-9ca7672ce9f2",
+        "event_name": "Robotics Challenge",
+        "blurb": "Short blurb here",
+        "event_description": "Longer description here",
+        "cover_image_url": "https://cdn.example.com/e/cover.jpg",
+        "price": "199.00",
+        "is_per_head": false,
+        "rules": "Rule text…",
+        "event_type": "EVENT",
+        "is_group": true,
+        "max_teamsize": 5,
+        "min_teamsize": 2,
+        "total_seats": 100,
+        "seats_filled": 42,
+        "event_status": "ACTIVE",
+        "event_mode": "OFFLINE",
+        "organizers": [
+          { "organizer_name": "ECE", "org_abbreviation": "ECE", "org_type": "DEPARTMENT" }
+        ],
+        "schedules": [
+          { "event_date": "2025-02-10", "start_time": "10:00:00", "end_time": "12:00:00", "venue": "Hall A" }
+        ],
+        "tags": [
+          { "tag_name": "Tech", "tag_abbreviation": "TECH" }
+        ]
+      }
+    }
+    ```
+  
+    ## 400 Bad Request (invalid UUID)
+    ```json
+    { "message": "Request not processed due to invalid parameters" }
+    ```
+  
+    ## 404 Not Found
+    ```json
+    { "message": "Event not found" }
+    ```
+  
+    ## 500 Internal Server Error
+    ```json
+    { "message": "Oops! Something happened. Please try again later" }
+    ```
+}
