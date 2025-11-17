@@ -11,7 +11,7 @@ get {
 }
 
 params:path {
-  eventId: 38af44d1-f2e1-408a-ba2a-9ca7672ce9f2
+  eventId: 08916d6e-2fa3-4788-87a2-933f4f4fdf1c
 }
 
 docs {
@@ -23,34 +23,28 @@ docs {
   
     ## 200 OK
     ```json
-    {
-      "message": "Event fetched successfully",
+    "message": "Event fetched successfully",
+      {
       "event": {
-        "id": "38af44d1-f2e1-408a-ba2a-9ca7672ce9f2",
-        "event_name": "Robotics Challenge",
-        "blurb": "Short blurb here",
-        "event_description": "Longer description here",
-        "cover_image_url": "https://cdn.example.com/e/cover.jpg",
-        "price": "199.00",
+        "id": "08916d6e-2fa3-4788-87a2-933f4f4fdf1c",
+        "event_name": "Art Exhibition",
+        "blurb": "An exhibition of student artwork.",
+        "event_description": "Showcase your creativity.",
+        "cover_image_url": null,
+        "price": 50,
         "is_per_head": false,
-        "rules": "Rule text…",
+        "rules": "Bring your own materials.",
         "event_type": "EVENT",
         "is_group": true,
-        "max_teamsize": 5,
-        "min_teamsize": 2,
-        "total_seats": 100,
-        "seats_filled": 42,
+        "max_teamsize": null,
+        "min_teamsize": null,
+        "total_seats": 30,
+        "seats_filled": 15,
         "event_status": "ACTIVE",
         "event_mode": "OFFLINE",
-        "organizers": [
-          { "organizer_name": "ECE", "org_abbreviation": "ECE", "org_type": "DEPARTMENT" }
-        ],
-        "schedules": [
-          { "event_date": "2025-02-10", "start_time": "10:00:00", "end_time": "12:00:00", "venue": "Hall A" }
-        ],
-        "tags": [
-          { "tag_name": "Tech", "tag_abbreviation": "TECH" }
-        ]
+        "organizers": "W3sib3JnX3R5cGUiOiAiQ0xVQiIsICJvcmdhbml6ZXJfbmFtZSI6ICJNdXNpYyBDbHViIiwgIm9yZ19hYmJyZXZpYXRpb24iOiAiTVVTIn1d",
+        "schedules": "W3sidmVudWUiOiAiQ2FtcHVzIEhhbGwiLCAiZW5kX3RpbWUiOiAiMjAyNS0wNy0yMVQxMjowMDowMCIsICJldmVudF9kYXRlIjogIjIwMjUtMTEtMTQiLCAic3RhcnRfdGltZSI6ICIyMDI1LTA3LTIxVDEwOjAwOjAwIn1d",
+        "tags": "W3sidGFnX25hbWUiOiAiQXJ0IiwgInRhZ19hYmJyZXZpYXRpb24iOiAiQVJUIn1d"
       }
     }
     ```
