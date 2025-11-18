@@ -17,7 +17,7 @@ SELECT
     e.id,
     e.name AS event_name,
     e.blurb,
-    e.description as event_description,
+    e.description AS event_description,
     e.cover_image_url,
     e.price,
     e.is_per_head,
@@ -30,28 +30,30 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
-
-    -- Organizer details
-    JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
+    COALESCE(
+      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
         'org_abbreviation', o.abbr,
         'org_type', o.org_type
-    )) FILTER (WHERE o.id IS NOT NULL) AS organizers,
-
-    -- Event schedule
-    JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
+      )) FILTER (WHERE o.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS organizers,
+    COALESCE(
+      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
-    )) FILTER (WHERE es.id IS NOT NULL) AS schedules,
-
-    -- Tags 
-    JSON_AGG(DISTINCT JSONB_BUILD_OBJECT(
+      )) FILTER (WHERE es.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS schedules,
+    COALESCE(
+      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'tag_name', t.name,
         'tag_abbreviation', t.abbreviation
-    )) FILTER (WHERE t.id IS NOT NULL) AS tags
-
+      )) FILTER (WHERE t.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS tags
 FROM event e
 LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
@@ -79,9 +81,9 @@ type GetEventByIdQueryRow struct {
 	SeatsFilled      int32           `json:"seats_filled"`
 	EventStatus      EventStatusEnum `json:"event_status"`
 	EventMode        EventModeEnum   `json:"event_mode"`
-	Organizers       []byte          `json:"organizers"`
-	Schedules        []byte          `json:"schedules"`
-	Tags             []byte          `json:"tags"`
+	Organizers       interface{}     `json:"organizers"`
+	Schedules        interface{}     `json:"schedules"`
+	Tags             interface{}     `json:"tags"`
 }
 
 func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetEventByIdQueryRow, error) {
@@ -121,8 +123,8 @@ SELECT
     MIN(es.event_date) AS event_date,
     e.is_group,
     COALESCE(
-        JSON_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
-        '[]'::json
+        JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
+        '[]'::jsonb
     ) AS tags,
     e.price AS event_price,
     FALSE AS is_registered,
