@@ -9,12 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiMail "github.com/Thanus-Kumaar/anokha-2025-backend/api/mail"
 	apiOrganizer "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
-	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
@@ -57,15 +57,15 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	authRouter := v1.Group("/auth")
-	staffRouter := v1.Group("/staff")
+	attendanceRouter := v1.Group("/attendance")
 	userRouter := v1.Group("/user")
 	eventRouter := v1.Group("/events")
 
 	apiAuth.StudentAuthRoutes(authRouter)
-	apiAuth.StaffAuthRoutes(authRouter)
+	apiAuth.OrganizerAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
-	apiStaff.AttendanceRoutes(staffRouter)
+	apiAttend.AttendanceRoutes(attendanceRouter)
 	apiTag.TagRoutes(userRouter)
 	apiOrganizer.OrganizerRoutes(userRouter)
 

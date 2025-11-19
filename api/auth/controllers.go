@@ -305,30 +305,30 @@ func LogoutUser(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func LoginStaffCsrf(c *gin.Context) {
+func LoginOrganizerCsrf(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Staff login action initiated successfully",
+		"message": "Organizer login action initiated successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
-func LoginStaff(c *gin.Context) {
+func LoginOrganizer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Staff logged in successfully",
+		"message": "Organizer logged in successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
-func LogoutStaff(c *gin.Context) {
+func LogoutOrganizer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Staff logged out successfully",
+		"message": "Organizer logged out successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
-func FetchStaffSession(c *gin.Context) {
+func FetchOrganizerSession(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Staff session obtained successfully",
+		"message": "Organizer session obtained successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }

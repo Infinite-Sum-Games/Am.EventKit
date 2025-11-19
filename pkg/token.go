@@ -58,7 +58,7 @@ func InitPaseto() error {
 	return nil
 }
 
-func CreateAuthToken(id, username, email string, user, host, staff bool) string {
+func CreateAuthToken(id, username, email string, user, host, organizer bool) string {
 	token := paseto.NewToken()
 	token.SetJti(email)
 	token.SetAudience(username)
@@ -73,15 +73,15 @@ func CreateAuthToken(id, username, email string, user, host, staff bool) string 
 	if err := token.Set("STUDENT-ROLE", user); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 	}
-	if err := token.Set("STAFF-ROLE", staff); err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
+	if err := token.Set("ORGANIZER-ROLE", organizer); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
 	}
 
 	signed := token.V4Sign(SignKey, nil)
 	return signed
 }
 
-func CreateRefreshToken(id, username, email string, user, host, staff bool) string {
+func CreateRefreshToken(id, username, email string, user, host, organizer bool) string {
 	token := paseto.NewToken()
 	token.SetJti(email)
 	token.SetAudience(username)
@@ -96,8 +96,8 @@ func CreateRefreshToken(id, username, email string, user, host, staff bool) stri
 	if err := token.Set("STUDENT-ROLE", user); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 	}
-	if err := token.Set("STAFF-ROLE", staff); err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to set STAFF-ROLE claim", err)
+	if err := token.Set("ORGANIZER-ROLE", organizer); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
 	}
 
 	signed := token.V4Sign(SignKey, nil)
@@ -165,7 +165,7 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c1 := authData["audience"] != refData["audience"]
 	c2 := authData["jti"] != refData["jti"]
 	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
-	c4 := authData["STAFF-ROLE"] != refData["STAFF-ROLE"]
+	c4 := authData["ORGANIZER-ROLE"] != refData["ORGANIZER-ROLE"]
 	c5 := authData["USER-ID"] != refData["USER-ID"]
 
 	if c1 || c2 || c3 || c4 || c5 {
@@ -177,7 +177,7 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c.Set("username", authData["audience"])
 	c.Set("email", authData["jti"])
 	c.Set("USER-ROLE", authData["USER-ROLE"])
-	c.Set("STAFF-ROLE", authData["STAFF-ROLE"])
+	c.Set("ORGANIZER-ROLE", authData["ORGANIZER-ROLE"])
 
 	return true
 }
