@@ -74,12 +74,7 @@ func (m *MailerService) worker(id int) {
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
 				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email", id), err)
-				// Re-enqueue the failed request
-				if err_enqueue := m.Enqueue(req); err_enqueue != nil {
-					pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to re-enqueue email", id), err_enqueue)
-				} else {
-					pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: re-enqueued failed email for retry", id))
-				}
+				// TODO: Retry queue or dead-letter (if critical)
 			}
 			m.wg.Done()
 		}
