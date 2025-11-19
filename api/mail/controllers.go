@@ -34,16 +34,16 @@ func (c *Controller) SendTestEmail(ctx *gin.Context) {
 	var data any
 	switch req.Type {
 	case "otp":
-		data = mail.OTPTemplateData{
+		data = &mail.OTPTemplateData{
 			UserName: "Test User",
 			OTP:      []string{"1", "2", "3", "4", "5", "6"},
 		}
 	case "welcome":
-		data = mail.WelcomeTemplateData{
+		data = &mail.WelcomeTemplateData{
 			UserName: "Test User",
 		}
 	case "event-reg":
-		data = mail.RegistrationData{
+		data = &mail.RegistrationData{
 			UserName:      "Test User",
 			EventName:     "Test Event",
 			EventDate:     "Tomorrow",

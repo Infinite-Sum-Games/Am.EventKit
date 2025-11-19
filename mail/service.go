@@ -80,17 +80,22 @@ func (m *MailerService) worker(id int) {
 				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to dequeue", id), err)
 				continue
 			}
-			req, ok := item.(EmailRequest)
+			req, ok := item.(*EmailRequest)
 			if !ok {
-				pkg.Log.Error(fmt.Sprintf("type assertion failed for EmailRequest, got: %#v", item), nil)
+				pkg.Log.Error(fmt.Sprintf("type assertion failed for *EmailRequest, got: %#v", item), nil)
 				continue
 			}
 
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
-				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email", id), err)
-				// TODO: Retry queue or dead-letter (if critical)
+				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on first attempt, retrying once...", id), err)
+				// Retry once immediately
+				err = sender.Send(req.To, req.Subject, req.Type, req.Data)
+				if err != nil {
+					pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on second attempt", id), err)
+					// After the second failure, the email is considered lost.
+				}
 			}
 			m.wg.Done()
 		}
