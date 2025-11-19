@@ -10,7 +10,11 @@ import (
 )
 
 const listTagsQuery = `-- name: ListTagsQuery :many
-SELECT id, name, abbreviation FROM tags
+SELECT
+    id,
+    name,
+    abbreviation
+FROM tags
 `
 
 func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
