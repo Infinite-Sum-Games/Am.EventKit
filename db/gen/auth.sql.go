@@ -24,6 +24,51 @@ func (q *Queries) CheckRefreshTokenQuery(ctx context.Context, db DBTX, email str
 	return refresh_token, err
 }
 
+const checkStudentVerifiedQuery = `-- name: CheckStudentVerifiedQuery :one
+SELECT email FROM student WHERE email = $1
+`
+
+func (q *Queries) CheckStudentVerifiedQuery(ctx context.Context, db DBTX, email string) (string, error) {
+	row := db.QueryRow(ctx, checkStudentVerifiedQuery, email)
+	err := row.Scan(&email)
+	return email, err
+}
+
+const finalizeStudentSignUpQuery = `-- name: FinalizeStudentSignUpQuery :exec
+INSERT INTO student (
+  name,
+  department_name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  academic_year,
+  account_status
+)
+SELECT
+  name,
+  department_name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  academic_year,
+  'VERIFIED'
+FROM student_onboarding
+WHERE student_onboarding.email = $1
+`
+
+func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email string) error {
+	_, err := db.Exec(ctx, finalizeStudentSignUpQuery, email)
+	return err
+}
+
 const revokeRefreshTokenQuery = `-- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student
@@ -41,4 +86,104 @@ func (q *Queries) RevokeRefreshTokenQuery(ctx context.Context, db DBTX, email st
 	var refresh_token pgtype.Text
 	err := row.Scan(&refresh_token)
 	return refresh_token, err
+}
+
+const updateStudentOTPQuery = `-- name: UpdateStudentOTPQuery :exec
+UPDATE student_onboarding
+SET otp = $2,
+    expiry_at = $3
+WHERE email = $1
+`
+
+type UpdateStudentOTPQueryParams struct {
+	Email    string           `json:"email"`
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+}
+
+func (q *Queries) UpdateStudentOTPQuery(ctx context.Context, db DBTX, arg UpdateStudentOTPQueryParams) error {
+	_, err := db.Exec(ctx, updateStudentOTPQuery, arg.Email, arg.Otp, arg.ExpiryAt)
+	return err
+}
+
+const updateStudentPasswordQuery = `-- name: UpdateStudentPasswordQuery :exec
+UPDATE student
+SET password = $2
+WHERE email = $1
+`
+
+type UpdateStudentPasswordQueryParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) UpdateStudentPasswordQuery(ctx context.Context, db DBTX, arg UpdateStudentPasswordQueryParams) error {
+	_, err := db.Exec(ctx, updateStudentPasswordQuery, arg.Email, arg.Password)
+	return err
+}
+
+const upsertStudentOnboardingQuery = `-- name: UpsertStudentOnboardingQuery :exec
+INSERT INTO student_onboarding (
+  name,
+  department_name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  academic_year,
+  otp,
+  expiry_at
+)
+VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+)
+ON CONFLICT (email)
+DO UPDATE SET
+  name = EXCLUDED.name,
+  department_name = EXCLUDED.department_name,
+  password = EXCLUDED.password,
+  phone_number = EXCLUDED.phone_number,
+  is_amrita_student = EXCLUDED.is_amrita_student,
+  amrita_roll_number = EXCLUDED.amrita_roll_number,
+  college_name = EXCLUDED.college_name,
+  college_city = EXCLUDED.college_city,
+  academic_year = EXCLUDED.academic_year,
+  otp = EXCLUDED.otp,
+  expiry_at = EXCLUDED.expiry_at
+`
+
+type UpsertStudentOnboardingQueryParams struct {
+	Name             string           `json:"name"`
+	DepartmentName   string           `json:"department_name"`
+	Email            string           `json:"email"`
+	Password         string           `json:"password"`
+	PhoneNumber      string           `json:"phone_number"`
+	IsAmritaStudent  bool             `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text      `json:"amrita_roll_number"`
+	CollegeName      string           `json:"college_name"`
+	CollegeCity      string           `json:"college_city"`
+	AcademicYear     string           `json:"academic_year"`
+	Otp              string           `json:"otp"`
+	ExpiryAt         pgtype.Timestamp `json:"expiry_at"`
+}
+
+func (q *Queries) UpsertStudentOnboardingQuery(ctx context.Context, db DBTX, arg UpsertStudentOnboardingQueryParams) error {
+	_, err := db.Exec(ctx, upsertStudentOnboardingQuery,
+		arg.Name,
+		arg.DepartmentName,
+		arg.Email,
+		arg.Password,
+		arg.PhoneNumber,
+		arg.IsAmritaStudent,
+		arg.AmritaRollNumber,
+		arg.CollegeName,
+		arg.CollegeCity,
+		arg.AcademicYear,
+		arg.Otp,
+		arg.ExpiryAt,
+	)
+	return err
 }

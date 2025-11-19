@@ -1,16 +1,29 @@
 services:
   # Primary database
   postgres:
-    image: postgres:latest
+    image: postgres:17-alpine
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: metabase
     ports:
       - "5432:5432"
     restart: on-failure
+    networks:
+      - app_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
 
   # Caching
   valkey:
@@ -20,10 +33,20 @@ services:
     ports:
       - "6379:6379"
     command: valkey-server --appendonly yes # persistance
+    networks:
+      - app_network
     volumes:
       - valkey_data:/data
-    networks:
-      - valkey_network
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
 
   # UI for Caching
   insight:
@@ -38,12 +61,120 @@ services:
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
     networks:
-      - valkey_network
+      - app_network
+
+  # PostgreSQL Exporter to export Postgres metrics to Prometheus
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: anokha-postgres-exporter
+    restart: on-failure
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1234@postgres:5432/postgres?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+      - monitoring_network
+
+  # Redis Exporter to export Valkey metrics to Prometheus
+  redis_exporter:
+    image: oliver006/redis_exporter:v1.62.0-alpine
+    container_name: anokha-redis-exporter
+    restart: on-failure
+    environment:
+      REDIS_ADDR: redis://valkey:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - valkey
+    networks:
+      - app_network
+      - monitoring_network
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: anokha-prometheus
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+    networks:
+      - monitoring_network
+    extra_hosts:
+      - "anokha-backend-host:host-gateway" 
+
+  # Grafana for visualizing metrics
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: anokha-grafana
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring_network
+
+  # Metabase for visualizing database
+  metabase:
+    image: metabase/metabase:v0.49.15
+    container_name: anokha-metabase
+    restart: on-failure
+    ports:
+      - "3030:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: 1234
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  # Loki for log aggregation
+  # loki:
+  #   image: grafana/loki:2.9.5
+  #   container_name: anokha-loki
+  #   ports:
+  #     - "3100:3100"
+  #   command: -config.file=/etc/loki/local-config.yaml
+  #   networks:
+  #     - monitoring_network
+  #   volumes:
+  #     - ./loki-config.yaml:/etc/loki/local-config.yaml
+
+  # Vector for log collection
+  # vector:
+  #   image: timberio/vector:0.48.0-alpine
+  #   container_name: anokha-vector
+  #   restart: on-failure
+  #   volumes:
+  #     - ./vector.yaml:/etc/vector/vector.yaml:ro
+  #     - ./dev.log:/logs/dev.log:ro
+  #     - ./prod.log:/logs/prod.log:ro
+  #   depends_on:
+  #     - loki
+  #   networks:
+  #       - monitoring_network
 
 networks:
-  valkey_network:
+  app_network:
+    driver: bridge
+  monitoring_network:
     driver: bridge
 
 volumes:
   postgres_data:
   valkey_data:
+  grafana_data:

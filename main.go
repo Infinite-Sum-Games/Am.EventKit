@@ -12,6 +12,7 @@ import (
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiMail "github.com/Thanus-Kumaar/anokha-2025-backend/api/mail"
+	apiOrganizer "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiStaff "github.com/Thanus-Kumaar/anokha-2025-backend/api/staff"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
@@ -27,7 +28,7 @@ import (
 func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	config := cors.Config{
-		AllowOrigins:              []string{cmd.Env.Domain},
+		AllowOrigins:              []string{cmd.Env.ClientDomain},
 		AllowWildcard:             true,
 		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
@@ -44,7 +45,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	r.Use(pkg.TagRequestWithId)
 	r.Use(mw.RecoveryPanics)
 
-	r.GET("/test", func(c *gin.Context) {
+	r.GET("/test", mw.PrometheusMiddleware("test"), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Server is live ◪_◪",
 		})
@@ -58,13 +59,15 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	authRouter := v1.Group("/auth")
 	staffRouter := v1.Group("/staff")
 	userRouter := v1.Group("/user")
+	eventRouter := v1.Group("/events")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.StaffAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
-	apiEvent.EventRoutes(userRouter)
+	apiEvent.EventRoutes(eventRouter)
 	apiStaff.AttendanceRoutes(staffRouter)
 	apiTag.TagRoutes(userRouter)
+	apiOrganizer.OrganizerRoutes(userRouter)
 
 	return r
 }

@@ -21,3 +21,6 @@ mail/mail-queue
 
 # .DS_Store files
 .DS_Store
+
+# persistent mail queue in mail/mail-queue
+mail/mail-queue

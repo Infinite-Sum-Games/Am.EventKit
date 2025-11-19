@@ -82,6 +82,7 @@ WHERE amrita_roll_number IS NOT NULL;
 CREATE TABLE IF NOT EXISTS student_onboarding (
   id SERIAL NOT NULL,
   name TEXT NOT NULL,
+  department_name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL UNIQUE,
