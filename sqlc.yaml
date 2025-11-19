@@ -20,6 +20,8 @@ sql:
             go_type:
               import: "time"
               type: "Time"
+          - db_type: "json"
+            go_type: "encoding/json.RawMessage"
           - db_type: "jsonb"
-            go_type: "github.com/jackc/pgx/v5/pgtype.JSONB"
+            go_type: "encoding/json.RawMessage"
 
