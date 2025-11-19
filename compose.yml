@@ -1,11 +1,12 @@
 services:
   # Primary database
   postgres:
-    image: postgres:16.3-alpine
+    image: postgres:17-alpine
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: metabase
     ports:
       - "5432:5432"
     restart: on-failure

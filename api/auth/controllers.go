@@ -184,7 +184,7 @@ func RegisterUserAccount(c *gin.Context) {
 	// also there is no function to set temp token, so i wrote a new one
 	pkg.SetTempCookie(c, tempToken)
 
-	err = mail.Mail.Enqueue(mail.EmailRequest{
+	err = mail.Mail.Enqueue(&mail.EmailRequest{
 		To:      []string{req.Email},
 		Subject: "Welcome to Anokha 2025",
 		Type:    "otp",

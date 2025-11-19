@@ -2,8 +2,6 @@ package pkg
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -24,6 +22,7 @@ const (
 	RefreshTokenValidTime = time.Hour * 24 * 90
 	AuthTokenValidTime    = time.Hour
 	TempTokenValidTime    = time.Minute * 5
+	CsrfTokenValidTime    = time.Minute * 5
 	privateKeyPath        = "app.rsa"
 	publicKeyPath         = "app.rsa.pub"
 )
@@ -119,15 +118,17 @@ func CreateTempToken(username, email string) string {
 	return signed
 }
 
-func CreateCsrfToken() string {
-	const tokenSize = 32
-	b := make([]byte, tokenSize)
-	_, err := rand.Read(b)
-	if err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to generate CSRF token", err)
-		return ""
-	}
-	return base64.RawURLEncoding.EncodeToString(b)
+func CreateCsrfToken(email string, purpose string) string {
+	token := paseto.NewToken()
+	token.SetJti(email)
+	token.SetIssuer("Anokha-25: AUTH-SERVICE")
+	token.SetIssuedAt(time.Now())
+	token.SetNotBefore(time.Now())
+	token.SetExpiration(time.Now().Add(CsrfTokenValidTime))
+	token.SetSubject(purpose)
+
+	signed := token.V4Sign(SignKey, nil)
+	return signed
 }
 
 func ParseToken(token, tokeType string) (bool, *paseto.Token) {
