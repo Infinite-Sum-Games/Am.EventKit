@@ -1,4 +1,16 @@
 services:
+  # Database visualizer (better than Beekeeper)
+  drizzle-gateway:
+    image: ghcr.io/drizzle-team/gateway:latest
+    container_name: drizzle-gateway
+    environment:
+      MASTERPASS: anokha
+    ports:
+      - "4983:4983"
+    restart: on-failure
+    networks:
+      - app_network
+  
   # Primary database
   postgres:
     image: postgres:17-alpine

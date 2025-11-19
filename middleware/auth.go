@@ -43,9 +43,9 @@ func Auth(c *gin.Context) {
 		username, _ := refreshTokenClaims["audience"].(string)
 		email, _ := refreshTokenClaims["jti"].(string)
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
-		isStaff, _ := refreshTokenClaims["STAFF-ROLE"].(bool)
+		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
 		// Creating and setting auth token, so it can be used for future requests
-		authToken := pkg.CreateAuthToken(userID, username, email, isStudent, false, isStaff)
+		authToken := pkg.CreateAuthToken(userID, username, email, isStudent, false, isOrganizer)
 		pkg.SetAuthCookie(c, authToken)
 	}
 
