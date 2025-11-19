@@ -2,8 +2,8 @@ root = "."
 
 [build]
   args_bin = []
-  bin = "./bin/anokha-backend"
-  cmd = "make build"
+  bin = "./bin/anokha-backend.exe"
+  cmd = "go build -o ./bin/anokha-backend.exe main.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "bruno", "public"]
   exclude_file = []
