@@ -22,6 +22,7 @@ const (
 	RefreshTokenValidTime = time.Hour * 24 * 90
 	AuthTokenValidTime    = time.Hour
 	TempTokenValidTime    = time.Minute * 5
+	CsrfTokenValidTime    = time.Minute * 5
 	privateKeyPath        = "app.rsa"
 	publicKeyPath         = "app.rsa.pub"
 )
@@ -111,6 +112,20 @@ func CreateTempToken(username, email string) string {
 
 	signed := token.V4Sign(SignKey, nil)
 	return signed
+}
+
+func CreateCsrfToken(email string, purpose string) string {
+	token := paseto.NewToken()
+	token.SetJti(email)
+	token.SetIssuer("Anokha-25: AUTH-SERVICE")
+	token.SetIssuedAt(time.Now())
+	token.SetNotBefore(time.Now())
+	token.SetExpiration(time.Now().Add(CsrfTokenValidTime))
+	token.SetSubject(purpose)
+
+	signed := token.V4Sign(SignKey, nil)
+	return signed
+
 }
 
 func ParseToken(token, tokeType string) (bool, *paseto.Token) {

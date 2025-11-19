@@ -11,6 +11,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const editUserProfileQuery = `-- name: EditUserProfileQuery :execrows
+UPDATE student
+SET 
+  name = $2,
+  phone_number = $3,
+  college_name = $4,
+  college_city = $5
+WHERE email = $1 AND account_status = 'VERIFIED'
+`
+
+type EditUserProfileQueryParams struct {
+	Email       string `json:"email"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phone_number"`
+	CollegeName string `json:"college_name"`
+	CollegeCity string `json:"college_city"`
+}
+
+func (q *Queries) EditUserProfileQuery(ctx context.Context, db DBTX, arg EditUserProfileQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, editUserProfileQuery,
+		arg.Email,
+		arg.Name,
+		arg.PhoneNumber,
+		arg.CollegeName,
+		arg.CollegeCity,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const fetchUserProfileQuery = `-- name: FetchUserProfileQuery :one
 SELECT 
   name, 
