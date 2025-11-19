@@ -2,10 +2,17 @@ package mail
 
 import (
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"html/template"
 	"path/filepath"
 )
+
+func init() {
+	gob.Register(OTPTemplateData{})
+	gob.Register(WelcomeTemplateData{})
+	gob.Register(RegistrationData{})
+}
 
 type OTPTemplateData struct {
 	UserName string
