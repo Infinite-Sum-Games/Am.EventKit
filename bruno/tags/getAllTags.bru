@@ -9,3 +9,32 @@ get {
   body: json
   auth: inherit
 }
+
+docs {
+  # GET /api/v1/user/tags/all
+  
+    - Input JSON: none
+    - Path params: none
+    - Query params: none
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Tags list fetched successfully",
+      "tags": [
+        { "id": "f3a9c5b2-1234-4e8d-9abc-111122223333", "name": "Tech", "abbreviation": "TECH" },
+        { "id": "a7c2e9d8-5678-4e8d-9abc-444455556666", "name": "Art", "abbreviation": "ART" }
+      ]
+    }
+    ```
+  
+    ## 500 Internal Server Error (DB failure)
+    ```json
+    { "message": "Failed to fetch tags" }
+    ```
+  
+    ## 500 Internal Server Error (connection failure)
+    ```json
+    { "message": "Failed to acquire DB connection" }
+    ```
+}
