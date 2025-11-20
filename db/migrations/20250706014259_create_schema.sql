@@ -41,21 +41,6 @@ CREATE TYPE attendance_mode_enum AS ENUM (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS staff (
-  id UUID DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL UNIQUE,
-  password TEXT NOT NULL,
-  name TEXT NOT NULL,
-  phone_number TEXT NOT NULL UNIQUE,
-  refresh_token TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-
-  CONSTRAINT "staff_pkey" PRIMARY KEY (id)
-);
--- +goose StatementEnd
-
--- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS student (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -82,6 +67,7 @@ WHERE amrita_roll_number IS NOT NULL;
 CREATE TABLE IF NOT EXISTS student_onboarding (
   id SERIAL NOT NULL,
   name TEXT NOT NULL,
+  department_name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL UNIQUE,
@@ -104,9 +90,10 @@ WHERE amrita_roll_number IS NOT NULL;
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS organizer (
   id UUID DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  abbr TEXT NOT NULL UNIQUE,
-  org_type organizer_type_enum  NOT NULL,
+  name TEXT NOT NULL UNIQUE, -- eg: Computer Science and Engineering
+  abbr TEXT NOT NULL UNIQUE, -- eg: CSE
+  password TEXT NOT NULL, -- eg: Single-time hash; need: For attendance
+  org_type organizer_type_enum  NOT NULL, -- eg: DEPARTMENT | CLUB
   student_head TEXT NOT NULL,
   student_co_head TEXT,
   faculty_head TEXT NOT NULL,
@@ -308,7 +295,7 @@ CREATE TABLE IF NOT EXISTS teams (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS team_events_participant (
+CREATE TABLE IF NOT EXISTS team_members (
   id UUID DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL,
   student_id UUID NOT NULL,
@@ -316,15 +303,15 @@ CREATE TABLE IF NOT EXISTS team_events_participant (
   student_name TEXT NOT NULL,
   student_email TEXT NOT NULL,
 
-  CONSTRAINT "team_events_participant_pkey" PRIMARY KEY (id),
+  CONSTRAINT "team_members_pkey" PRIMARY KEY (id),
 
-  CONSTRAINT "team_events_participant_team_id_fkey"
+  CONSTRAINT "team_members_team_id_fkey"
   FOREIGN KEY(team_id)
   REFERENCES teams(id)
   ON DELETE RESTRICT
   ON UPDATE CASCADE,
 
-  CONSTRAINT "team_events_participant_student_id_fkey"
+  CONSTRAINT "team_members_student_id_fkey"
   FOREIGN KEY(student_id)
   REFERENCES student(id)
   ON DELETE RESTRICT
@@ -400,7 +387,7 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
 -- +goose StatementBegin
 DROP TABLE IF EXISTS solo_event_participant;
 DROP TABLE IF EXISTS team_events_attendance;
-DROP TABLE IF EXISTS team_events_participant;
+DROP TABLE IF EXISTS team_members;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS event_tag_mapping;
@@ -413,7 +400,6 @@ DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS organizer;
 DROP TABLE IF EXISTS student_onboarding;
 DROP TABLE IF EXISTS student;
-DROP TABLE IF EXISTS staff;
 
 DROP TYPE IF EXISTS attendance_mode_enum;
 DROP TYPE IF EXISTS event_mode_enum;

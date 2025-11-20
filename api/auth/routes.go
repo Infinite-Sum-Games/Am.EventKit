@@ -11,23 +11,21 @@ func StudentAuthRoutes(r *gin.RouterGroup) {
 	// CSRF requests
 	r.GET("/user/login", LoginUserCsrf)
 	r.GET("/user/register", RegisterUserAccountCsrf)
-	r.GET("/user/register/otp/verify", VerifyUserOtpCsrf)
-	r.GET("/user/register/otp/resend", ResendUserOtpCsrf)
+	r.GET("/user/register/otp/verify")
+	r.GET("/user/register/otp/resend")
 
 	// Actual requests
-	r.POST("/user/login", mw.VerifyCsrf, LoginUser)
-	r.POST("/user/register", mw.VerifyCsrf, RegisterUserAccount)
-	r.POST("/user/register/otp/verify", mw.VerifyCsrf, VerifyUserOtp)
-	r.POST("/user/register/otp/resend", mw.VerifyCsrf, ResendUserOtp)
+	r.POST("/user/login", LoginUser)
+	r.POST("/user/register", RegisterUserAccount)
+	r.POST("/user/register/otp/verify", mw.VerifyCsrf, mw.TempTokenAuth, VerifyUserOtp)
+	r.POST("/user/register/otp/resend", mw.VerifyCsrf, mw.TempTokenAuth, ResendUserOtp)
 
 	r.GET("/user/session", mw.Auth, FetchUserSession)
 	r.GET("/user/logout", mw.Auth, LogoutUser)
 }
 
-func StaffAuthRoutes(r *gin.RouterGroup) {
-	r.GET("/staff/login", LoginStaffCsrf)
-	r.POST("/staff/login", mw.VerifyCsrf, LoginStaff)
-
-	r.GET("/staff/session", mw.Auth, FetchStaffSession)
-	r.GET("/staff/logout", mw.Auth, LogoutStaff)
+func OrganizerAuthRoutes(r *gin.RouterGroup) {
+	r.GET("/organizer/login", LoginOrganizerCsrf)
+	r.POST("/organizer/login", LoginOrganizer)
+	r.GET("/organizer/logout", mw.Auth, LogoutOrganizer)
 }

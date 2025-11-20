@@ -13,7 +13,8 @@ import (
 type EnvConfig struct {
 	Environment   string `mapstructure:"env"`
 	Port          int    `mapstructure:"port"`
-	Domain        string `mapstructure:"domain"`
+	ClientDomain  string `mapstructure:"client_domain"`
+	CookieDomain  string `mapstructure:"cookie_domain"`
 	CookieSecure  bool   `mapstructure:"cookie_secure"`
 	DatabaseURL   string `mapstructure:"database_url"`
 	RedisHost     string `mapstructure:"redis_host"`

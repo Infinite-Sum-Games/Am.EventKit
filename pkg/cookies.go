@@ -16,7 +16,7 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 		authTokenString,      // value
 		3600,                 // maxAge (1 hour)
 		"/",                  // path
-		cmd.Env.Domain,       // domain
+		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure
 		true,                 // httpOnly
 	)
@@ -28,7 +28,19 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 		refreshTokenString,   // value
 		3600*24*90,           // maxAge (90 days)
 		"/",                  // path
-		cmd.Env.Domain,       // domain
+		cmd.Env.CookieDomain, // domain
+		cmd.Env.CookieSecure, // secure
+		true,                 // httpOnly
+	)
+}
+
+func SetTempCookie(c *gin.Context, tempTokenString string) {
+	c.SetCookie(
+		"temp_token",         // key
+		tempTokenString,      // value
+		5*60,                 // maxAge (5 mins)
+		"/",                  // path
+		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure
 		true,                 // httpOnly
 	)
@@ -40,7 +52,7 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 		csrfTokenString,      // value
 		300,                  // maxAge (5 minutes)
 		c.FullPath(),         // path to be constructed for restriction
-		cmd.Env.Domain,       // domain
+		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure
 		true,                 // httpOnly
 	)

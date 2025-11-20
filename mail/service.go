@@ -2,6 +2,7 @@ package mail
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"os"
 	"sync"
@@ -10,13 +11,22 @@ import (
 	"github.com/joncrlsn/dque"
 )
 
+func init() {
+	gob.Register(OTPTemplateData{})
+	gob.Register(WelcomeTemplateData{})
+	gob.Register(RegistrationData{})
+	gob.Register(EmailRequest{})
+}
+
 type MailerService struct {
-	queue   *dque.DQue
+	Queue   *dque.DQue
 	workers int
 	ctx     context.Context
 	cancel  context.CancelFunc
 	wg      *sync.WaitGroup
 }
+
+var Mail *MailerService
 
 func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 	if err := os.MkdirAll(path, 0755); err != nil {
@@ -32,7 +42,7 @@ func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 	pkg.Log.Info("[MAIL-SERVICE]: mail queue created successfully!")
 	ctx, cancel := context.WithCancel(context.Background())
 	return &MailerService{
-		queue:   queue,
+		Queue:   queue,
 		workers: numWorkers,
 		ctx:     ctx,
 		cancel:  cancel,
@@ -44,14 +54,16 @@ func (m *MailerService) Start() {
 	for i := range m.workers {
 		go m.worker(i)
 	}
+	pkg.Log.Info(fmt.Sprintf("[OK]: Mail service initialized successfully with %d workers", m.workers))
 }
 
-func (m *MailerService) Enqueue(req EmailRequest) error {
-	return m.queue.Enqueue(req)
+func (m *MailerService) Enqueue(req *EmailRequest) error {
+	return m.Queue.Enqueue(req)
 }
 
 func (m *MailerService) worker(id int) {
 	sender := NewMailer()
+	pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: started", id))
 
 	for {
 		select {
@@ -63,28 +75,41 @@ func (m *MailerService) worker(id int) {
 			return
 
 		default:
-			item, err := m.queue.DequeueBlock()
+			item, err := m.Queue.DequeueBlock()
 			if err != nil {
 				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to dequeue", id), err)
 				continue
 			}
-			req := item.(*EmailRequest)
+			req, ok := item.(*EmailRequest)
+			if !ok {
+				pkg.Log.Error(fmt.Sprintf("type assertion failed for *EmailRequest, got: %#v", item), nil)
+				continue
+			}
 
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
-				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email", id), err)
-				// TODO: Retry queue or dead-letter (if critical)
+				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on first attempt, retrying once...", id), err)
+				// Retry once immediately
+				err = sender.Send(req.To, req.Subject, req.Type, req.Data)
+				if err != nil {
+					pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on second attempt", id), err)
+					// After the second failure, the email is considered lost.
+				}
 			}
 			m.wg.Done()
 		}
 	}
 }
 
+func (m *MailerService) Wait() {
+	m.wg.Wait()
+}
+
 func (m *MailerService) Shutdown() {
 	m.cancel()
 	m.wg.Wait()
-	if err := m.queue.Close(); err != nil {
+	if err := m.Queue.Close(); err != nil {
 		pkg.Log.Error("[MAIL-SERVICE]: error in closing mail queue", err)
 	}
 }
