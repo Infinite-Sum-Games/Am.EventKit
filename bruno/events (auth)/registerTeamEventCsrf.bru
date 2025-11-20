@@ -1,0 +1,20 @@
+meta {
+  name: registerTeamEventCsrf
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/event/team/register/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

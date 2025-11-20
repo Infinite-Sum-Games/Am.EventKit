@@ -1,11 +1,11 @@
 meta {
   name: registerUser
   type: http
-  seq: 1
+  seq: 3
 }
 
 post {
-  url: {{baseUrl}}/v1/auth/user/register
+  url: {{baseUrl}}/auth/user/register
   body: json
   auth: inherit
 }

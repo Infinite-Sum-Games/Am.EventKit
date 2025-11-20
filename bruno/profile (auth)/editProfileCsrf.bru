@@ -1,0 +1,15 @@
+meta {
+  name: editProfileCsrf
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/user/profile/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

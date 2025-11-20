@@ -1,0 +1,16 @@
+meta {
+  name: loginUserCsrf
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/auth/user/login
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
