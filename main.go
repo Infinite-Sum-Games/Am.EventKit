@@ -63,6 +63,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
+
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
 	apiAttend.AttendanceRoutes(attendanceRouter)
@@ -142,22 +143,22 @@ func StartApp() {
 		pkg.Log.Info("[OK]: Start the server on port 9000")
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			pkg.Log.Fatal("could not listen on port 9000", err)
-		}
+		} // Blocking in nature (?)
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
+	// Graceful shutdown with 10 second timeout; no new connections accepted
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	pkg.Log.Info("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		pkg.Log.Fatal("Server forced to shutdown", err)
 	}
 
+	// Mailer shutdown sequence
 	mailerSvc.Shutdown()
 
 	pkg.Log.Info("Server exiting")
