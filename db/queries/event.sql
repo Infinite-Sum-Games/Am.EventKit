@@ -51,8 +51,8 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'event_date', es.event_date,
-        'start_time', es.start_time,
-        'end_time', es.end_time,
+        'start_time', es.start_time::time,
+        'end_time', es.end_time::time,
         'venue', es.venue
       )) FILTER (WHERE es.id IS NOT NULL),
       '[]'::jsonb
@@ -63,12 +63,23 @@ SELECT
         'tag_abbreviation', t.abbreviation
       )) FILTER (WHERE t.id IS NOT NULL),
       '[]'::jsonb
-    ) AS tags
+    ) AS tags,
+    COALESCE(
+      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'person_name', p.name,
+        'profession', p.profession,
+        'phone_number', p.phone_number,
+        'email', p.email
+      )) FILTER (WHERE p.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS people
 FROM event e
 LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
+LEFT JOIN people p ON pem.person_id = p.id
 WHERE e.id = $1
 GROUP BY e.id;
