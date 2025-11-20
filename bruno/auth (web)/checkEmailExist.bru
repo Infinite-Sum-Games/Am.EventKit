@@ -1,0 +1,16 @@
+meta {
+  name: checkEmailExist
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/auth/user/check
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
