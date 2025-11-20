@@ -53,13 +53,24 @@ SELECT
         'tag_abbreviation', t.abbreviation
       )) FILTER (WHERE t.id IS NOT NULL),
       '[]'::jsonb
-    ) AS tags
+    ) AS tags,
+    COALESCE(
+      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'person_name', p.name,
+        'profession', p.profession,
+        'phone_number', p.phone_number,
+        'email', p.email
+      )) FILTER (WHERE p.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS people
 FROM event e
 LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
+LEFT JOIN people p ON pem.person_id = p.id
 WHERE e.id = $1
 GROUP BY e.id
 `
@@ -84,6 +95,7 @@ type GetEventByIdQueryRow struct {
 	Organizers       interface{}     `json:"organizers"`
 	Schedules        interface{}     `json:"schedules"`
 	Tags             interface{}     `json:"tags"`
+	People           interface{}     `json:"people"`
 }
 
 func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetEventByIdQueryRow, error) {
@@ -109,6 +121,7 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 		&i.Organizers,
 		&i.Schedules,
 		&i.Tags,
+		&i.People,
 	)
 	return i, err
 }
