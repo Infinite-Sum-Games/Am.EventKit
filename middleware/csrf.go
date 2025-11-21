@@ -9,6 +9,7 @@ import (
 )
 
 func VerifyCsrf(c *gin.Context) {
+	// Check request header presence
 	csrfToken := c.Request.Header["X-Csrf-Token"]
 	if len(csrfToken) != 1 {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Could not find CSRF header.")
@@ -45,14 +46,46 @@ func VerifyCsrf(c *gin.Context) {
 				csrfFromHeader,
 			))
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"message": "Security tokens do not match.",
+			"message": "Security token compromised.",
 		})
 		return
 	}
 
-	pkg.Log.InfoCtx(
-		c,
-		"[SUCCESS]: Verified CSRF token successfully.",
-	)
+	// Check whether the CSRF token is parsable
+	ok, token := pkg.ParseToken(csrfFromCookie, "csrf_token")
+	if !ok {
+		pkg.Log.ErrorCtx(c,
+			"[CSRF-ERROR]: Failed to parse token",
+			fmt.Errorf("given string is not a CSRF token"),
+		)
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "Security token compromised.",
+		})
+		return
+	}
+
+	// After parsing, extract the subject
+	tokenSub, tokenSubErr := token.GetSubject()
+	if tokenSubErr != nil {
+		pkg.Log.ErrorCtx(c,
+			"[CSRF-ERROR]: Could not find subject; bad token",
+			fmt.Errorf("given string is not a CSRF token"),
+		)
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "Security token compromised.",
+		})
+		return
+	}
+
+	// After extraction, check the path
+	if tokenSub != pkg.CsrfRoutes[c.FullPath()] {
+		pkg.Log.ErrorCtx(c, "[CSRF-ERROR]: ", fmt.Errorf(""))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "The request is malformed",
+		})
+		return
+	}
+
+	pkg.Log.InfoCtx(c, "[SUCCESS]: Verified CSRF token successfully.")
 	c.Next()
 }
