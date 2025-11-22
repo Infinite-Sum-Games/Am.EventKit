@@ -1,3 +1,10 @@
+-- name: FindEmail :one
+SELECT EXISTS (
+  SELECT 1 
+  FROM student
+  WHERE email = $1
+);
+
 -- name: CheckRefreshTokenQuery :one
 SELECT refresh_token 
 FROM student 
