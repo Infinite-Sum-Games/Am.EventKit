@@ -2,8 +2,6 @@ package pkg
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -17,7 +15,7 @@ import (
 
 /*
 	JTI stores the email
-	Audience stores the username
+	Audience stores the userId
 */
 
 const (
@@ -35,13 +33,13 @@ var (
 )
 
 func InitPaseto() error {
-	privateKeyBinary, err := os.ReadFile("app.rsa")
+	privateKeyBinary, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		return err
 	}
 	privateKeyHex := hex.EncodeToString(privateKeyBinary)
 
-	publicKeyBinary, err := os.ReadFile("app.pub.rsa")
+	publicKeyBinary, err := os.ReadFile(publicKeyPath)
 	if err != nil {
 		return err
 	}
@@ -60,56 +58,60 @@ func InitPaseto() error {
 	return nil
 }
 
-func CreateAuthToken(id, username, email string, user, host, organizer bool) string {
+func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, error) {
 	token := paseto.NewToken()
+
 	token.SetJti(email)
-	token.SetAudience(username)
+	token.SetAudience(userId)
 	token.SetIssuer("Anokha-25: AUTH-SERVICE")
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
-	if err := token.Set("USER-ID", id); err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to set USER-ID claim", err)
-	}
-	if err := token.Set("STUDENT-ROLE", user); err != nil {
+
+	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
+		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", organizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
 	}
 
 	signed := token.V4Sign(SignKey, nil)
-	return signed
+	return signed, nil
 }
 
-func CreateRefreshToken(id, username, email string, user, host, organizer bool) string {
+func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string, error) {
+
 	token := paseto.NewToken()
 	token.SetJti(email)
-	token.SetAudience(username)
+	token.SetAudience(userId)
 	token.SetIssuer("Anokha-25: AUTH-SERVICE")
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
-	if err := token.Set("USER-ID", id); err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to set USER-ID claim", err)
-	}
-	if err := token.Set("STUDENT-ROLE", user); err != nil {
+
+	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
+		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", organizer); err != nil {
+
+	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
 	}
 
 	signed := token.V4Sign(SignKey, nil)
-	return signed
+	return signed, nil
 }
 
-func CreateTempToken(username, email string) string {
+func CreateTempToken(onboardingId, email string) string {
 	token := paseto.NewToken()
+
 	token.SetJti(email)
-	token.SetAudience(username)
+	token.SetAudience(onboardingId)
 	token.SetIssuer("Anokha-25: AUTH-SERVICE")
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
@@ -120,24 +122,11 @@ func CreateTempToken(username, email string) string {
 	return signed
 }
 
-func CreateCsrfToken(email string, purpose string) string {
-	token := paseto.NewToken()
-	token.SetJti(email)
-	token.SetIssuer("Anokha-25: AUTH-SERVICE")
-	token.SetIssuedAt(time.Now())
-	token.SetNotBefore(time.Now())
-	token.SetExpiration(time.Now().Add(CsrfTokenValidTime))
-	token.SetSubject(purpose)
-
-	signed := token.V4Sign(SignKey, nil)
-	return signed
-
-}
-
-func ParseToken(token, tokeType string) (bool, *paseto.Token) {
+func ParseToken(token, tokenType string) (bool, *paseto.Token) {
 	parser := paseto.NewParser()
+
 	parser.AddRule(paseto.IssuedBy("Anokha-25: AUTH-SERVICE"))
-	parser.AddRule(paseto.Subject(tokeType))
+	parser.AddRule(paseto.Subject(tokenType))
 	parser.AddRule(paseto.ValidAt(time.Now()))
 	parser.AddRule(paseto.NotExpired())
 
@@ -169,15 +158,13 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c2 := authData["jti"] != refData["jti"]
 	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
 	c4 := authData["ORGANIZER-ROLE"] != refData["ORGANIZER-ROLE"]
-	c5 := authData["USER-ID"] != refData["USER-ID"]
 
-	if c1 || c2 || c3 || c4 || c5 {
+	if c1 || c2 || c3 || c4 {
 		return false
 	}
 
 	// Setting up variables in *gin.Context for passing around in handlers
-	c.Set("userId", authData["USER-ID"])
-	c.Set("username", authData["audience"])
+	c.Set("userId", authData["audience"])
 	c.Set("email", authData["jti"])
 	c.Set("USER-ROLE", authData["USER-ROLE"])
 	c.Set("ORGANIZER-ROLE", authData["ORGANIZER-ROLE"])
@@ -192,7 +179,7 @@ func VerifyTempToken(c *gin.Context, tempToken string) bool {
 	}
 
 	tempData := parsedTempToken.Claims()
-	c.Set("username", tempData["audience"])
+	c.Set("onboardingId", tempData["audience"])
 	c.Set("email", tempData["jti"])
 
 	return true
@@ -207,6 +194,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -224,6 +212,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 		Log.FatalCtx(c, "[AUTH-ERROR] Failed to fetch refresh token from DB", err)
 		return nil, err
 	}
+
 	if token.String == "" {
 		return nil, fmt.Errorf("[AUTH-ERROR] Refresh token not available in DB")
 	}
