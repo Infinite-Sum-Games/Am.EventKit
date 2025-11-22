@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	api "github.com/Thanus-Kumaar/anokha-2025-backend/api/util"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
@@ -19,7 +18,7 @@ import (
 
 func CheckEmailExist(c *gin.Context) {
 
-	req, ok := api.ValidateRequest[models.CheckEmailRequest](c)
+	req, ok := pkg.ValidateRequest[models.CheckEmailRequest](c)
 	if !ok {
 		return
 	}
@@ -39,32 +38,41 @@ func CheckEmailExist(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	exists, err := q.CheckIfStudentExistsByEmail(ctx, conn, req.Email)
-	if !exists {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "No student with the registered email exists",
+	_, err = q.FindEmail(ctx, conn, req.Email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Email is available",
 		})
 
-		pkg.Log.InfoCtx(c, "[AUTH-INFO]: Student with given email does not exist")
+		pkg.Log.SuccessCtx(c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Student email already exists",
+	c.JSON(http.StatusConflict, gin.H{
+		"message": "Email already registered",
 	})
 
-	pkg.Log.SuccessCtx(c)
+	pkg.Log.WarnCtx(c, "[AUTH-WARN]: The email already exists")
 }
 
 func RegisterUserAccountCsrf(c *gin.Context) {
+	csrfToken, tokenErr := pkg.CreateCsrfToken("register@account", c)
+	if tokenErr != nil {
+		return
+	}
+
+	pkg.SetCsrfCookie(c, csrfToken)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Register account action initiated successfully",
+		"key":     csrfToken,
 	})
+
 	pkg.Log.SuccessCtx(c)
 }
 
 func RegisterUserAccount(c *gin.Context) {
-	req, ok := api.ValidateRequest[models.StudentOnboardingRequest](c)
+	req, ok := pkg.ValidateRequest[models.StudentOnboardingRequest](c)
 	if !ok {
 		return
 	}
@@ -156,6 +164,22 @@ func RegisterUserAccount(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
+func VerifyUserOtpCsrf(c *gin.Context) {
+	csrfToken, tokenErr := pkg.CreateCsrfToken("verify@otp", c)
+	if tokenErr != nil {
+		return
+	}
+
+	pkg.SetCsrfCookie(c, csrfToken)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Verify onboarding action initiated successfully",
+		"key":     csrfToken,
+	})
+
+	pkg.Log.SuccessCtx(c)
+}
+
 func VerifyUserOtp(c *gin.Context) {
 	var req struct {
 		Otp string `json:"otp" binding:"required"`
@@ -242,6 +266,7 @@ func VerifyUserOtp(c *gin.Context) {
 }
 
 func ResendUserOtp(c *gin.Context) {
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OTP resent to user email successfully",
 	})

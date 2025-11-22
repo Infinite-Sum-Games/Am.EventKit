@@ -7,13 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FetchOrganizerSession(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Organizer session obtained successfully",
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func FetchUserSession(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User session obtained successfully",

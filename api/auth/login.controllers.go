@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	api "github.com/Thanus-Kumaar/anokha-2025-backend/api/util"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
@@ -17,15 +16,31 @@ import (
 )
 
 func LoginUserCsrf(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
+	if !ok {
+		return
+	}
+
+	csrfToken, err := pkg.CreateCsrfToken(req.Email, c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		return
+	}
+
+	pkg.SetCsrfCookie(c, csrfToken)
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Login action initiated successfully",
+		"message": "User login action initiated successfully",
+		"key":     csrfToken,
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
 func LoginUser(c *gin.Context) {
-	// use the ValidateRequest function if the models.Type has a Validate() function defined
-	req, ok := api.ValidateRequest[models.LoginRequest](c)
+
+	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
 	if !ok {
 		return
 	}
@@ -64,13 +79,13 @@ func LoginUser(c *gin.Context) {
 	isNewToken := false
 	if user.RefreshToken.String == "" {
 		// no token exists, create new refresh token and set it in database
-		refreshToken = pkg.CreateRefreshToken(user.ID.String(), user.Name, user.Email, true, false, false)
+		refreshToken = pkg.CreateRefreshToken(user.ID.String(), user.Email, true, false)
 		isNewToken = true
 	} else {
 		// Validate existing token
 		valid, _ := pkg.ParseToken(user.RefreshToken.String, "refresh_token")
 		if !valid {
-			refreshToken = pkg.CreateRefreshToken(user.ID.String(), user.Name, user.Email, true, false, false)
+			refreshToken = pkg.CreateRefreshToken(user.ID.String(), user.Email, true, false)
 			isNewToken = true
 		} else {
 			refreshToken = user.RefreshToken.String
@@ -102,8 +117,24 @@ func LoginUser(c *gin.Context) {
 }
 
 func LoginOrganizerCsrf(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
+	if !ok {
+		return
+	}
+
+	csrfToken, err := pkg.CreateCsrfToken(req.Email, c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		return
+	}
+
+	pkg.SetCsrfCookie(c, csrfToken)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Organizer login action initiated successfully",
+		"key":     csrfToken,
 	})
 	pkg.Log.SuccessCtx(c)
 }
