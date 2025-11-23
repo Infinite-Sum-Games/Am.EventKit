@@ -33,7 +33,7 @@ func (s StudentOnboardingRequest) Validate() error {
 		v.Field(&s.Name, v.Required, v.Length(3, 50)),
 		v.Field(&s.DepartmentName, v.Required),
 		v.Field(&s.Email, v.Required, is.Email),
-		v.Field(&s.Password, v.Required, v.Length(8, 32)),
+		v.Field(&s.Password, v.Required, v.Length(8, 0)),
 		v.Field(&s.PhoneNumber, v.Required, v.Length(10, 10)),
 		v.Field(&s.CollegeName, v.Required, v.Length(3, 50)),
 		v.Field(&s.CollegeCity, v.Required, v.Length(3, 50)),
@@ -59,4 +59,15 @@ func (s OtpRequest) Validate() error {
 	return v.ValidateStruct(&s,
 		v.Field(&s.Otp, v.Required, v.Length(6, 6), is.Digit),
 	)
+}
+
+type ForgetPasswordRequest struct {
+	Email       string `json:"email"`
+	NewPassword string `json:"new_password"`
+}
+
+func (f ForgetPasswordRequest) Validate() error {
+	return v.ValidateStruct(&f,
+		v.Field(&f.Email, v.Required, is.Email),
+		v.Field(&f.NewPassword, v.Required, v.Length(8, 0)))
 }
