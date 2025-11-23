@@ -6,8 +6,14 @@ meta {
 
 get {
   url: {{baseUrl}}/auth/user/check
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu"
+  }
 }
 
 settings {
@@ -28,7 +34,7 @@ docs {
   ```
   
   ## 400 Bad Request
-  If you do not follow the request structure appropriately then, this arises. Please refer to the `Body` section of this request to see the structure.
+  If you do not follow the request structure appropriately or if your JSON fields fail validation, this arises. Please refer to the `Body` section of this request to see the structure.
   ```json
   {
     "message": "The request is malformed."
