@@ -143,18 +143,18 @@ func StartApp() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	pkg.Log.Info("Shutting down server...")
+	pkg.Log.Info("[OK]: Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		pkg.Log.Fatal("Server forced to shutdown", err)
+		pkg.Log.Fatal("[OK]: Server forced to shutdown", err)
 	}
 
 	// Mailer shutdown sequence
 	mailerSvc.Shutdown()
 
-	pkg.Log.Info("Server exiting")
+	pkg.Log.Info("[OK]: Server shutting down")
 }
 
 func main() {
