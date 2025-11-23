@@ -16,6 +16,8 @@ func Auth(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Access denied.",
 		})
+
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Refresh Cookie is missing", refErr)
 		return
 	}
 
@@ -25,12 +27,16 @@ func Auth(c *gin.Context) {
 	// exists there and if it is a valid one or not
 	// 3. If the token is valid then new authToken can be minted, added to
 	// the cookie
-	accessToken, authErr := c.Cookie("access_token")
-	if authErr == nil && pkg.VerifyTokens(c, accessToken, refreshToken) {
+	accessToken, accessErr := c.Cookie("access_token")
+	if accessErr == nil && pkg.VerifyTokens(c, accessToken, refreshToken) {
 		c.Next()
 		return
 	}
-	if authErr == http.ErrNoCookie {
+
+	if accessErr == http.ErrNoCookie {
+
+		// Check if refresh token is valid. If yes, mint a new access token
+		// otherwise go back to old token
 		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
@@ -38,15 +44,51 @@ func Auth(c *gin.Context) {
 			})
 			return
 		}
+
 		refreshTokenClaims := validToken.Claims()
-		userID, _ := refreshTokenClaims["USER-ID"].(string)
-		username, _ := refreshTokenClaims["audience"].(string)
+		userId, _ := refreshTokenClaims["audience"].(string)
 		email, _ := refreshTokenClaims["jti"].(string)
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
 		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
+
 		// Creating and setting auth token, so it can be used for future requests
-		authToken := pkg.CreateAuthToken(userID, username, email, isStudent, false, isOrganizer)
+		authToken, err := pkg.CreateAuthToken(userId, email, isStudent, isOrganizer)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			return
+		}
+
 		pkg.SetAuthCookie(c, authToken)
+	}
+
+	c.Next()
+}
+
+func TempAuth(c *gin.Context) {
+
+	tempToken, tempErr := c.Cookie("temp_token")
+	if tempErr == http.ErrNoCookie {
+		pkg.NullifyCookies(c)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
+		})
+
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Temporary auth token is missing", tempErr)
+		return
+	}
+
+	ok := pkg.VerifyTempToken(c, tempToken)
+
+	if !ok {
+		pkg.NullifyCookies(c)
+		c.AbortWithStatusJSON(http.StatusRequestTimeout, gin.H{
+			"message": "Access denied.",
+		})
+
+		pkg.Log.WarnCtx(c, "[AUTH-ERROR]: Failed to verify temporary token")
+		return
 	}
 
 	c.Next()

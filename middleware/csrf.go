@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/* CSRF Verification Process
+*  1. Collect CSRF token from Header and Cookie
+*  2.
+ */
+
 func VerifyCsrf(c *gin.Context) {
 	// Check request header presence
 	csrfToken := c.Request.Header["X-Csrf-Token"]
