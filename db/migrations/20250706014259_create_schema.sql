@@ -142,16 +142,16 @@ CREATE TABLE IF NOT EXISTS event (
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS favourites (
   id SERIAL NOT NULL,
-  student_id UUID NOT NULL,
+  email TEXT NOT NULL,
   event_id UUID NOT NULL,
 
   CONSTRAINT "favourites_pkey" PRIMARY KEY (id),
 
-  CONSTRAINT "favourites_student_id_event_id_unique" UNIQUE (student_id, event_id),
+  CONSTRAINT "favourites_email_event_id_unique" UNIQUE (email, event_id),
 
-  CONSTRAINT "favourites_student_id" 
-    FOREIGN KEY (student_id)
-    REFERENCES student(id)
+  CONSTRAINT "favourites_email" 
+    FOREIGN KEY (email)
+    REFERENCES student(email)
       ON DELETE RESTRICT
       ON UPDATE CASCADE
 );
