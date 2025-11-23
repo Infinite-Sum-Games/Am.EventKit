@@ -33,7 +33,7 @@ func NewMailer() *Mailer {
 type EmailRequest struct {
 	To      []string `json:"to"`
 	Subject string   `json:"subject"`
-	Type    string   `json:"type"`
+	Type    string   `json:"type"` // "otp" | "welcome" | "event-reg"
 	Data    any      `json:"data"`
 }
 

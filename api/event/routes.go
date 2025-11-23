@@ -7,4 +7,6 @@ import (
 func EventRoutes(r *gin.RouterGroup) {
 	r.GET("/", FetchAllEvents)
 	r.GET("/:eventId", FetchEventById)
+	r.POST("/register/:eventId")
+	r.GET("/register/:eventId")
 }

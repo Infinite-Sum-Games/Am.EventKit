@@ -54,6 +54,7 @@ func (m *MailerService) Start() {
 	for i := range m.workers {
 		go m.worker(i)
 	}
+
 	pkg.Log.Info(fmt.Sprintf("[OK]: Mail service initialized successfully with %d workers", m.workers))
 }
 
