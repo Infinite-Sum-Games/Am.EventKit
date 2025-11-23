@@ -12,10 +12,7 @@ import (
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
-	apiMail "github.com/Thanus-Kumaar/anokha-2025-backend/api/mail"
-	apiOrganizer "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
-	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 
 	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	mail "github.com/Thanus-Kumaar/anokha-2025-backend/mail"
@@ -53,9 +50,6 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 		pkg.Log.SuccessCtx(c)
 	})
 
-	mailController := apiMail.NewController(mailerSvc)
-	apiMail.SetRoutes(r, mailController)
-
 	v1 := r.Group("/api/v1")
 	authRouter := v1.Group("/auth")
 	attendanceRouter := v1.Group("/attendance")
@@ -64,11 +58,8 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
-
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
-	apiTag.TagRoutes(eventRouter)
-	apiOrganizer.OrganizerRoutes(eventRouter)
 	apiAttend.AttendanceRoutes(attendanceRouter)
 
 	return r
@@ -78,7 +69,7 @@ func StartApp() {
 	// Setting up environment variables
 	config, err := cmd.LoadConfig()
 	if err != nil {
-		log.Printf("[CRASH] Failed to load environment variables: %v", err)
+		log.Printf("[CRASH]: Failed to load environment variables: %v", err)
 		return
 	}
 	cmd.Env = config
@@ -129,7 +120,8 @@ func StartApp() {
 	// Initialize Mailer Service
 	mailerSvc, err := mail.NewMailerService("mail/mail-queue", 4)
 	if err != nil {
-		pkg.Log.Fatal("failed to create mailer service", err)
+		pkg.Log.Fatal("[CRASH]: failed to create mailer service", err)
+		return
 	}
 	mailerSvc.Start()
 	pkg.Log.Info("[OK]: Mailer service started successfully")
