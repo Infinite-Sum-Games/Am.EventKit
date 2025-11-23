@@ -7,6 +7,10 @@ import (
 
 func ProfileRoutes(r *gin.RouterGroup) {
 	r.GET("/profile", mw.Auth, FetchUserProfile)
+
 	r.GET("/profile/edit", mw.Auth, EditUserProfileCsrf)
 	r.POST("/profile/edit", mw.Auth, mw.VerifyCsrf, EditUserProfile)
+
+	r.GET("/profile/tickets", mw.Auth)
+	r.GET("/profile/transactions", mw.Auth)
 }

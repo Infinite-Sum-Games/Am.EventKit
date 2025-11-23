@@ -27,7 +27,10 @@ func FetchEventDetailsByDateAndOrganizer(c *gin.Context) {
 	organizer := c.Query("organizer")
 
 	if dateStr == "" || organizer == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "date and organizer are required"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "date and organizer are required",
+		})
+
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Missing date or organizer", nil)
 		return
 	}
@@ -60,10 +63,15 @@ func FetchEventDetailsByDateAndOrganizer(c *gin.Context) {
 	})
 
 	if err == pgx.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{"message": "No events found"})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: No events found for given date and organizer", err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No events found",
+		})
+
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: No events with for date and organizer", err)
 		return
-	} else if err != nil {
+	}
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to fetch events", err)
 		return
@@ -246,13 +254,17 @@ func HandleEventCheckInOut(c *gin.Context) {
 			StudentName:     student.Name,
 			StudentEmail:    student.Email,
 		})
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to check in"})
 			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to check in", err)
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "check-in successful"})
+		c.JSON(http.StatusOK, gin.H{
+			"message": "check-in successful",
+		})
+
 		pkg.Log.SuccessCtx(c)
 		return
 	}
