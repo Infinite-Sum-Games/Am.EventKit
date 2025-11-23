@@ -16,10 +16,11 @@ import (
 	apiOrganizer "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
+
+	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	mail "github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	pkg "github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -66,9 +67,9 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
+	apiTag.TagRoutes(eventRouter)
+	apiOrganizer.OrganizerRoutes(eventRouter)
 	apiAttend.AttendanceRoutes(attendanceRouter)
-	apiTag.TagRoutes(userRouter)
-	apiOrganizer.OrganizerRoutes(userRouter)
 
 	return r
 }
