@@ -327,9 +327,9 @@ type EventToOrganizerMapping struct {
 }
 
 type Favourite struct {
-	ID        int32     `json:"id"`
-	StudentID uuid.UUID `json:"student_id"`
-	EventID   uuid.UUID `json:"event_id"`
+	ID      int32     `json:"id"`
+	Email   string    `json:"email"`
+	EventID uuid.UUID `json:"event_id"`
 }
 
 type Organizer struct {
