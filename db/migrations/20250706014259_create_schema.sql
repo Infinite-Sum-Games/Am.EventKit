@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS student_onboarding (
 
   CONSTRAINT "student_onboarding_pkey" PRIMARY KEY (id)
 );
+
 CREATE UNIQUE INDEX student_onboarding_unique_roll_number
 ON student_onboarding(amrita_roll_number)
 WHERE amrita_roll_number IS NOT NULL;
@@ -91,12 +92,15 @@ WHERE amrita_roll_number IS NOT NULL;
 CREATE TABLE IF NOT EXISTS organizer (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE, -- eg: Computer Science and Engineering
-  abbr TEXT NOT NULL UNIQUE, -- eg: CSE
+  email TEXT NOT NULL UNIQUE, -- eg: cse@cb.amrita.edu
   password TEXT NOT NULL, -- eg: Single-time hash; need: For attendance
   org_type organizer_type_enum  NOT NULL, -- eg: DEPARTMENT | CLUB
   student_head TEXT NOT NULL,
   student_co_head TEXT,
   faculty_head TEXT NOT NULL,
+  refresh_token TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "organizer_pkey" PRIMARY KEY (id)
 );

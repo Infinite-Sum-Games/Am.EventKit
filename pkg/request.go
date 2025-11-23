@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
 )
