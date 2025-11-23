@@ -13,11 +13,21 @@ import (
 )
 
 const insertEventQuery = `-- name: InsertEventQuery :exec
-INSERT INTO event(name, blurb, description, price, is_per_head, rules, 
-  event_type, is_group, total_seats, seats_filled, event_status, event_mode, 
-  attendance_mode) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
-)
+INSERT INTO event(
+  name, 
+  blurb, 
+  description, 
+  price, 
+  is_per_head, 
+  rules, 
+  event_type, 
+  is_group, 
+  total_seats, 
+  seats_filled, 
+  event_status, 
+  event_mode, 
+  attendance_mode
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 `
 
 type InsertEventQueryParams struct {
@@ -56,8 +66,13 @@ func (q *Queries) InsertEventQuery(ctx context.Context, db DBTX, arg InsertEvent
 }
 
 const insertEventScheduleQuery = `-- name: InsertEventScheduleQuery :exec
-INSERT INTO event_schedule(event_id, event_date, start_time, end_time, venue)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO event_schedule(
+  event_id, 
+  event_date, 
+  start_time, 
+  end_time, 
+  venue
+) VALUES ($1, $2, $3, $4, $5)
 `
 
 type InsertEventScheduleQueryParams struct {
@@ -80,8 +95,10 @@ func (q *Queries) InsertEventScheduleQuery(ctx context.Context, db DBTX, arg Ins
 }
 
 const insertEventTagMappingQuery = `-- name: InsertEventTagMappingQuery :exec
-INSERT INTO event_tag_mapping(tag_id, event_id)
-VALUES ($1, $2)
+INSERT INTO event_tag_mapping(
+  tag_id, 
+  event_id
+) VALUES ($1, $2)
 `
 
 type InsertEventTagMappingQueryParams struct {
@@ -95,8 +112,10 @@ func (q *Queries) InsertEventTagMappingQuery(ctx context.Context, db DBTX, arg I
 }
 
 const insertEventToOrganizerMappingQuery = `-- name: InsertEventToOrganizerMappingQuery :exec
-INSERT INTO event_to_organizer_mapping(event_id, organizer_id)
-VALUES ($1, $2)
+INSERT INTO event_to_organizer_mapping(
+  event_id, 
+  organizer_id
+) VALUES ($1, $2)
 `
 
 type InsertEventToOrganizerMappingQueryParams struct {
@@ -110,13 +129,19 @@ func (q *Queries) InsertEventToOrganizerMappingQuery(ctx context.Context, db DBT
 }
 
 const insertOrganizerQuery = `-- name: InsertOrganizerQuery :exec
-INSERT INTO organizer(name, abbr, org_type, student_head, student_co_head, faculty_head)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO organizer(
+  name, 
+  email, 
+  org_type, 
+  student_head, 
+  student_co_head, 
+  faculty_head
+) VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type InsertOrganizerQueryParams struct {
 	Name          string            `json:"name"`
-	Abbr          string            `json:"abbr"`
+	Email         string            `json:"email"`
 	OrgType       OrganizerTypeEnum `json:"org_type"`
 	StudentHead   string            `json:"student_head"`
 	StudentCoHead pgtype.Text       `json:"student_co_head"`
@@ -126,7 +151,7 @@ type InsertOrganizerQueryParams struct {
 func (q *Queries) InsertOrganizerQuery(ctx context.Context, db DBTX, arg InsertOrganizerQueryParams) error {
 	_, err := db.Exec(ctx, insertOrganizerQuery,
 		arg.Name,
-		arg.Abbr,
+		arg.Email,
 		arg.OrgType,
 		arg.StudentHead,
 		arg.StudentCoHead,
@@ -136,8 +161,10 @@ func (q *Queries) InsertOrganizerQuery(ctx context.Context, db DBTX, arg InsertO
 }
 
 const insertPeopleQuery = `-- name: InsertPeopleQuery :exec
-INSERT INTO people(name, phone_number)
-VALUES ($1, $2)
+INSERT INTO people(
+  name, 
+  phone_number
+) VALUES ($1, $2)
 `
 
 type InsertPeopleQueryParams struct {
@@ -151,8 +178,10 @@ func (q *Queries) InsertPeopleQuery(ctx context.Context, db DBTX, arg InsertPeop
 }
 
 const insertPeopleToEventMappingQuery = `-- name: InsertPeopleToEventMappingQuery :exec
-INSERT INTO people_to_event_mapping(event_id, person_id)
-VALUES ($1, $2)
+INSERT INTO people_to_event_mapping(
+  event_id, 
+  person_id
+) VALUES ($1, $2)
 `
 
 type InsertPeopleToEventMappingQueryParams struct {
@@ -166,8 +195,10 @@ func (q *Queries) InsertPeopleToEventMappingQuery(ctx context.Context, db DBTX, 
 }
 
 const insertTagsQuery = `-- name: InsertTagsQuery :exec
-INSERT INTO tags(name, abbreviation)
-VALUES ($1, $2)
+INSERT INTO tags(
+  name, 
+  abbreviation
+) VALUES ($1, $2)
 `
 
 type InsertTagsQueryParams struct {
@@ -181,7 +212,13 @@ func (q *Queries) InsertTagsQuery(ctx context.Context, db DBTX, arg InsertTagsQu
 }
 
 const listEventScheduleQuery = `-- name: ListEventScheduleQuery :many
-SELECT id, event_id, event_date, start_time, end_time, venue
+SELECT 
+  id, 
+  event_id, 
+  event_date, 
+  start_time, 
+  end_time, 
+  venue
 FROM event_schedule
 `
 
@@ -222,7 +259,10 @@ func (q *Queries) ListEventScheduleQuery(ctx context.Context, db DBTX) ([]ListEv
 }
 
 const listEventTagMappingQuery = `-- name: ListEventTagMappingQuery :many
-SELECT id, tag_id, event_id
+SELECT 
+  id, 
+  tag_id, 
+  event_id
 FROM event_tag_mapping
 `
 
@@ -247,7 +287,10 @@ func (q *Queries) ListEventTagMappingQuery(ctx context.Context, db DBTX) ([]Even
 }
 
 const listEventToOrganizerMappingQuery = `-- name: ListEventToOrganizerMappingQuery :many
-SELECT id, event_id, organizer_id
+SELECT 
+  id, 
+  event_id, 
+  organizer_id
 FROM event_to_organizer_mapping
 `
 
@@ -272,8 +315,21 @@ func (q *Queries) ListEventToOrganizerMappingQuery(ctx context.Context, db DBTX)
 }
 
 const listEventsQuery = `-- name: ListEventsQuery :many
-SELECT id, name, blurb, description, price, is_per_head, rules, event_type, is_group, 
-       total_seats, seats_filled, event_status, event_mode, attendance_mode
+SELECT 
+  id, 
+  name, 
+  blurb, 
+  description, 
+  price, 
+  is_per_head, 
+  rules, 
+  event_type, 
+  is_group, 
+  total_seats, 
+  seats_filled, 
+  event_status, 
+  event_mode, 
+  attendance_mode
 FROM event
 `
 
@@ -330,7 +386,12 @@ func (q *Queries) ListEventsQuery(ctx context.Context, db DBTX) ([]ListEventsQue
 }
 
 const listPeopleQuery = `-- name: ListPeopleQuery :many
-SELECT id, name, phone_number, profession, email
+SELECT 
+  id, 
+  name, 
+  phone_number, 
+  profession, 
+  email
 FROM people
 `
 
@@ -361,7 +422,10 @@ func (q *Queries) ListPeopleQuery(ctx context.Context, db DBTX) ([]Person, error
 }
 
 const listPeopleToEventMappingQuery = `-- name: ListPeopleToEventMappingQuery :many
-SELECT id, event_id, person_id
+SELECT 
+  id, 
+  event_id, 
+  person_id
 FROM people_to_event_mapping
 `
 
@@ -386,7 +450,16 @@ func (q *Queries) ListPeopleToEventMappingQuery(ctx context.Context, db DBTX) ([
 }
 
 const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
-TRUNCATE TABLE organizer, people, tags, event, event_to_organizer_mapping, event_schedule, people_to_event_mapping, event_tag_mapping CASCADE
+TRUNCATE TABLE 
+  organizer, 
+  people, 
+  tags, 
+  event, 
+  event_to_organizer_mapping, 
+  event_schedule, 
+  people_to_event_mapping, 
+  event_tag_mapping 
+CASCADE
 `
 
 func (q *Queries) TruncateAllTablesQuery(ctx context.Context, db DBTX) error {

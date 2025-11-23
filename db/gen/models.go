@@ -330,12 +330,15 @@ type EventToOrganizerMapping struct {
 type Organizer struct {
 	ID            uuid.UUID         `json:"id"`
 	Name          string            `json:"name"`
-	Abbr          string            `json:"abbr"`
+	Email         string            `json:"email"`
 	Password      string            `json:"password"`
 	OrgType       OrganizerTypeEnum `json:"org_type"`
 	StudentHead   string            `json:"student_head"`
 	StudentCoHead pgtype.Text       `json:"student_co_head"`
 	FacultyHead   string            `json:"faculty_head"`
+	RefreshToken  pgtype.Text       `json:"refresh_token"`
+	CreatedAt     pgtype.Timestamp  `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
 }
 
 type PeopleToEventMapping struct {

@@ -110,23 +110,40 @@ func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email
 	return id, err
 }
 
+const findEmail = `-- name: FindEmail :one
+SELECT EXISTS (
+  SELECT 1 
+  FROM student
+  WHERE email = $1
+)
+`
+
+func (q *Queries) FindEmail(ctx context.Context, db DBTX, email string) (bool, error) {
+	row := db.QueryRow(ctx, findEmail, email)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
 SELECT 
-    otp, 
-    expiry_at 
+  name,
+  otp
 FROM student_onboarding 
-WHERE email = $1
+WHERE 
+  email = $1
+  AND expiry_at > NOW()
 `
 
 type GetStudentOtpQueryRow struct {
-	Otp      string           `json:"otp"`
-	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+	Name string `json:"name"`
+	Otp  string `json:"otp"`
 }
 
 func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, email string) (GetStudentOtpQueryRow, error) {
 	row := db.QueryRow(ctx, getStudentOtpQuery, email)
 	var i GetStudentOtpQueryRow
-	err := row.Scan(&i.Otp, &i.ExpiryAt)
+	err := row.Scan(&i.Name, &i.Otp)
 	return i, err
 }
 

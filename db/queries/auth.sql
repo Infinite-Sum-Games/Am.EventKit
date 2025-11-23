@@ -66,10 +66,12 @@ DO UPDATE SET
 
 -- name: GetStudentOtpQuery :one
 SELECT 
-    otp, 
-    expiry_at 
+  name,
+  otp
 FROM student_onboarding 
-WHERE email = $1;
+WHERE 
+  email = $1
+  AND expiry_at > NOW();
 
 -- name: UpdateStudentPasswordQuery :exec
 UPDATE student
