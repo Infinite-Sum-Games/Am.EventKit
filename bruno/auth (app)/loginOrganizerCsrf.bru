@@ -14,3 +14,26 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # Organizer Login (CSRF)
+  
+  This route gives you the CSRF token required to fill the form for logging in as an organizer through the mobile application. Without this, your request will be rejected.
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Organizer login action initiated successfully",
+    "key": "csrf-token-string"
+  }
+  ```
+  The CSRF token must be sent in the subsequent request under the `X-Csrf-Token` header.
+  
+  ## 500 Internal Server Error
+  If you see this, report to the backend team immediately.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
+}
