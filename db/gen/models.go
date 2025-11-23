@@ -340,6 +340,15 @@ type Organizer struct {
 	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
 }
 
+type PasswordReset struct {
+	ID        int32            `json:"id"`
+	Email     string           `json:"email"`
+	Password  string           `json:"password"`
+	Otp       string           `json:"otp"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	ExpiryAt  pgtype.Timestamp `json:"expiry_at"`
+}
+
 type PeopleToEventMapping struct {
 	ID       int32     `json:"id"`
 	EventID  uuid.UUID `json:"event_id"`

@@ -85,6 +85,17 @@ WHERE amrita_roll_number IS NOT NULL;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS password_reset (
+  id SERIAL NOT NULL,
+  email TEXT NOT NULL,
+  password TEXT NOT NULL,
+  otp TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  expiry_at TIMESTAMP NOT NULL
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS organizer (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE, -- eg: Computer Science and Engineering
