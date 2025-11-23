@@ -9,8 +9,8 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.GET("/", FetchAllEvents)
 	r.GET("/:eventId", FetchEventById)
 
-	r.GET("/auth/", FetchAllEventsWithAuth)
-	r.GET("/auth/:eventId", FetchEventByEventIdWithAuth)
+	r.GET("/auth/", mw.Auth, FetchAllEventsWithAuth)
+	r.GET("/auth/:eventId", mw.Auth, FetchEventByEventIdWithAuth)
 
 	r.POST("/register/:eventId")
 	r.GET("/register/:eventId")
