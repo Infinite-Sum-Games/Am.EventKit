@@ -1,11 +1,11 @@
 meta {
-  name: getAllTags
+  name: getAllEvenTags
   type: http
-  seq: 1
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/v1/user/tags/all
+  url: {{baseUrl}}/events/tags
   body: json
   auth: inherit
 }
