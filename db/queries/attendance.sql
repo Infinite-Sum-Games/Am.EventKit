@@ -45,6 +45,7 @@ SELECT
     ) AS tags
 
 FROM event e
+
 LEFT JOIN event_schedule es 
   ON e.id = es.event_id
 LEFT JOIN event_to_organizer_mapping m 
@@ -58,14 +59,10 @@ LEFT JOIN tags t
 
 WHERE 
   es.event_date = $1
-  AND o.abbr = $2
+  AND o.email = $2
 
 GROUP BY e.id
-
 ORDER BY es.start_time ASC;
-
-
-
 
 -- name: GetStudentByEmail :one
 SELECT * FROM student
@@ -87,7 +84,8 @@ SELECT
     created_at,
     updated_at
 FROM bookings
-WHERE student_id = $1
+WHERE 
+  student_id = $1
   AND event_id = $2
   AND txn_status = 'SUCCESS'
 LIMIT 1;
@@ -105,7 +103,6 @@ SELECT
 FROM event_schedule
 WHERE id = $1;
 
-
 -- name: GetAttendanceRecord :one
 SELECT
     id,
@@ -122,7 +119,6 @@ WHERE student_id = $1
   AND event_schedule_id = $2
 LIMIT 1;
 
-
 -- name: InsertCheckIn :one
 INSERT INTO solo_event_participant (
     student_id,
@@ -132,10 +128,7 @@ INSERT INTO solo_event_participant (
     student_name,
     student_email,
     check_in
-)
-VALUES (
-    $1, $2, $3, $4, $5, $6, NOW()
-)
+) VALUES ($1, $2, $3, $4, $5, $6, NOW())
 RETURNING
     id,
     student_id,
@@ -146,8 +139,6 @@ RETURNING
     student_email,
     check_in,
     check_out;
-
-
 
 -- name: UpdateCheckOut :one
 UPDATE solo_event_participant
