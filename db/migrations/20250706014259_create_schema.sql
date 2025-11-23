@@ -9,7 +9,6 @@ CREATE EXTENSION IF NOT EXISTS citext;
 -- +goose StatementBegin
 CREATE TYPE account_status_enum AS ENUM (
   'VERIFIED',
-  'UNVERIFIED',
   'DISABLED'
 );
 
@@ -44,7 +43,6 @@ CREATE TYPE attendance_mode_enum AS ENUM (
 CREATE TABLE IF NOT EXISTS student (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  department_name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL UNIQUE,
@@ -52,8 +50,7 @@ CREATE TABLE IF NOT EXISTS student (
   amrita_roll_number TEXT,
   college_name TEXT DEFAULT 'Amrita Vishwa Vidyapeetham' NOT NULL,
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
-  academic_year TEXT NOT NULL,
-  account_status account_status_enum NOT NULL,
+  account_status account_status_enum DEFAULT 'VERIFIED',
   refresh_token TEXT,
 
   CONSTRAINT "student_pkey" PRIMARY KEY (id)
@@ -67,7 +64,6 @@ WHERE amrita_roll_number IS NOT NULL;
 CREATE TABLE IF NOT EXISTS student_onboarding (
   id SERIAL NOT NULL,
   name TEXT NOT NULL,
-  department_name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL UNIQUE,
@@ -100,7 +96,7 @@ CREATE TABLE IF NOT EXISTS organizer (
   faculty_head TEXT NOT NULL,
   refresh_token TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
 
   CONSTRAINT "organizer_pkey" PRIMARY KEY (id)
 );
@@ -126,7 +122,7 @@ CREATE TABLE IF NOT EXISTS event (
   event_mode event_mode_enum NOT NULL,
   attendance_mode attendance_mode_enum NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
 
   CONSTRAINT "event_pkey" PRIMARY KEY (id)
 );
@@ -141,7 +137,7 @@ CREATE TABLE IF NOT EXISTS event_schedule (
   end_time TIMESTAMP NOT NULL,
   venue TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
 
   CONSTRAINT "event_schedule_pkey" PRIMARY KEY (id),
 
@@ -254,7 +250,7 @@ CREATE TABLE bookings (
   team_details JSONB,
   metadata JSONB,
   created_at TIMESTAMP NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
 
   CONSTRAINT "bookings_pkey" PRIMARY KEY (id),
 

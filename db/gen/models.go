@@ -15,9 +15,8 @@ import (
 type AccountStatusEnum string
 
 const (
-	AccountStatusEnumVERIFIED   AccountStatusEnum = "VERIFIED"
-	AccountStatusEnumUNVERIFIED AccountStatusEnum = "UNVERIFIED"
-	AccountStatusEnumDISABLED   AccountStatusEnum = "DISABLED"
+	AccountStatusEnumVERIFIED AccountStatusEnum = "VERIFIED"
+	AccountStatusEnumDISABLED AccountStatusEnum = "DISABLED"
 )
 
 func (e *AccountStatusEnum) Scan(src interface{}) error {
@@ -368,25 +367,22 @@ type SoloEventParticipant struct {
 }
 
 type Student struct {
-	ID               uuid.UUID         `json:"id"`
-	Name             string            `json:"name"`
-	DepartmentName   string            `json:"department_name"`
-	Email            string            `json:"email"`
-	Password         string            `json:"password"`
-	PhoneNumber      string            `json:"phone_number"`
-	IsAmritaStudent  bool              `json:"is_amrita_student"`
-	AmritaRollNumber pgtype.Text       `json:"amrita_roll_number"`
-	CollegeName      string            `json:"college_name"`
-	CollegeCity      string            `json:"college_city"`
-	AcademicYear     string            `json:"academic_year"`
-	AccountStatus    AccountStatusEnum `json:"account_status"`
-	RefreshToken     pgtype.Text       `json:"refresh_token"`
+	ID               uuid.UUID             `json:"id"`
+	Name             string                `json:"name"`
+	Email            string                `json:"email"`
+	Password         string                `json:"password"`
+	PhoneNumber      string                `json:"phone_number"`
+	IsAmritaStudent  bool                  `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text           `json:"amrita_roll_number"`
+	CollegeName      string                `json:"college_name"`
+	CollegeCity      string                `json:"college_city"`
+	AccountStatus    NullAccountStatusEnum `json:"account_status"`
+	RefreshToken     pgtype.Text           `json:"refresh_token"`
 }
 
 type StudentOnboarding struct {
 	ID               int32            `json:"id"`
 	Name             string           `json:"name"`
-	DepartmentName   string           `json:"department_name"`
 	Email            string           `json:"email"`
 	Password         string           `json:"password"`
 	PhoneNumber      string           `json:"phone_number"`

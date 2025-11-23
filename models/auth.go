@@ -20,9 +20,9 @@ type StudentOnboardingRequest struct {
 	DepartmentName   string `json:"department_name"`
 	Email            string `json:"email"`
 	Password         string `json:"password"`
-	PhoneNumber      string `json:"phone_number" binding:"required"`
+	PhoneNumber      string `json:"phone_number"`
 	IsAmritaStudent  bool   `json:"is_amrita_student"`
-	AmritaRollNumber string `json:"amrita_roll_number,omitempty"`
+	AmritaRollNumber string `json:"amrita_roll_number"`
 	CollegeName      string `json:"college_name"`
 	CollegeCity      string `json:"college_city"`
 	AcademicYear     string `json:"academic_year"`
