@@ -13,4 +13,7 @@ func EventRoutes(r *gin.RouterGroup) {
 
 	r.GET("/tags", GetAllEventTags)
 	r.GET("/organizers", GetAllOrganizers)
+
+	r.PUT("/favourite/:eventId", StarEvent)
+	r.DELETE("/favourite/:eventId", UnstarEvent)
 }
