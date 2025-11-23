@@ -140,6 +140,24 @@ CREATE TABLE IF NOT EXISTS event (
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS favourites (
+  id SERIAL NOT NULL,
+  student_id UUID NOT NULL,
+  event_id UUID NOT NULL,
+
+  CONSTRAINT "favourites_pkey" PRIMARY KEY (id),
+
+  CONSTRAINT "favourites_student_id_event_id_unique" UNIQUE (student_id, event_id),
+
+  CONSTRAINT "favourites_student_id" 
+    FOREIGN KEY (student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS event_schedule (
   id UUID DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL,
@@ -153,10 +171,10 @@ CREATE TABLE IF NOT EXISTS event_schedule (
   CONSTRAINT "event_schedule_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "event_schedule_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -181,16 +199,16 @@ CREATE TABLE people_to_event_mapping (
   CONSTRAINT "people_to_event_mapping_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "people_to_event_mapping_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "people_to_event_mapping_person_id_fkey"
-  FOREIGN KEY (person_id)
-  REFERENCES people(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY (person_id)
+    REFERENCES people(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -203,16 +221,16 @@ CREATE TABLE IF NOT EXISTS event_to_organizer_mapping (
   CONSTRAINT "event_to_organizer_mapping_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "event_to_organizer_mapping_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "event_to_organizer_mapping_organizer_id_fkey"
-  FOREIGN KEY (organizer_id)
-  REFERENCES organizer(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY (organizer_id)
+    REFERENCES organizer(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -235,15 +253,16 @@ CREATE TABLE IF NOT EXISTS event_tag_mapping (
   CONSTRAINT "event_tag_mapping_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "event_tag_mapping_tag_id_fkey"
-  FOREIGN KEY (tag_id)
-  REFERENCES tags(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY (tag_id)
+    REFERENCES tags(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "event_tag_mapping_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -292,10 +311,10 @@ CREATE TABLE IF NOT EXISTS teams (
   CONSTRAINT "team_name_event_id_unique" UNIQUE (team_name, event_id),
 
   CONSTRAINT "teams_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "teams_booking_id_fkey"
   FOREIGN KEY (booking_id)
@@ -317,16 +336,16 @@ CREATE TABLE IF NOT EXISTS team_members (
   CONSTRAINT "team_members_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "team_members_team_id_fkey"
-  FOREIGN KEY(team_id)
-  REFERENCES teams(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY(team_id)
+    REFERENCES teams(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "team_members_student_id_fkey"
-  FOREIGN KEY(student_id)
-  REFERENCES student(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY(student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 --
@@ -341,16 +360,16 @@ CREATE TABLE IF NOT EXISTS team_events_attendance (
   CONSTRAINT "team_events_attendance_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "team_events_attendance_student_id_fkey"
-  FOREIGN KEY(student_id)
-  REFERENCES student(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY(student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "team_events_attendance_event_schedule_id_fkey"
-  FOREIGN KEY(event_schedule_id)
-  REFERENCES event_schedule(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY(event_schedule_id)
+    REFERENCES event_schedule(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 --
@@ -369,28 +388,28 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
   CONSTRAINT "solo_event_participant_pkey" PRIMARY KEY (id),
 
   CONSTRAINT "solo_event_participant_student_id_fkey"
-  FOREIGN KEY(student_id)
-  REFERENCES student(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY(student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
   
   CONSTRAINT "solo_event_participant_event_id_fkey"
-  FOREIGN KEY(event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY(event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "solo_event_participant_event_schedule_id_fkey"
-  FOREIGN KEY(event_schedule_id)
-  REFERENCES event_schedule(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
+    FOREIGN KEY(event_schedule_id)
+    REFERENCES event_schedule(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
 
   CONSTRAINT "solo_event_participant_booking_id_fkey"
-  FOREIGN KEY(booking_id)
-  REFERENCES bookings(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY(booking_id)
+    REFERENCES bookings(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -407,9 +426,11 @@ DROP TABLE IF EXISTS event_to_organizer_mapping;
 DROP TABLE IF EXISTS people_to_event_mapping;
 DROP TABLE IF EXISTS people;
 DROP TABLE IF EXISTS event_schedule;
+DROP TABLE IF EXISTS favourites;
 DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS organizer;
 DROP TABLE IF EXISTS student_onboarding;
+DROP TABLE IF EXISTS password_reset;
 DROP TABLE IF EXISTS student;
 
 DROP TYPE IF EXISTS attendance_mode_enum;
