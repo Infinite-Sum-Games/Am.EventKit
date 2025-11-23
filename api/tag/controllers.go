@@ -17,7 +17,9 @@ func GetAllEventTags(c *gin.Context) {
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
@@ -27,10 +29,14 @@ func GetAllEventTags(c *gin.Context) {
 
 	tags, err := q.ListTagsQuery(ctx, conn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
 		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to fetch tags", err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tags list fetched successfully",
 		"tags":    tags,
