@@ -155,3 +155,31 @@ WHERE
   AND account_status = 'VERIFIED'
 RETURNING
   email;
+
+-- name: UpsertStudentOnboardingQuery :one
+INSERT INTO student_onboarding (
+  name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  otp,
+  expiry_at
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (email)
+DO UPDATE SET
+  name = EXCLUDED.name,
+  password = EXCLUDED.password,
+  phone_number = EXCLUDED.phone_number,
+  is_amrita_student = EXCLUDED.is_amrita_student,
+  amrita_roll_number = EXCLUDED.amrita_roll_number,
+  college_name = EXCLUDED.college_name,
+  college_city = EXCLUDED.college_city,
+  otp = EXCLUDED.otp,
+  expiry_at = EXCLUDED.expiry_at
+RETURNING
+  id, 
+  email;
