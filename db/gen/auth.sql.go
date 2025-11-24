@@ -79,7 +79,8 @@ const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
 SELECT 
   id,
   name,
-  otp
+  otp,
+  expiry_at
 FROM student_onboarding 
 WHERE 
   email = $1
@@ -87,15 +88,21 @@ WHERE
 `
 
 type GetStudentOtpQueryRow struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
-	Otp  string `json:"otp"`
+	ID       int32            `json:"id"`
+	Name     string           `json:"name"`
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
 }
 
 func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, email string) (GetStudentOtpQueryRow, error) {
 	row := db.QueryRow(ctx, getStudentOtpQuery, email)
 	var i GetStudentOtpQueryRow
-	err := row.Scan(&i.ID, &i.Name, &i.Otp)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Otp,
+		&i.ExpiryAt,
+	)
 	return i, err
 }
 

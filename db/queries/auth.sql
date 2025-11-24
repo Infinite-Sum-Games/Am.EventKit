@@ -42,7 +42,8 @@ RETURNING
 SELECT 
   id,
   name,
-  otp
+  otp,
+  expiry_at
 FROM student_onboarding 
 WHERE 
   email = $1
