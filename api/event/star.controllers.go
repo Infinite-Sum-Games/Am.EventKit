@@ -19,7 +19,7 @@ func StarEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after cross auth middleware", nil)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
 		return
 	}
 
@@ -74,7 +74,7 @@ func UnstarEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after cross auth middleware", nil)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
 		return
 	}
 
@@ -104,7 +104,7 @@ func UnstarEvent(c *gin.Context) {
 
 	q := db.New()
 	eventId, err = q.UnmarkFavouriteEventQuery(ctx, conn, db.UnmarkFavouriteEventQueryParams{
-		Email: email,
+		Email:   email,
 		EventID: eventId,
 	})
 	if err == pgx.ErrNoRows {
