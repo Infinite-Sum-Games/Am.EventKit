@@ -266,6 +266,40 @@ func (q *Queries) PasswordChangeVerifyOtpQuery(ctx context.Context, db DBTX, arg
 	return i, err
 }
 
+const resendStudentOtpQuery = `-- name: ResendStudentOtpQuery :one
+SELECT
+  so.name,
+  so.email,
+  so.otp,
+  so.expiry_at
+FROM student_onboarding so
+WHERE
+  so.email = $1
+  AND so.expiry_at > NOW()
+  AND NOT EXISTS (
+    SELECT 1 FROM student s WHERE s.email = $1
+)
+`
+
+type ResendStudentOtpQueryRow struct {
+	Name     string           `json:"name"`
+	Email    string           `json:"email"`
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+}
+
+func (q *Queries) ResendStudentOtpQuery(ctx context.Context, db DBTX, email string) (ResendStudentOtpQueryRow, error) {
+	row := db.QueryRow(ctx, resendStudentOtpQuery, email)
+	var i ResendStudentOtpQueryRow
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Otp,
+		&i.ExpiryAt,
+	)
+	return i, err
+}
+
 const revokeRefreshTokenQuery = `-- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student
@@ -371,4 +405,69 @@ func (q *Queries) UpdateUserPasswordQuery(ctx context.Context, db DBTX, arg Upda
 	var email string
 	err := row.Scan(&email)
 	return email, err
+}
+
+const upsertStudentOnboardingQuery = `-- name: UpsertStudentOnboardingQuery :one
+INSERT INTO student_onboarding (
+  name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  otp,
+  expiry_at
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (email)
+DO UPDATE SET
+  name = EXCLUDED.name,
+  password = EXCLUDED.password,
+  phone_number = EXCLUDED.phone_number,
+  is_amrita_student = EXCLUDED.is_amrita_student,
+  amrita_roll_number = EXCLUDED.amrita_roll_number,
+  college_name = EXCLUDED.college_name,
+  college_city = EXCLUDED.college_city,
+  otp = EXCLUDED.otp,
+  expiry_at = EXCLUDED.expiry_at
+RETURNING
+  id, 
+  email
+`
+
+type UpsertStudentOnboardingQueryParams struct {
+	Name             string           `json:"name"`
+	Email            string           `json:"email"`
+	Password         string           `json:"password"`
+	PhoneNumber      string           `json:"phone_number"`
+	IsAmritaStudent  bool             `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text      `json:"amrita_roll_number"`
+	CollegeName      string           `json:"college_name"`
+	CollegeCity      string           `json:"college_city"`
+	Otp              string           `json:"otp"`
+	ExpiryAt         pgtype.Timestamp `json:"expiry_at"`
+}
+
+type UpsertStudentOnboardingQueryRow struct {
+	ID    int32  `json:"id"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) UpsertStudentOnboardingQuery(ctx context.Context, db DBTX, arg UpsertStudentOnboardingQueryParams) (UpsertStudentOnboardingQueryRow, error) {
+	row := db.QueryRow(ctx, upsertStudentOnboardingQuery,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.PhoneNumber,
+		arg.IsAmritaStudent,
+		arg.AmritaRollNumber,
+		arg.CollegeName,
+		arg.CollegeCity,
+		arg.Otp,
+		arg.ExpiryAt,
+	)
+	var i UpsertStudentOnboardingQueryRow
+	err := row.Scan(&i.ID, &i.Email)
+	return i, err
 }
