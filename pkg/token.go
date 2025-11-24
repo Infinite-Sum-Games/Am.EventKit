@@ -107,11 +107,10 @@ func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string,
 	return signed, nil
 }
 
-func CreateTempToken(onboardingId, email string) string {
+func CreateTempToken(email string) string {
 	token := paseto.NewToken()
 
 	token.SetJti(email)
-	token.SetAudience(onboardingId)
 	token.SetIssuer("Anokha-25: AUTH-SERVICE")
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
@@ -179,7 +178,6 @@ func VerifyTempToken(c *gin.Context, tempToken string) bool {
 	}
 
 	tempData := parsedTempToken.Claims()
-	c.Set("onboardingId", tempData["audience"])
 	c.Set("email", tempData["jti"])
 
 	return true
