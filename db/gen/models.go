@@ -266,19 +266,18 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 }
 
 type Booking struct {
-	ID                    uuid.UUID        `json:"id"`
-	TxnID                 string           `json:"txn_id"`
-	StudentID             uuid.UUID        `json:"student_id"`
-	EventID               uuid.UUID        `json:"event_id"`
-	RegistrationFee       pgtype.Numeric   `json:"registration_fee"`
-	RegistrationTimestamp pgtype.Timestamp `json:"registration_timestamp"`
-	ProductInfo           string           `json:"product_info"`
-	SeatsReleased         int32            `json:"seats_released"`
-	TxnStatus             string           `json:"txn_status"`
-	TeamDetails           []byte           `json:"team_details"`
-	Metadata              []byte           `json:"metadata"`
-	CreatedAt             pgtype.Timestamp `json:"created_at"`
-	UpdatedAt             pgtype.Timestamp `json:"updated_at"`
+	ID              uuid.UUID        `json:"id"`
+	TxnID           string           `json:"txn_id"`
+	StudentID       uuid.UUID        `json:"student_id"`
+	EventID         uuid.UUID        `json:"event_id"`
+	RegistrationFee pgtype.Numeric   `json:"registration_fee"`
+	ProductInfo     string           `json:"product_info"`
+	SeatsReleased   int32            `json:"seats_released"`
+	TxnStatus       string           `json:"txn_status"`
+	TeamDetails     []byte           `json:"team_details"`
+	Metadata        []byte           `json:"metadata"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
 }
 
 type Event struct {

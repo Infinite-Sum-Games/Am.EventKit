@@ -25,41 +25,6 @@ func (q *Queries) CheckRefreshTokenQuery(ctx context.Context, db DBTX, email str
 	return refresh_token, err
 }
 
-const finalizeStudentSignUpQuery = `-- name: FinalizeStudentSignUpQuery :one
-INSERT INTO student (
-  name,
-  email,
-  password,
-  phone_number,
-  is_amrita_student,
-  amrita_roll_number,
-  college_name,
-  college_city,
-  account_status
-)
-SELECT
-  name,
-  email,
-  password,
-  phone_number,
-  is_amrita_student,
-  amrita_roll_number,
-  college_name,
-  college_city,
-  academic_year,
-  'VERIFIED'
-FROM student_onboarding
-WHERE student_onboarding.email = $1
-RETURNING id
-`
-
-func (q *Queries) FinalizeStudentSignUpQuery(ctx context.Context, db DBTX, email string) (uuid.UUID, error) {
-	row := db.QueryRow(ctx, finalizeStudentSignUpQuery, email)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
-}
-
 const findEmailQuery = `-- name: FindEmailQuery :one
 SELECT EXISTS (
   SELECT 1 
@@ -79,28 +44,52 @@ const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
 SELECT 
   id,
   name,
-  otp,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
   expiry_at
 FROM student_onboarding 
 WHERE 
   email = $1
+  AND otp = $2
   AND expiry_at > NOW()
 `
 
-type GetStudentOtpQueryRow struct {
-	ID       int32            `json:"id"`
-	Name     string           `json:"name"`
-	Otp      string           `json:"otp"`
-	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+type GetStudentOtpQueryParams struct {
+	Email string `json:"email"`
+	Otp   string `json:"otp"`
 }
 
-func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, email string) (GetStudentOtpQueryRow, error) {
-	row := db.QueryRow(ctx, getStudentOtpQuery, email)
+type GetStudentOtpQueryRow struct {
+	ID               int32            `json:"id"`
+	Name             string           `json:"name"`
+	Email            string           `json:"email"`
+	Password         string           `json:"password"`
+	PhoneNumber      string           `json:"phone_number"`
+	IsAmritaStudent  bool             `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text      `json:"amrita_roll_number"`
+	CollegeName      string           `json:"college_name"`
+	CollegeCity      string           `json:"college_city"`
+	ExpiryAt         pgtype.Timestamp `json:"expiry_at"`
+}
+
+func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, arg GetStudentOtpQueryParams) (GetStudentOtpQueryRow, error) {
+	row := db.QueryRow(ctx, getStudentOtpQuery, arg.Email, arg.Otp)
 	var i GetStudentOtpQueryRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Otp,
+		&i.Email,
+		&i.Password,
+		&i.PhoneNumber,
+		&i.IsAmritaStudent,
+		&i.AmritaRollNumber,
+		&i.CollegeName,
+		&i.CollegeCity,
 		&i.ExpiryAt,
 	)
 	return i, err
@@ -167,8 +156,51 @@ func (q *Queries) LoginUserQuery(ctx context.Context, db DBTX, arg LoginUserQuer
 	return i, err
 }
 
-const passwordChangeOtpQuery = `-- name: PasswordChangeOtpQuery :one
+const onboardStudentQuery = `-- name: OnboardStudentQuery :one
+INSERT INTO student (
+  name,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
+  account_status
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id
+`
 
+type OnboardStudentQueryParams struct {
+	Name             string                `json:"name"`
+	Email            string                `json:"email"`
+	Password         string                `json:"password"`
+	PhoneNumber      string                `json:"phone_number"`
+	IsAmritaStudent  bool                  `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text           `json:"amrita_roll_number"`
+	CollegeName      string                `json:"college_name"`
+	CollegeCity      string                `json:"college_city"`
+	AccountStatus    NullAccountStatusEnum `json:"account_status"`
+}
+
+func (q *Queries) OnboardStudentQuery(ctx context.Context, db DBTX, arg OnboardStudentQueryParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, onboardStudentQuery,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.PhoneNumber,
+		arg.IsAmritaStudent,
+		arg.AmritaRollNumber,
+		arg.CollegeName,
+		arg.CollegeCity,
+		arg.AccountStatus,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const passwordChangeOtpQuery = `-- name: PasswordChangeOtpQuery :one
 INSERT INTO password_reset (
   email,
   password,
@@ -193,17 +225,6 @@ type PasswordChangeOtpQueryParams struct {
 	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
 }
 
-// INSERT INTO password_reset (
-//
-//	email,
-//	password,
-//	otp,
-//	expiry_at
-//
-// ) VALUES ($1, $2, $3, $4)
-// RETURNING
-//
-//	email;
 func (q *Queries) PasswordChangeOtpQuery(ctx context.Context, db DBTX, arg PasswordChangeOtpQueryParams) (string, error) {
 	row := db.QueryRow(ctx, passwordChangeOtpQuery,
 		arg.Email,
@@ -249,7 +270,8 @@ const revokeRefreshTokenQuery = `-- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student
 SET
-	refresh_token = NULL
+	refresh_token = NULL,
+  updated_at = NOW()
 WHERE
 	email = $1
 	AND status = 'active'
@@ -266,7 +288,9 @@ func (q *Queries) RevokeRefreshTokenQuery(ctx context.Context, db DBTX, email st
 
 const updateOrganizerRefreshTokenQuery = `-- name: UpdateOrganizerRefreshTokenQuery :one
 UPDATE organizer
-SET refresh_token = $1
+SET 
+  refresh_token = $1,
+  updated_at = NOW()
 WHERE
   email = $2
 RETURNING
@@ -287,7 +311,9 @@ func (q *Queries) UpdateOrganizerRefreshTokenQuery(ctx context.Context, db DBTX,
 
 const updateRefreshTokenQuery = `-- name: UpdateRefreshTokenQuery :one
 UPDATE student 
-SET refresh_token = $1 
+SET 
+  refresh_token = $1,
+  updated_at = NOW()
 WHERE 
   email = $2
   AND account_status = 'VERIFIED'
@@ -326,7 +352,8 @@ func (q *Queries) UpdateStudentPasswordQuery(ctx context.Context, db DBTX, arg U
 const updateUserPasswordQuery = `-- name: UpdateUserPasswordQuery :one
 UPDATE student
 SET
-  password = $1
+  password = $1,
+  updated_at = NOW()
 WHERE
   email = $2
   AND account_status = 'VERIFIED'
