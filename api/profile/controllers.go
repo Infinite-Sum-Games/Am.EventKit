@@ -8,7 +8,6 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
-	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -16,10 +15,17 @@ import (
 )
 
 func FetchUserProfile(c *gin.Context) {
+	email := c.GetString("email")
+	if email == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	email := "sample@gmail.com" // For testing purposes
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
@@ -61,8 +67,14 @@ func FetchUserProfile(c *gin.Context) {
 }
 
 func EditUserProfileCsrf(c *gin.Context) {
-	// TODO - Replace with email retireved from auth token
-	email := "sample@gmail.com" // For testing purposes
+	email := c.GetString("email")
+	if email == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+		return
+	}
 
 	csrfToken, err := pkg.CreateCsrfToken(email, c)
 	if err != nil {
@@ -84,22 +96,17 @@ func EditUserProfileCsrf(c *gin.Context) {
 }
 
 func EditUserProfile(c *gin.Context) {
-
-	mw.VerifyCsrf(c)
-
-	// TODO - Replace with email retrieved from auth token
-	email := "sample@gmail.com" // For testing purposes"
-
-	var req models.EditProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request payload"})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Invalid request payload", err)
+	email := c.GetString("email")
+	if email == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
 		return
 	}
 
-	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Validation error", "errors": err.Error()})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Validation error", err)
+	req, ok := pkg.ValidateRequest[models.EditProfileRequest](c)
+	if !ok {
 		return
 	}
 
@@ -108,7 +115,9 @@ func EditUserProfile(c *gin.Context) {
 
 	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to begin DB transaction", err)
 		return
 	}
@@ -129,19 +138,25 @@ func EditUserProfile(c *gin.Context) {
 		CollegeName: req.CollegeName,
 		CollegeCity: req.CollegeCity,
 	})
-
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to edit user profile", err)
 		return
-	} else if rowAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "User profile does not exist"})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist", nil)
+	}
+	if rowAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "User profile does not exist",
+		})
+		pkg.Log.FatalCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
 		return
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
