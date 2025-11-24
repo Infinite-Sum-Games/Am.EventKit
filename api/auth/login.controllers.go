@@ -20,6 +20,7 @@ func LoginUserCsrf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to generate CSRF token", err)
 		return
 	}
 
@@ -33,7 +34,6 @@ func LoginUserCsrf(c *gin.Context) {
 }
 
 func LoginUser(c *gin.Context) {
-
 	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
 	if !ok {
 		return
@@ -47,7 +47,6 @@ func LoginUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
 		return
 	}
@@ -57,7 +56,7 @@ func LoginUser(c *gin.Context) {
 	password, err := pkg.Hash(req.HashedPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "",
+			"message": "Oops! Something happened. Please try again later.",
 		})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to hash password", err)
 		return
@@ -71,7 +70,6 @@ func LoginUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "No user with given email and password",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Username and password do not exist", err)
 		return
 	}
@@ -109,15 +107,14 @@ func LoginUser(c *gin.Context) {
 			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Could not add refresh token to DB", err)
 			return
 		}
-
 		pkg.SetRefreshCookie(c, token.String)
+
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
 		return
 	}
@@ -127,10 +124,10 @@ func LoginUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to create auth token", err)
 		return
 	}
+
 	pkg.SetAuthCookie(c, authToken)
 
 	c.JSON(http.StatusOK, gin.H{
@@ -213,6 +210,7 @@ func LoginOrganizer(c *gin.Context) {
 	// Check if there is a refreshToken already. If it exists, just mint an
 	// auth token, set the cookies and return. Otherwise, mint both and return.
 	if result.RefreshToken.String == "" {
+
 		refreshToken, err := pkg.CreateRefreshToken(result.ID.String(), req.Email, false, true)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -225,8 +223,11 @@ func LoginOrganizer(c *gin.Context) {
 
 		token, err := q.UpdateOrganizerRefreshTokenQuery(ctx, tx,
 			db.UpdateOrganizerRefreshTokenQueryParams{
-				Email:        req.Email,
-				RefreshToken: refreshToken,
+				Email: req.Email,
+				RefreshToken: pgtype.Text{
+					String: refreshToken,
+					Valid:  true,
+				},
 			})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -236,14 +237,13 @@ func LoginOrganizer(c *gin.Context) {
 			return
 		}
 
-		pkg.SetRefreshCookie(c, refreshToken)
+		pkg.SetRefreshCookie(c, token.String)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
 		return
 	}
@@ -253,10 +253,10 @@ func LoginOrganizer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to create auth token", err)
 		return
 	}
+
 	pkg.SetAuthCookie(c, authToken)
 
 	c.JSON(http.StatusOK, gin.H{
