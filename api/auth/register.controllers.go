@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
@@ -38,7 +39,7 @@ func CheckEmailExist(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	_, err = q.FindEmail(ctx, conn, req.Email)
+	_, err = q.FindEmailQuery(ctx, conn, req.Email)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Email is available",
@@ -56,8 +57,12 @@ func CheckEmailExist(c *gin.Context) {
 }
 
 func RegisterUserAccountCsrf(c *gin.Context) {
-	csrfToken, tokenErr := pkg.CreateCsrfToken("register@account", c)
+	csrfToken, tokenErr := pkg.CreateCsrfToken("register@amrita.edu", c)
 	if tokenErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to create CSRF token", tokenErr)
 		return
 	}
 
@@ -80,46 +85,64 @@ func RegisterUserAccount(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// checking if user already registered successfully!
-	conn, err := cmd.DBPool.Acquire(ctx)
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
-	defer conn.Release()
+	defer tx.Rollback(ctx)
 
 	q := db.New()
-	_, err = q.CheckStudentVerifiedQuery(ctx, conn, req.Email)
-	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+	ok, err = q.FindEmailQuery(ctx, tx, req.Email)
+	if err != nil && err != pgx.ErrNoRows {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: DB error while checking student", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
-	if err == nil {
-		// Student already exists
-		c.JSON(http.StatusConflict, gin.H{"message": "Student is already registered"})
+	if ok {
+		c.JSON(http.StatusConflict, gin.H{
+			"message": "Student is already registered",
+		})
+		pkg.Log.WarnCtx(c, "[AUTH-ERROR]: Re-attempt to register existing account")
 		return
 	}
 
+	// If student has not registered
 	otpStr, otpSlice, err := pkg.GenerateOTP()
 	if err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to generate OTP", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
+
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to generate OTP", err)
 		return
 	}
 
-	var expiry pgtype.Timestamp
-	expiry.Time = time.Now().Add(10 * time.Minute)
-	expiry.Valid = true
+	expiry := pgtype.Timestamp{
+		Time:  time.Now().Add(10 * time.Minute),
+		Valid: true,
+	}
 
-	err = q.UpsertStudentOnboardingQuery(ctx, conn, db.UpsertStudentOnboardingQueryParams{
+	hashedPass, err := pkg.Hash(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to hash password", err)
+		return
+	}
+
+	err = q.UpsertStudentOnboardingQuery(ctx, tx, db.UpsertStudentOnboardingQueryParams{
 		Name:            req.Name,
 		DepartmentName:  req.DepartmentName,
 		Email:           req.Email,
-		Password:        req.Password, // assuming password is hashed in frontend
+		Password:        hashedPass,
 		PhoneNumber:     req.PhoneNumber,
 		IsAmritaStudent: req.IsAmritaStudent,
 		AmritaRollNumber: pgtype.Text{
@@ -137,29 +160,43 @@ func RegisterUserAccount(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
-	// QUESTION: CreateToken functions are not returning any errors, is that fine?
+
+	// Commit transaction
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+		return
+	}
+
+	// Create a temporary token and dispatch it for the OTP request and forward
+	// the OTP email. The sending of OTP email is not tied to the transaction
+	// and is thus out of the transaction block. It's an async mailer process
 	tempToken := pkg.CreateTempToken(req.Name, req.Email)
-	// also there is no function to set temp token, so i wrote a new one
 	pkg.SetTempCookie(c, tempToken)
 
 	err = mail.Mail.Enqueue(&mail.EmailRequest{
 		To:      []string{req.Email},
 		Subject: "Welcome to Anokha 2025",
 		Type:    "otp",
-		// should pass this as pointer (IMPORTANT)
 		Data: &mail.OTPTemplateData{
 			UserName: req.Name,
 			OTP:      otpSlice,
 		},
 	})
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
 		pkg.Log.ErrorCtx(c, "[MAIL-ERROR]: Failed to add request to email queue", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User registered successfully!\nkindly check mail for OTP - Check SPAM too :)",
+		"message": "User onboarding initiated. OTP sent to email.",
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -181,63 +218,77 @@ func VerifyUserOtpCsrf(c *gin.Context) {
 }
 
 func VerifyUserOtp(c *gin.Context) {
-	var req struct {
-		Otp string `json:"otp" binding:"required"`
+
+	email := c.GetString("email")
+	if email == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+
+		pkg.Log.FatalCtx(
+			c,
+			"[AUTH-ERROR]: Could not find email in ctx",
+			fmt.Errorf("BUG: Middleware did not add email in ctx"),
+		)
+		return
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid OTP request"})
+
+	req, ok := pkg.ValidateRequest[models.OtpRequest](c)
+	if !ok {
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
 	defer cancel()
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
 
-	q := db.New()
-	row, err := q.GetStudentOtpQuery(ctx, conn, c.GetString("email"))
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to get otp from table", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		return
-	}
-	if req.Otp != row.Otp {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid OTP"})
-		return
-	}
-	if !row.ExpiryAt.Valid || row.ExpiryAt.Time.Before(time.Now()) {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "OTP has expired"})
-		return
-	}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 
-	// Migration of data from onboarding table to original table
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Unable to start transaction", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to begin transaction", err)
 		return
 	}
 	defer tx.Rollback(ctx)
-	userID, err := q.FinalizeStudentSignUpQuery(ctx, tx, c.GetString("email"))
-	if err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Migration of student from onboarding failed!", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+
+	q := db.New()
+
+	row, err := q.GetStudentOtpQuery(ctx, tx, email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "OTP is either invalid or expired.",
+		})
+
+		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Could not find OTP")
 		return
 	}
-	if err = q.DeleteOnboardingQuery(ctx, tx, c.GetString("email")); err != nil {
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to delete onboarding record", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to get otp from table", err)
 		return
 	}
 
 	// token generation and setting cookie
-	authToken := pkg.CreateAuthToken(userID.String(), c.GetString("username"), c.GetString("email"), true, false, false)
-	refreshToken := pkg.CreateRefreshToken(userID.String(), c.GetString("username"), c.GetString("email"), true, false, false)
+	authToken, err := pkg.CreateAuthToken(row.ID, email, true, false)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		return
+	}
+
+	refreshToken, err := pkg.CreateRefreshToken(row.ID.String(), email, true, false)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		return
+	}
+
 	pkg.SetAuthCookie(c, authToken)
 	pkg.SetRefreshCookie(c, refreshToken)
 
@@ -249,16 +300,23 @@ func VerifyUserOtp(c *gin.Context) {
 		},
 		ID: userID,
 	}); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to add refresh token", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
 
 	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OTP verification completed successfully",
 	})
@@ -266,9 +324,70 @@ func VerifyUserOtp(c *gin.Context) {
 }
 
 func ResendUserOtp(c *gin.Context) {
+	email := c.GetString("email")
+	if email == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+
+		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Email not in ctx after middleware", nil)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+
+		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	results, err := q.GetStudentOtpQuery(ctx, conn, email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No OTP available beyond expiry time.",
+		})
+
+		pkg.Log.WarnCtx(c, "[AUTH-ERROR]: All OTPs expired")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Could not fetch OTP for onboarding", err)
+		return
+	}
+
+	// Resend OTP via Mail
+	emailReq := mail.EmailRequest{
+		To:      []string{email},
+		Subject: fmt.Sprintf("Resend OTP - Anokha 2025 - %d", time.Now().UnixMilli()),
+		Type:    "otp",
+		Data: mail.OTPTemplateData{
+			UserName: results.Name,
+			OTP:      strings.Split(results.Otp, ""),
+		},
+	}
+	if err := mail.Mail.Enqueue(&emailReq); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to add mail to mailing queue", err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "OTP resent to user email successfully",
+		"message":   "OTP resent to user email successfully",
+		"expiry_at": results.ExpiryAt.Time,
 	})
 	pkg.Log.SuccessCtx(c)
 }
