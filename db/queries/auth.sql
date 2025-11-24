@@ -61,6 +61,20 @@ WHERE
   AND otp = $2
   AND expiry_at > NOW();
 
+-- name: ResendStudentOtpQuery :one
+SELECT
+  so.name,
+  so.email,
+  so.otp,
+  so.expiry_at
+FROM student_onboarding so
+WHERE
+  so.email = $1
+  AND so.expiry_at > NOW()
+  AND NOT EXISTS (
+    SELECT 1 FROM student s WHERE s.email = $1
+);
+
 -- name: UpdateStudentPasswordQuery :exec
 UPDATE student
 SET password = $2
