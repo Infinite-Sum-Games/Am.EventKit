@@ -1,5 +1,4 @@
 -- +goose up
-
 -- +goose StatementBegin
 CREATE SCHEMA IF NOT EXISTS "public";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -53,7 +52,7 @@ CREATE TABLE IF NOT EXISTS student (
   account_status account_status_enum DEFAULT 'VERIFIED',
   refresh_token TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "student_pkey" PRIMARY KEY (id)
 );
@@ -111,7 +110,7 @@ CREATE TABLE IF NOT EXISTS organizer (
   faculty_head TEXT NOT NULL,
   refresh_token TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "organizer_pkey" PRIMARY KEY (id)
 );
@@ -137,7 +136,7 @@ CREATE TABLE IF NOT EXISTS event (
   event_mode event_mode_enum NOT NULL,
   attendance_mode attendance_mode_enum NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "event_pkey" PRIMARY KEY (id)
 );
@@ -170,7 +169,7 @@ CREATE TABLE IF NOT EXISTS event_schedule (
   end_time TIMESTAMP NOT NULL,
   venue TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "event_schedule_pkey" PRIMARY KEY (id),
 
@@ -277,14 +276,13 @@ CREATE TABLE bookings (
   student_id UUID NOT NULL,
   event_id UUID NOT NULL ,
   registration_fee NUMERIC NOT NULL,
-  registration_timestamp TIMESTAMP NOT NULL DEFAULT now(),
   product_info TEXT NOT NULL,
   seats_released  INTEGER NOT NULL DEFAULT 0,
   txn_status TEXT NOT NULL,
   team_details JSONB,
   metadata JSONB,
-  created_at TIMESTAMP NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "bookings_pkey" PRIMARY KEY (id),
 
@@ -352,7 +350,7 @@ CREATE TABLE IF NOT EXISTS team_members (
       ON UPDATE CASCADE
 );
 -- +goose StatementEnd
---
+
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS team_events_attendance (
   id UUID DEFAULT gen_random_uuid(),
@@ -419,23 +417,23 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
 
 -- +goose down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS solo_event_participant;
-DROP TABLE IF EXISTS team_events_attendance;
-DROP TABLE IF EXISTS team_members;
-DROP TABLE IF EXISTS teams;
-DROP TABLE IF EXISTS bookings;
-DROP TABLE IF EXISTS event_tag_mapping;
-DROP TABLE IF EXISTS tags;
-DROP TABLE IF EXISTS event_to_organizer_mapping;
-DROP TABLE IF EXISTS people_to_event_mapping;
-DROP TABLE IF EXISTS people;
-DROP TABLE IF EXISTS event_schedule;
-DROP TABLE IF EXISTS favourites;
-DROP TABLE IF EXISTS event;
-DROP TABLE IF EXISTS organizer;
-DROP TABLE IF EXISTS student_onboarding;
-DROP TABLE IF EXISTS password_reset;
-DROP TABLE IF EXISTS student;
+DROP TABLE IF EXISTS solo_event_participant CASCADE;
+DROP TABLE IF EXISTS team_events_attendance CASCADE;
+DROP TABLE IF EXISTS team_members CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS event_tag_mapping CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS event_to_organizer_mapping CASCADE;
+DROP TABLE IF EXISTS people_to_event_mapping CASCADE;
+DROP TABLE IF EXISTS people CASCADE;
+DROP TABLE IF EXISTS event_schedule CASCADE;
+DROP TABLE IF EXISTS favourites CASCADE;
+DROP TABLE IF EXISTS event CASCADE;
+DROP TABLE IF EXISTS organizer CASCADE;
+DROP TABLE IF EXISTS student_onboarding CASCADE;
+DROP TABLE IF EXISTS password_reset CASCADE;
+DROP TABLE IF EXISTS student CASCADE;
 
 DROP TYPE IF EXISTS attendance_mode_enum;
 DROP TYPE IF EXISTS event_mode_enum;
