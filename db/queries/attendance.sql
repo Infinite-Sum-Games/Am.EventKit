@@ -75,7 +75,6 @@ SELECT
     student_id,
     event_id,
     registration_fee,
-    registration_timestamp,
     product_info,
     seats_released,
     txn_status,

@@ -1,5 +1,4 @@
 -- name: ListOrganizersQuery :many
-
 SELECT
   id,
   name as organizer_name,

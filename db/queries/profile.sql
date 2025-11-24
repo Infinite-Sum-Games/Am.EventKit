@@ -16,7 +16,8 @@ SET
   name = $2,
   phone_number = $3,
   college_name = $4,
-  college_city = $5
+  college_city = $5,
+  updated_at = NOW()
 WHERE 
   email = $1 
   AND account_status = 'VERIFIED';

@@ -12,7 +12,9 @@ WHERE email = $1;
 
 -- name: UpdateRefreshTokenQuery :one
 UPDATE student 
-SET refresh_token = $1 
+SET 
+  refresh_token = $1,
+  updated_at = NOW()
 WHERE 
   email = $2
   AND account_status = 'VERIFIED'
@@ -21,7 +23,9 @@ RETURNING
 
 -- name: UpdateOrganizerRefreshTokenQuery :one
 UPDATE organizer
-SET refresh_token = $1
+SET 
+  refresh_token = $1,
+  updated_at = NOW()
 WHERE
   email = $2
 RETURNING
@@ -31,7 +35,8 @@ RETURNING
 UPDATE
 	student
 SET
-	refresh_token = NULL
+	refresh_token = NULL,
+  updated_at = NOW()
 WHERE
 	email = $1
 	AND status = 'active'
@@ -42,11 +47,18 @@ RETURNING
 SELECT 
   id,
   name,
-  otp,
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number,
+  college_name,
+  college_city,
   expiry_at
 FROM student_onboarding 
 WHERE 
   email = $1
+  AND otp = $2
   AND expiry_at > NOW();
 
 -- name: UpdateStudentPasswordQuery :exec
@@ -54,7 +66,7 @@ UPDATE student
 SET password = $2
 WHERE email = $1;
 
--- name: FinalizeStudentSignUpQuery :one
+-- name: OnboardStudentQuery :one
 INSERT INTO student (
   name,
   email,
@@ -65,20 +77,7 @@ INSERT INTO student (
   college_name,
   college_city,
   account_status
-)
-SELECT
-  name,
-  email,
-  password,
-  phone_number,
-  is_amrita_student,
-  amrita_roll_number,
-  college_name,
-  college_city,
-  academic_year,
-  'VERIFIED'
-FROM student_onboarding
-WHERE student_onboarding.email = $1
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id;
 
 -- name: LoginUserQuery :one
@@ -103,15 +102,6 @@ FROM
 WHERE
   email = $1
   AND password = $2;
-
--- INSERT INTO password_reset (
---   email,
---   password,
---   otp,
---   expiry_at
--- ) VALUES ($1, $2, $3, $4)
--- RETURNING
---   email;
 
 -- name: PasswordChangeOtpQuery :one
 INSERT INTO password_reset (
@@ -144,7 +134,8 @@ WHERE
 -- name: UpdateUserPasswordQuery :one
 UPDATE student
 SET
-  password = $1
+  password = $1,
+  updated_at = NOW()
 WHERE
   email = $2
   AND account_status = 'VERIFIED'
