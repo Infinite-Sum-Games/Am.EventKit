@@ -265,7 +265,7 @@ func (q *Queries) GetScheduleById(ctx context.Context, db DBTX, id uuid.UUID) (E
 }
 
 const getStudentByEmail = `-- name: GetStudentByEmail :one
-SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token FROM student
+SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at FROM student
 WHERE email = $1
 `
 
@@ -284,6 +284,8 @@ func (q *Queries) GetStudentByEmail(ctx context.Context, db DBTX, email string) 
 		&i.CollegeCity,
 		&i.AccountStatus,
 		&i.RefreshToken,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

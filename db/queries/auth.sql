@@ -102,3 +102,50 @@ FROM
 WHERE
   email = $1
   AND password = $2;
+
+-- INSERT INTO password_reset (
+--   email,
+--   password,
+--   otp,
+--   expiry_at
+-- ) VALUES ($1, $2, $3, $4)
+-- RETURNING
+--   email;
+
+-- name: PasswordChangeOtpQuery :one
+INSERT INTO password_reset (
+  email,
+  password,
+  otp,
+  expiry_at
+) SELECT
+    $1, $2, $3, $4
+WHERE EXISTS (
+    SELECT 1
+    FROM 
+      student s
+    WHERE 
+      s.email = $1
+      AND s.account_status = 'VERIFIED'
+) RETURNING email;
+
+-- name: PasswordChangeVerifyOtpQuery :one
+SELECT 
+  email, 
+  password
+FROM
+  password_reset
+WHERE
+  email = $1
+  AND otp = $2
+  AND expiry_at > NOW();
+
+-- name: UpdateUserPasswordQuery :one
+UPDATE student
+SET
+  password = $1
+WHERE
+  email = $2
+  AND account_status = 'VERIFIED'
+RETURNING
+  email;

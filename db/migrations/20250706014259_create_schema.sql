@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS student (
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
   account_status account_status_enum DEFAULT 'VERIFIED',
   refresh_token TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP GENERATED ALWAYS AS (CURRENT_TIMESTAMP) STORED,
 
   CONSTRAINT "student_pkey" PRIMARY KEY (id)
 );
@@ -91,7 +93,9 @@ CREATE TABLE IF NOT EXISTS password_reset (
   password TEXT NOT NULL,
   otp TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  expiry_at TIMESTAMP NOT NULL
+  expiry_at TIMESTAMP NOT NULL,
+
+  CONSTRAINT "password_reset_pkey" PRIMARY KEY (id)
 );
 -- +goose StatementEnd
 

@@ -393,6 +393,8 @@ type Student struct {
 	CollegeCity      string                `json:"college_city"`
 	AccountStatus    NullAccountStatusEnum `json:"account_status"`
 	RefreshToken     pgtype.Text           `json:"refresh_token"`
+	CreatedAt        pgtype.Timestamp      `json:"created_at"`
+	UpdatedAt        pgtype.Timestamp      `json:"updated_at"`
 }
 
 type StudentOnboarding struct {

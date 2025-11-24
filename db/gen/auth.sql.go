@@ -160,6 +160,84 @@ func (q *Queries) LoginUserQuery(ctx context.Context, db DBTX, arg LoginUserQuer
 	return i, err
 }
 
+const passwordChangeOtpQuery = `-- name: PasswordChangeOtpQuery :one
+
+INSERT INTO password_reset (
+  email,
+  password,
+  otp,
+  expiry_at
+) SELECT
+    $1, $2, $3, $4
+WHERE EXISTS (
+    SELECT 1
+    FROM 
+      student s
+    WHERE 
+      s.email = $1
+      AND s.account_status = 'VERIFIED'
+) RETURNING email
+`
+
+type PasswordChangeOtpQueryParams struct {
+	Email    string           `json:"email"`
+	Password string           `json:"password"`
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
+}
+
+// INSERT INTO password_reset (
+//
+//	email,
+//	password,
+//	otp,
+//	expiry_at
+//
+// ) VALUES ($1, $2, $3, $4)
+// RETURNING
+//
+//	email;
+func (q *Queries) PasswordChangeOtpQuery(ctx context.Context, db DBTX, arg PasswordChangeOtpQueryParams) (string, error) {
+	row := db.QueryRow(ctx, passwordChangeOtpQuery,
+		arg.Email,
+		arg.Password,
+		arg.Otp,
+		arg.ExpiryAt,
+	)
+	var email string
+	err := row.Scan(&email)
+	return email, err
+}
+
+const passwordChangeVerifyOtpQuery = `-- name: PasswordChangeVerifyOtpQuery :one
+SELECT 
+  email, 
+  password
+FROM
+  password_reset
+WHERE
+  email = $1
+  AND otp = $2
+  AND expiry_at > NOW()
+`
+
+type PasswordChangeVerifyOtpQueryParams struct {
+	Email string `json:"email"`
+	Otp   string `json:"otp"`
+}
+
+type PasswordChangeVerifyOtpQueryRow struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) PasswordChangeVerifyOtpQuery(ctx context.Context, db DBTX, arg PasswordChangeVerifyOtpQueryParams) (PasswordChangeVerifyOtpQueryRow, error) {
+	row := db.QueryRow(ctx, passwordChangeVerifyOtpQuery, arg.Email, arg.Otp)
+	var i PasswordChangeVerifyOtpQueryRow
+	err := row.Scan(&i.Email, &i.Password)
+	return i, err
+}
+
 const revokeRefreshTokenQuery = `-- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student
@@ -236,4 +314,27 @@ type UpdateStudentPasswordQueryParams struct {
 func (q *Queries) UpdateStudentPasswordQuery(ctx context.Context, db DBTX, arg UpdateStudentPasswordQueryParams) error {
 	_, err := db.Exec(ctx, updateStudentPasswordQuery, arg.Email, arg.Password)
 	return err
+}
+
+const updateUserPasswordQuery = `-- name: UpdateUserPasswordQuery :one
+UPDATE student
+SET
+  password = $1
+WHERE
+  email = $2
+  AND account_status = 'VERIFIED'
+RETURNING
+  email
+`
+
+type UpdateUserPasswordQueryParams struct {
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+func (q *Queries) UpdateUserPasswordQuery(ctx context.Context, db DBTX, arg UpdateUserPasswordQueryParams) (string, error) {
+	row := db.QueryRow(ctx, updateUserPasswordQuery, arg.Password, arg.Email)
+	var email string
+	err := row.Scan(&email)
+	return email, err
 }
