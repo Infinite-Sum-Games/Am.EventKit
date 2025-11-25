@@ -16,7 +16,6 @@ func Auth(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Access denied.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Refresh Cookie is missing", refErr)
 		return
 	}
@@ -57,6 +56,7 @@ func Auth(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",
 			})
+			pkg.Log.FatalCtx(c, "[COOKIE-ERROR]: Failed to mint new auth token", err)
 			return
 		}
 
@@ -67,14 +67,12 @@ func Auth(c *gin.Context) {
 }
 
 func TempAuth(c *gin.Context) {
-
 	tempToken, tempErr := c.Cookie("temp_token")
 	if tempErr == http.ErrNoCookie {
 		pkg.NullifyCookies(c)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Access denied.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Temporary auth token is missing", tempErr)
 		return
 	}
@@ -86,7 +84,6 @@ func TempAuth(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusRequestTimeout, gin.H{
 			"message": "Access denied.",
 		})
-
 		pkg.Log.WarnCtx(c, "[AUTH-ERROR]: Failed to verify temporary token")
 		return
 	}
