@@ -12,21 +12,61 @@ post {
 
 body:json {
   {
-    "name": "Tharun Kumarr A",
-    "department_name": "Computer Science",
-    "email": "tharunkumarra@gmail.com",
-    "password": "Tharun@123",
-    "phone_number": "8838517013",
+    "name": "Ritesh Koushik",
+    "email": "riteshkoushik39@gmail.com",
+    "password": "password123",
+    "phone_number": "9994622650",
     "is_amrita_student": true,
     "amrita_roll_number": "CB.EN.U4CSE22253",
     "college_name": "Amrita Vishwa Vidyapeetham",
-    "college_city": "Coimbatore",
-    "academic_year": "2022-2026"
+    "college_city": "Coimbatore"
   }
   
 }
 
-docs {
-  # README
+script:pre-request {
+  const jar = bru.cookies.jar();
+  const cookieValue = jar.getCookie("http://localhost:9000", "csrf_token");
   
+  console.log("Grabbed cookie:", cookieValue);
+  
+  req.setHeader("X-Csrf-Token", cookieValue);
+}
+
+docs {
+  # Register User
+  
+  > Make sure to get the CSRF token for this route before sending this request. Else it will lead to 401. Make sure to set it as "X-Csrf-Token".
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "User onboarding initiated. OTP sent to email.",
+    "expiry_at": ""
+  }
+  ```
+  
+  ## 401 Unauthorized
+  The CSRF token is either not passed in header or cookie or both.
+  ```json
+  {
+    "message": "Access denied.",
+  }
+  ```
+  
+  ## 403 Forbidden
+  The CSRF token is not parsable. This can be due to some tampering with the CSRF cookie. 
+  ```json
+  {
+    "message": "User is forbidden",
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  Check the log file and inform backend team about the error immediately.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
 }
