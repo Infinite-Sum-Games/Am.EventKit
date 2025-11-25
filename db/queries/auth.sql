@@ -45,21 +45,24 @@ RETURNING
 
 -- name: GetStudentOtpQuery :one
 SELECT 
-  id,
-  name,
-  email,
-  password,
-  phone_number,
-  is_amrita_student,
-  amrita_roll_number,
-  college_name,
-  college_city,
-  expiry_at
-FROM student_onboarding 
+  so.id,
+  so.name,
+  so.email,
+  so.password,
+  so.phone_number,
+  so.is_amrita_student,
+  so.amrita_roll_number,
+  so.college_name,
+  so.college_city,
+  so.expiry_at
+FROM student_onboarding so
 WHERE 
-  email = $1
-  AND otp = $2
-  AND expiry_at > NOW();
+  so.email = $1
+  AND so.otp = $2
+  AND so.expiry_at > NOW()
+  AND NOT EXISTS (
+    SELECT 1 FROM student s WHERE s.email = $1
+  );
 
 -- name: ResendStudentOtpQuery :one
 SELECT
@@ -97,6 +100,7 @@ RETURNING id;
 -- name: LoginUserQuery :one
 SELECT
   id,
+  name,
   email,
   refresh_token
 FROM
@@ -119,20 +123,25 @@ WHERE
 
 -- name: PasswordChangeOtpQuery :one
 INSERT INTO password_reset (
+  name,
   email,
   password,
   otp,
   expiry_at
-) SELECT
-    $1, $2, $3, $4
-WHERE EXISTS (
-    SELECT 1
-    FROM 
-      student s
-    WHERE 
-      s.email = $1
-      AND s.account_status = 'VERIFIED'
-) RETURNING email;
+) 
+SELECT
+  s.name, 
+  s.email, 
+  $2, 
+  $3, 
+  $4
+FROM
+  student s
+WHERE 
+  s.email = $1
+  AND s.account_status = 'VERIFIED'
+RETURNING 
+  email, name;
 
 -- name: PasswordChangeVerifyOtpQuery :one
 SELECT 

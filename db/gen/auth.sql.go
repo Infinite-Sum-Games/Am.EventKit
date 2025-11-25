@@ -131,6 +131,7 @@ func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, arg LoginOrg
 const loginUserQuery = `-- name: LoginUserQuery :one
 SELECT
   id,
+  name,
   email,
   refresh_token
 FROM
@@ -148,6 +149,7 @@ type LoginUserQueryParams struct {
 
 type LoginUserQueryRow struct {
 	ID           uuid.UUID   `json:"id"`
+	Name         string      `json:"name"`
 	Email        string      `json:"email"`
 	RefreshToken pgtype.Text `json:"refresh_token"`
 }
@@ -155,7 +157,12 @@ type LoginUserQueryRow struct {
 func (q *Queries) LoginUserQuery(ctx context.Context, db DBTX, arg LoginUserQueryParams) (LoginUserQueryRow, error) {
 	row := db.QueryRow(ctx, loginUserQuery, arg.Email, arg.Password)
 	var i LoginUserQueryRow
-	err := row.Scan(&i.ID, &i.Email, &i.RefreshToken)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.RefreshToken,
+	)
 	return i, err
 }
 
