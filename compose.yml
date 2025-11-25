@@ -25,44 +25,6 @@ services:
           memory: 512M
           cpus: '0.5'
 
-  # Caching
-  valkey:
-    image: valkey/valkey:8.1.1-alpine
-    container_name: anokha-valkey
-    restart: on-failure
-    ports:
-      - "6379:6379"
-    command: valkey-server --appendonly yes # persistance
-    networks:
-      - app_network
-    volumes:
-      - valkey_data:/data
-    healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.25'
-
-  # UI for Caching
-  insight:
-    image: redislabs/redisinsight:latest
-    container_name: anokha-insight
-    restart: on-failure
-    ports:
-      - "5540:5540"
-    depends_on:
-      - valkey
-    environment:
-      - VALKEY_HOST=valkey
-      - VALKEY_PORT=6379
-    networks:
-      - app_network
-
   # PostgreSQL Exporter to export Postgres metrics to Prometheus
   # postgres_exporter:
   #   image: prometheuscommunity/postgres-exporter:v0.15.0
@@ -77,22 +39,7 @@ services:
   #   networks:
   #     - app_network
   #     - monitoring_network
-
-  # Redis Exporter to export Valkey metrics to Prometheus
-  # redis_exporter:
-  #   image: oliver006/redis_exporter:v1.62.0-alpine
-  #   container_name: anokha-redis-exporter
-  #   restart: on-failure
-  #   environment:
-  #     REDIS_ADDR: redis://valkey:6379
-  #   ports:
-  #     - "9121:9121"
-  #   depends_on:
-  #     - valkey
-  #   networks:
-  #     - app_network
-  #     - monitoring_network
-
+  
   # Prometheus
   # prometheus:
   #   image: prom/prometheus:v2.52.0
@@ -150,5 +97,4 @@ networks:
 
 volumes:
   postgres_data:
-  valkey_data:
   # grafana_data:
