@@ -109,14 +109,6 @@ func StartApp() {
 	}
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
-	// Initialize Valkey (cache)
-	cmd.Valkey, err = cmd.InitValkey()
-	if err != nil {
-		pkg.Log.Fatal("[CRASH]: Failed to initialize cache", err)
-		return
-	}
-	pkg.Log.Info("[OK]: Valkey initialized successfully")
-
 	// Initialize Mailer Service
 	mailerSvc, err := mail.NewMailerService("mail/mail-queue", 4)
 	if err != nil {
