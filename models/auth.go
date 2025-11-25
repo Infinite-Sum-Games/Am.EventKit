@@ -54,7 +54,7 @@ type OtpRequest struct {
 
 func (s OtpRequest) Validate() error {
 	return v.ValidateStruct(&s,
-		v.Field(&s.Otp, v.Required, v.Length(6, 6), is.Digit),
+		v.Field(&s.Otp, v.Required, v.Length(4, 6), is.Digit),
 	)
 }
 
