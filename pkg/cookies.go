@@ -120,7 +120,7 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		Log.FatalCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
+		Log.FatalCtx(c, "[AUTH-FATAL]: Failed to commit txn while revoking refresh-token", err)
 		return
 	}
 
