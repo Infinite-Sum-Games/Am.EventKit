@@ -42,21 +42,24 @@ func (q *Queries) FindEmailQuery(ctx context.Context, db DBTX, email string) (bo
 
 const getStudentOtpQuery = `-- name: GetStudentOtpQuery :one
 SELECT 
-  id,
-  name,
-  email,
-  password,
-  phone_number,
-  is_amrita_student,
-  amrita_roll_number,
-  college_name,
-  college_city,
-  expiry_at
-FROM student_onboarding 
+  so.id,
+  so.name,
+  so.email,
+  so.password,
+  so.phone_number,
+  so.is_amrita_student,
+  so.amrita_roll_number,
+  so.college_name,
+  so.college_city,
+  so.expiry_at
+FROM student_onboarding so
 WHERE 
-  email = $1
-  AND otp = $2
-  AND expiry_at > NOW()
+  so.email = $1
+  AND so.otp = $2
+  AND so.expiry_at > NOW()
+  AND NOT EXISTS (
+    SELECT 1 FROM student s WHERE s.email = $1
+  )
 `
 
 type GetStudentOtpQueryParams struct {
@@ -202,20 +205,25 @@ func (q *Queries) OnboardStudentQuery(ctx context.Context, db DBTX, arg OnboardS
 
 const passwordChangeOtpQuery = `-- name: PasswordChangeOtpQuery :one
 INSERT INTO password_reset (
+  name,
   email,
   password,
   otp,
   expiry_at
-) SELECT
-    $1, $2, $3, $4
-WHERE EXISTS (
-    SELECT 1
-    FROM 
-      student s
-    WHERE 
-      s.email = $1
-      AND s.account_status = 'VERIFIED'
-) RETURNING email
+) 
+SELECT
+  s.name, 
+  s.email, 
+  $2, 
+  $3, 
+  $4
+FROM
+  student s
+WHERE 
+  s.email = $1
+  AND s.account_status = 'VERIFIED'
+RETURNING 
+  email, name
 `
 
 type PasswordChangeOtpQueryParams struct {
@@ -225,16 +233,21 @@ type PasswordChangeOtpQueryParams struct {
 	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
 }
 
-func (q *Queries) PasswordChangeOtpQuery(ctx context.Context, db DBTX, arg PasswordChangeOtpQueryParams) (string, error) {
+type PasswordChangeOtpQueryRow struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+func (q *Queries) PasswordChangeOtpQuery(ctx context.Context, db DBTX, arg PasswordChangeOtpQueryParams) (PasswordChangeOtpQueryRow, error) {
 	row := db.QueryRow(ctx, passwordChangeOtpQuery,
 		arg.Email,
 		arg.Password,
 		arg.Otp,
 		arg.ExpiryAt,
 	)
-	var email string
-	err := row.Scan(&email)
-	return email, err
+	var i PasswordChangeOtpQueryRow
+	err := row.Scan(&i.Email, &i.Name)
+	return i, err
 }
 
 const passwordChangeVerifyOtpQuery = `-- name: PasswordChangeVerifyOtpQuery :one

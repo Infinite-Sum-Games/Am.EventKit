@@ -88,6 +88,7 @@ WHERE amrita_roll_number IS NOT NULL;
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS password_reset (
   id SERIAL NOT NULL,
+  name TEXT NOT NULL,
   email TEXT NOT NULL,
   password TEXT NOT NULL,
   otp TEXT NOT NULL,
