@@ -87,7 +87,10 @@ func ForgotUserPassword(c *gin.Context) {
 		Email:    req.Email,
 		Password: req.NewPassword,
 		Otp:      otpStr,
-		ExpiryAt: pgtype.Timestamp{Time: time.Now().Add(5 * time.Minute), Valid: true},
+		ExpiryAt: pgtype.Timestamp{
+			Time:  time.Now().Add(5 * time.Minute),
+			Valid: true,
+		},
 	})
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{

@@ -37,11 +37,8 @@ func CheckEmailExist(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	_, err = q.FindEmailQuery(ctx, conn, req.Email)
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
-	if err == pgx.ErrNoRows {
+	ok, _ = q.FindEmailQuery(ctx, conn, req.Email)
+	if !ok {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Email is available.",
 		})
@@ -197,6 +194,10 @@ func RegisterUserAccount(c *gin.Context) {
 func VerifyUserOtpCsrf(c *gin.Context) {
 	csrfToken, tokenErr := pkg.CreateCsrfToken("verify.otp@amrita.edu", c)
 	if tokenErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to create CSRF token", tokenErr)
 		return
 	}
 
