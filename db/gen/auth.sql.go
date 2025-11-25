@@ -453,7 +453,8 @@ DO UPDATE SET
   expiry_at = EXCLUDED.expiry_at
 RETURNING
   id, 
-  email
+  email,
+  expiry_at
 `
 
 type UpsertStudentOnboardingQueryParams struct {
@@ -470,8 +471,9 @@ type UpsertStudentOnboardingQueryParams struct {
 }
 
 type UpsertStudentOnboardingQueryRow struct {
-	ID    int32  `json:"id"`
-	Email string `json:"email"`
+	ID       int32            `json:"id"`
+	Email    string           `json:"email"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
 }
 
 func (q *Queries) UpsertStudentOnboardingQuery(ctx context.Context, db DBTX, arg UpsertStudentOnboardingQueryParams) (UpsertStudentOnboardingQueryRow, error) {
@@ -488,6 +490,6 @@ func (q *Queries) UpsertStudentOnboardingQuery(ctx context.Context, db DBTX, arg
 		arg.ExpiryAt,
 	)
 	var i UpsertStudentOnboardingQueryRow
-	err := row.Scan(&i.ID, &i.Email)
+	err := row.Scan(&i.ID, &i.Email, &i.ExpiryAt)
 	return i, err
 }

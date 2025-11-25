@@ -191,4 +191,5 @@ DO UPDATE SET
   expiry_at = EXCLUDED.expiry_at
 RETURNING
   id, 
-  email;
+  email,
+  expiry_at;
