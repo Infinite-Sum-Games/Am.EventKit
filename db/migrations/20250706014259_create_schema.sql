@@ -72,7 +72,6 @@ CREATE TABLE IF NOT EXISTS student_onboarding (
   amrita_roll_number TEXT,
   college_name TEXT DEFAULT 'Amrita Vishwa Vidyapeetham' NOT NULL,
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
-  academic_year TEXT NOT NULL,
   otp TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
   expiry_at TIMESTAMP NOT NULL,

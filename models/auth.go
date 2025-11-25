@@ -17,7 +17,6 @@ func (s CheckEmailRequest) Validate() error {
 
 type StudentOnboardingRequest struct {
 	Name             string `json:"name"`
-	DepartmentName   string `json:"department_name"`
 	Email            string `json:"email"`
 	Password         string `json:"password"`
 	PhoneNumber      string `json:"phone_number"`
@@ -25,19 +24,17 @@ type StudentOnboardingRequest struct {
 	AmritaRollNumber string `json:"amrita_roll_number"`
 	CollegeName      string `json:"college_name"`
 	CollegeCity      string `json:"college_city"`
-	AcademicYear     string `json:"academic_year"`
 }
 
 func (s StudentOnboardingRequest) Validate() error {
 	return v.ValidateStruct(&s,
 		v.Field(&s.Name, v.Required, v.Length(3, 50)),
-		v.Field(&s.DepartmentName, v.Required),
 		v.Field(&s.Email, v.Required, is.Email),
 		v.Field(&s.Password, v.Required, v.Length(8, 0)),
 		v.Field(&s.PhoneNumber, v.Required, v.Length(10, 10)),
 		v.Field(&s.CollegeName, v.Required, v.Length(3, 50)),
 		v.Field(&s.CollegeCity, v.Required, v.Length(3, 50)),
-		v.Field(&s.AcademicYear, v.Required, is.Digit))
+	)
 }
 
 type LoginRequest struct {
