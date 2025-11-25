@@ -110,18 +110,18 @@ func StartApp() {
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
 	// Initialize Mailer Service
-	mailerSvc, err := mail.NewMailerService("mail/mail-queue", 4)
+	mail.Mail, err = mail.NewMailerService("mail/mail-queue", 4)
 	if err != nil {
 		pkg.Log.Fatal("[CRASH]: failed to create mailer service", err)
 		return
 	}
-	mailerSvc.Start()
+	mail.Mail.Start()
 	pkg.Log.Info("[OK]: Mailer service started successfully")
 
 	// Initialize server
 	server := &http.Server{
 		Addr:    ":" + "9000",
-		Handler: SetupRouter(mailerSvc),
+		Handler: SetupRouter(mail.Mail),
 	}
 
 	go func() {
@@ -144,7 +144,7 @@ func StartApp() {
 	}
 
 	// Mailer shutdown sequence
-	mailerSvc.Shutdown()
+	mail.Mail.Shutdown()
 
 	pkg.Log.Info("[OK]: Server shutting down")
 }
