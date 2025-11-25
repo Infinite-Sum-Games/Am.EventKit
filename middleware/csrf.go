@@ -14,12 +14,11 @@ import (
  */
 
 func VerifyCsrf(c *gin.Context) {
-	// Check request header presence
 	csrfToken := c.Request.Header["X-Csrf-Token"]
 	if len(csrfToken) != 1 {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Could not find CSRF header.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -27,8 +26,8 @@ func VerifyCsrf(c *gin.Context) {
 	csrfFromHeader := csrfToken[0] // extracting into string var for reuse
 	if csrfFromHeader == "" {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Found empty CSRF header.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -37,7 +36,7 @@ func VerifyCsrf(c *gin.Context) {
 	if csrfErr == http.ErrNoCookie {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Could not find CSRF token in cookie.")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message": "Missing security token.",
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -50,8 +49,8 @@ func VerifyCsrf(c *gin.Context) {
 				csrfFromCookie,
 				csrfFromHeader,
 			))
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"message": "Security token compromised.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -64,7 +63,7 @@ func VerifyCsrf(c *gin.Context) {
 			fmt.Errorf("given string is not a CSRF token"),
 		)
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"message": "Security token compromised.",
+			"message": "User is forbidden.",
 		})
 		return
 	}
