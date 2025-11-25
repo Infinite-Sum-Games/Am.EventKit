@@ -24,7 +24,7 @@ const (
 	TempTokenValidTime    = time.Minute * 5
 	CsrfTokenValidTime    = time.Minute * 10
 	privateKeyPath        = "app.rsa"
-	publicKeyPath         = "app.rsa.pub"
+	publicKeyPath         = "app.pub.rsa"
 )
 
 var (
