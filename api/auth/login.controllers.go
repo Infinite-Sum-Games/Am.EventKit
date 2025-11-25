@@ -108,7 +108,6 @@ func LoginUser(c *gin.Context) {
 			return
 		}
 		pkg.SetRefreshCookie(c, token.String)
-
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -132,6 +131,8 @@ func LoginUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
+		"name":    result.Name,
+		"email":   result.Email,
 	})
 	pkg.Log.SuccessCtx(c)
 }
