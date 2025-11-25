@@ -65,28 +65,3 @@ func Auth(c *gin.Context) {
 
 	c.Next()
 }
-
-func TempAuth(c *gin.Context) {
-	tempToken, tempErr := c.Cookie("temp_token")
-	if tempErr == http.ErrNoCookie {
-		pkg.NullifyCookies(c)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message": "Access denied.",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Temporary auth token is missing", tempErr)
-		return
-	}
-
-	ok := pkg.VerifyTempToken(c, tempToken)
-
-	if !ok {
-		pkg.NullifyCookies(c)
-		c.AbortWithStatusJSON(http.StatusRequestTimeout, gin.H{
-			"message": "Access denied.",
-		})
-		pkg.Log.WarnCtx(c, "[AUTH-ERROR]: Failed to verify temporary token")
-		return
-	}
-
-	c.Next()
-}
