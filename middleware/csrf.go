@@ -62,30 +62,30 @@ func VerifyCsrf(c *gin.Context) {
 			"[CSRF-ERROR]: Failed to parse token",
 			fmt.Errorf("given string is not a CSRF token"),
 		)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied",
+		})
+		return
+	}
+
+	// After parsing, extract the subject
+	tokenAud, tokenAudErr := token.GetAudience()
+	if tokenAudErr != nil {
+		pkg.Log.ErrorCtx(c,
+			"[CSRF-ERROR]: Could not find audience; bad token",
+			fmt.Errorf("given string is not a CSRF token"),
+		)
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "User is forbidden.",
 		})
 		return
 	}
 
-	// After parsing, extract the subject
-	tokenSub, tokenSubErr := token.GetSubject()
-	if tokenSubErr != nil {
-		pkg.Log.ErrorCtx(c,
-			"[CSRF-ERROR]: Could not find subject; bad token",
-			fmt.Errorf("given string is not a CSRF token"),
-		)
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"message": "Security token compromised.",
-		})
-		return
-	}
-
 	// After extraction, check the path
-	if tokenSub != pkg.CsrfRoutes[c.FullPath()] {
-		pkg.Log.ErrorCtx(c, "[CSRF-ERROR]: ", fmt.Errorf(""))
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed",
+	if tokenAud != pkg.CsrfRoutes[c.FullPath()] {
+		pkg.Log.ErrorCtx(c, "[CSRF-ERROR]: Invalid token for submitted form", nil)
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "User is forbidden.",
 		})
 		return
 	}
