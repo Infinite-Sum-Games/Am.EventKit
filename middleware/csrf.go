@@ -90,6 +90,5 @@ func VerifyCsrf(c *gin.Context) {
 		return
 	}
 
-	pkg.Log.InfoCtx(c, "[SUCCESS]: Verified CSRF token successfully.")
 	c.Next()
 }
