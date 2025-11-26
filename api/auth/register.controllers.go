@@ -271,11 +271,14 @@ func VerifyUserOtp(c *gin.Context) {
 
 	// After verification, transfer the details to student table
 	_, err = q.OnboardStudentQuery(ctx, tx, db.OnboardStudentQueryParams{
-		Name:             result.Name,
-		Email:            result.Email,
-		Password:         result.Password,
-		PhoneNumber:      result.PhoneNumber,
-		IsAmritaStudent:  result.IsAmritaStudent,
+		Name:        result.Name,
+		Email:       result.Email,
+		Password:    result.Password,
+		PhoneNumber: result.PhoneNumber,
+		IsAmritaStudent: pgtype.Bool{
+			Bool:  result.IsAmritaStudent,
+			Valid: true,
+		},
 		AmritaRollNumber: result.AmritaRollNumber,
 		CollegeName:      result.CollegeName,
 		CollegeCity:      result.CollegeCity,
