@@ -387,7 +387,7 @@ type Student struct {
 	Email            string                `json:"email"`
 	Password         string                `json:"password"`
 	PhoneNumber      string                `json:"phone_number"`
-	IsAmritaStudent  bool                  `json:"is_amrita_student"`
+	IsAmritaStudent  pgtype.Bool           `json:"is_amrita_student"`
 	AmritaRollNumber pgtype.Text           `json:"amrita_roll_number"`
 	CollegeName      string                `json:"college_name"`
 	CollegeCity      string                `json:"college_city"`
@@ -407,7 +407,6 @@ type StudentOnboarding struct {
 	AmritaRollNumber pgtype.Text      `json:"amrita_roll_number"`
 	CollegeName      string           `json:"college_name"`
 	CollegeCity      string           `json:"college_city"`
-	AcademicYear     string           `json:"academic_year"`
 	Otp              string           `json:"otp"`
 	CreatedAt        pgtype.Timestamp `json:"created_at"`
 	ExpiryAt         pgtype.Timestamp `json:"expiry_at"`

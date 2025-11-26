@@ -63,7 +63,7 @@ type FetchUserProfileQueryRow struct {
 	Name             string      `json:"name"`
 	Email            string      `json:"email"`
 	PhoneNumber      string      `json:"phone_number"`
-	IsAmritaStudent  bool        `json:"is_amrita_student"`
+	IsAmritaStudent  pgtype.Bool `json:"is_amrita_student"`
 	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
 	CollegeName      string      `json:"college_name"`
 	CollegeCity      string      `json:"college_city"`

@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS student (
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   phone_number TEXT NOT NULL UNIQUE,
-  is_amrita_student BOOLEAN NOT NULL DEFAULT TRUE,
+  is_amrita_student BOOLEAN DEFAULT FALSE,
   amrita_roll_number TEXT,
   college_name TEXT DEFAULT 'Amrita Vishwa Vidyapeetham' NOT NULL,
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
