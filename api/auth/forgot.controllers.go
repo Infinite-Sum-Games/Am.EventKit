@@ -107,6 +107,14 @@ func ForgotUserPassword(c *gin.Context) {
 		return
 	}
 
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.FatalCtx(c, "[AUTH-FATAL]: Failed to commit DB transaction", err)
+		return
+	}
+
 	emailReq := mail.EmailRequest{
 		To:      []string{result.Email},
 		Subject: "Password Reset - Anokha 2025",
