@@ -2,63 +2,203 @@ package main
 
 import (
 	"context"
+	"math/big"
+	"os"
+	"strconv"
+	"time"
+
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	pkg "github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"math/big"
-	"os"
-	"strconv"
-	"time"
 )
+
+func SeedStudents(conn *pgx.Conn) error {
+	q := db.New()
+
+	students, _ := q.ViewStudentSeedQuery(context.Background(), conn)
+	if len(students) > 0 {
+		pkg.Log.Info("Students already seeded, skipping...")
+		return nil
+	}
+
+	hashedPassword, err := pkg.Hash("Password@123")
+	if err != nil {
+		pkg.Log.Error("Error inserting manual students: %v\n", err)
+		return err
+	}
+
+	manualStudents := []db.SeedAmritaStudentQueryParams{
+		{
+			Name:        "Thanus Kumaar A",
+			Email:       "thanus@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Tharun Kumarr A",
+			Email:       "tharun@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Adithya Menon R",
+			Email:       "adukottan@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Nandgopal R Nair",
+			Email:       "nandu@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Vijay SB",
+			Email:       "vijay@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Akshay KS",
+			Email:       "akshay@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Saran Hiruthik",
+			Email:       "saran@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Keerthivasan Venkitajalam",
+			Email:       "keerthivasan@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "",
+			Email:       "ritesh@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22038",
+				Valid:  true,
+			},
+		},
+	}
+	for _, student := range manualStudents {
+		err := q.SeedAmritaStudentQuery(context.Background(), conn, student)
+		if err != nil {
+			pkg.Log.Error("Error inserting manual students: %v\n", err)
+			return err
+		}
+	}
+
+	pkg.Log.Info("Successfully seeded 5 students.")
+	return nil
+}
 
 func SeedOrganizers(conn *pgx.Conn) error {
 	q := db.New()
 
-	organizers, _ := q.ListOrganizersQuery(context.Background(), conn)
+	organizers, _ := q.ViewOrganizerSeedQuery(context.Background(), conn)
 	if len(organizers) > 0 {
 		pkg.Log.Info("Organizers already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few organizers for reference
-	manualOrganizers := []db.InsertOrganizerQueryParams{
+	manualOrganizers := []db.SeedOrganizerQueryParams{
 		{
-			Name:        "Engineering Department",
-			Abbr:        "ENG",
+			Name:        "Computer Science and Engineering",
+			Email:       "cse@cb.amrita.edu",
 			OrgType:     db.OrganizerTypeEnum("DEPARTMENT"),
-			StudentHead: "Alice Smith",
-			FacultyHead: "Dr. Emily Brown",
+			StudentHead: "Tharun Kumarr A",
+			FacultyHead: "Dr. Ritwik M",
 		},
 		{
-			Name:        "Music Club",
-			Abbr:        "MUS",
+			Name:        "Amrita Centre for Entrepreneurship",
+			Email:       "ace@cb.amrita.edu",
 			OrgType:     db.OrganizerTypeEnum("CLUB"),
-			StudentHead: "Charlie Davis",
-			FacultyHead: "Prof. John Green",
+			StudentHead: "Thanus Kumaar A",
+			FacultyHead: "Dr. Dhanya MD",
 		},
 	}
 	for _, organizer := range manualOrganizers {
-		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
+		err := q.SeedOrganizerQuery(context.Background(), conn, organizer)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual organizer: %v\n", err)
-			return err
-		}
-	}
-
-	// Seed additional organizers with random data
-	for i := 2; i < 5; i++ {
-		organizer := db.InsertOrganizerQueryParams{
-			Name:        gofakeit.Company() + " " + strconv.Itoa(i+1),
-			Abbr:        gofakeit.LetterN(3) + strconv.Itoa(i+1),
-			OrgType:     db.OrganizerTypeEnum(gofakeit.RandomString([]string{"DEPARTMENT", "CLUB"})),
-			StudentHead: gofakeit.Name(),
-			FacultyHead: gofakeit.Name(),
-		}
-		err := q.InsertOrganizerQuery(context.Background(), conn, organizer)
-		if err != nil {
-			pkg.Log.Error("Error inserting organizer: %v\n", err)
 			return err
 		}
 	}
@@ -70,14 +210,14 @@ func SeedOrganizers(conn *pgx.Conn) error {
 func SeedPeople(conn *pgx.Conn) error {
 	q := db.New()
 
-	people, _ := q.ListPeopleQuery(context.Background(), conn)
+	people, _ := q.ViewPeopleSeedQuery(context.Background(), conn)
 	if len(people) > 0 {
 		pkg.Log.Info("People already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few people for reference
-	manualPeople := []db.InsertPeopleQueryParams{
+	manualPeople := []db.SeedPeopleQueryParams{
 		{
 			Name:        "Eve Wilson",
 			PhoneNumber: "9876543210",
@@ -88,7 +228,7 @@ func SeedPeople(conn *pgx.Conn) error {
 		},
 	}
 	for _, person := range manualPeople {
-		err := q.InsertPeopleQuery(context.Background(), conn, person)
+		err := q.SeedPeopleQuery(context.Background(), conn, person)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual person: %v\n", err)
 			return err
@@ -97,11 +237,11 @@ func SeedPeople(conn *pgx.Conn) error {
 
 	// Seed additional people with random data
 	for i := 2; i < 20; i++ {
-		person := db.InsertPeopleQueryParams{
+		person := db.SeedPeopleQueryParams{
 			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Phone(),
 		}
-		err := q.InsertPeopleQuery(context.Background(), conn, person)
+		err := q.SeedPeopleQuery(context.Background(), conn, person)
 		if err != nil {
 			pkg.Log.Error("Error inserting person: %v\n", err)
 			return err
@@ -115,14 +255,14 @@ func SeedPeople(conn *pgx.Conn) error {
 func SeedTags(conn *pgx.Conn) error {
 	q := db.New()
 
-	tags, _ := q.ListTagsQuery(context.Background(), conn)
+	tags, _ := q.ViewTagSeedQuery(context.Background(), conn)
 	if len(tags) > 0 {
 		pkg.Log.Info("Tags already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few tags for reference
-	manualTags := []db.InsertTagsQueryParams{
+	manualTags := []db.SeedTagsQueryParams{
 		{
 			Name:         "Tech",
 			Abbreviation: "TEC",
@@ -133,7 +273,7 @@ func SeedTags(conn *pgx.Conn) error {
 		},
 	}
 	for _, tag := range manualTags {
-		err := q.InsertTagsQuery(context.Background(), conn, tag)
+		err := q.SeedTagsQuery(context.Background(), conn, tag)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual tag: %v\n", err)
 			return err
@@ -142,11 +282,11 @@ func SeedTags(conn *pgx.Conn) error {
 
 	// Seed additional tags with random data
 	for i := 2; i < 10; i++ {
-		tag := db.InsertTagsQueryParams{
+		tag := db.SeedTagsQueryParams{
 			Name:         gofakeit.Word() + "Tag" + strconv.Itoa(i+1),
 			Abbreviation: gofakeit.LetterN(3) + strconv.Itoa(i+1),
 		}
-		err := q.InsertTagsQuery(context.Background(), conn, tag)
+		err := q.SeedTagsQuery(context.Background(), conn, tag)
 		if err != nil {
 			pkg.Log.Error("Error inserting tag: %v\n", err)
 			return err
@@ -160,14 +300,14 @@ func SeedTags(conn *pgx.Conn) error {
 func SeedEvents(conn *pgx.Conn) error {
 	q := db.New()
 
-	events, _ := q.ListEventsQuery(context.Background(), conn)
+	events, _ := q.ViewEventSeedQuery(context.Background(), conn)
 	if len(events) > 0 {
 		pkg.Log.Info("Events already seeded, skipping...")
 		return nil
 	}
 
 	// Manually seed a few events for reference
-	manualEvents := []db.InsertEventQueryParams{
+	manualEvents := []db.SeedEventQueryParams{
 		{
 			Name:           "Tech Workshop",
 			Blurb:          "A workshop on technology trends.",
@@ -200,7 +340,7 @@ func SeedEvents(conn *pgx.Conn) error {
 		},
 	}
 	for _, event := range manualEvents {
-		err := q.InsertEventQuery(context.Background(), conn, event)
+		err := q.SeedEventQuery(context.Background(), conn, event)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual event: %v\n", err)
 			return err
@@ -209,7 +349,7 @@ func SeedEvents(conn *pgx.Conn) error {
 
 	// Seed additional events with random data
 	for i := 2; i < 10; i++ {
-		event := db.InsertEventQueryParams{
+		event := db.SeedEventQueryParams{
 			Name:           gofakeit.BeerName() + " " + strconv.Itoa(i+1),
 			Blurb:          gofakeit.Sentence(10),
 			Description:    gofakeit.Paragraph(3, 5, 10, " "),
@@ -224,7 +364,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventMode:      db.EventModeEnum(gofakeit.RandomString([]string{"ONLINE", "OFFLINE"})),
 			AttendanceMode: db.AttendanceModeEnum(gofakeit.RandomString([]string{"SOLO", "DUO"})),
 		}
-		err := q.InsertEventQuery(context.Background(), conn, event)
+		err := q.SeedEventQuery(context.Background(), conn, event)
 		if err != nil {
 			pkg.Log.Error("Error inserting event: %v\n", err)
 			return err
@@ -238,7 +378,7 @@ func SeedEvents(conn *pgx.Conn) error {
 func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventToOrganizerMappingQuery(context.Background(), conn)
+	records, err := q.ViewEventToOrganizerMappingSeedQuery(context.Background(), conn)
 	if len(records) > 0 {
 		pkg.Log.Info("Event to Organizer mappings already seeded, skipping...")
 		return nil
@@ -247,20 +387,20 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 		pkg.Log.Error("failed to list event to organizer mappings: %v", err)
 	}
 
-	events, err := q.ListEventsQuery(context.Background(), conn)
+	events, err := q.ViewEventSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
-	organizers, err := q.ListOrganizersQuery(context.Background(), conn)
+	organizers, err := q.ViewOrganizerSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing organizers: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to organizers
-	manualMappings := []db.InsertEventToOrganizerMappingQueryParams{
+	manualMappings := []db.SeedEventToOrganizerMappingQueryParams{
 		{
 			EventID:     events[0].ID,
 			OrganizerID: organizers[0].ID,
@@ -271,7 +411,7 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual event to organizer mapping: %v\n", err)
 			return err
@@ -282,11 +422,11 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		organizer := organizers[i%len(organizers)]
-		mapping := db.InsertEventToOrganizerMappingQueryParams{
+		mapping := db.SeedEventToOrganizerMappingQueryParams{
 			EventID:     event.ID,
 			OrganizerID: organizer.ID,
 		}
-		err := q.InsertEventToOrganizerMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedEventToOrganizerMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting event to organizer mapping: %v\n", err)
 			return err
@@ -300,7 +440,7 @@ func SeedEventToOrganizerMapping(conn *pgx.Conn) error {
 func SeedEventSchedule(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventScheduleQuery(context.Background(), conn)
+	records, err := q.ViewEventScheduleSeedQuery(context.Background(), conn)
 	if len(records) > 0 {
 		pkg.Log.Info("Event schedules already seeded, skipping...")
 		return nil
@@ -309,14 +449,14 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		pkg.Log.Error("failed to list event schedules: %v", err)
 	}
 
-	events, err := q.ListEventsQuery(context.Background(), conn)
+	events, err := q.ViewEventSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
 	// Manually schedule the first two events
-	manualSchedules := []db.InsertEventScheduleQueryParams{
+	manualSchedules := []db.SeedEventScheduleQueryParams{
 		{
 			EventID: events[0].ID,
 			EventDate: pgtype.Date{
@@ -351,7 +491,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 		},
 	}
 	for _, schedule := range manualSchedules {
-		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
+		err := q.SeedEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual event schedule: %v\n", err)
 			return err
@@ -360,7 +500,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 
 	// Seed additional schedules with random data
 	for i := 2; i < len(events); i++ {
-		schedule := db.InsertEventScheduleQueryParams{
+		schedule := db.SeedEventScheduleQueryParams{
 			EventID: events[i].ID,
 			EventDate: pgtype.Date{
 				Time:  time.Now().AddDate(0, 0, 1).Truncate(24 * time.Hour),
@@ -376,7 +516,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 			},
 			Venue: gofakeit.City(),
 		}
-		err := q.InsertEventScheduleQuery(context.Background(), conn, schedule)
+		err := q.SeedEventScheduleQuery(context.Background(), conn, schedule)
 		if err != nil {
 			pkg.Log.Error("Error inserting event schedule: %v\n", err)
 			return err
@@ -390,7 +530,7 @@ func SeedEventSchedule(conn *pgx.Conn) error {
 func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListPeopleToEventMappingQuery(context.Background(), conn)
+	records, err := q.ViewPeopleToEventMappingSeedQuery(context.Background(), conn)
 	if len(records) > 0 {
 		pkg.Log.Info("People to Event mappings already seeded, skipping...")
 		return nil
@@ -399,20 +539,20 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		pkg.Log.Error("failed to list people to event mappings: %v", err)
 	}
 
-	events, err := q.ListEventsQuery(context.Background(), conn)
+	events, err := q.ViewEventSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
-	people, err := q.ListPeopleQuery(context.Background(), conn)
+	people, err := q.ViewPeopleSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing people: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to people
-	manualMappings := []db.InsertPeopleToEventMappingQueryParams{
+	manualMappings := []db.SeedPeopleToEventMappingQueryParams{
 		{
 			EventID:  events[0].ID,
 			PersonID: people[0].ID,
@@ -423,7 +563,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual people to event mapping: %v\n", err)
 			return err
@@ -434,11 +574,11 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		person := people[i%len(people)]
-		mapping := db.InsertPeopleToEventMappingQueryParams{
+		mapping := db.SeedPeopleToEventMappingQueryParams{
 			EventID:  event.ID,
 			PersonID: person.ID,
 		}
-		err := q.InsertPeopleToEventMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting people to event mapping: %v\n", err)
 			return err
@@ -452,7 +592,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 func SeedEventTagMapping(conn *pgx.Conn) error {
 	q := db.New()
 
-	records, err := q.ListEventTagMappingQuery(context.Background(), conn)
+	records, err := q.ViewEventTagMappingSeedQuery(context.Background(), conn)
 	if len(records) > 0 {
 		pkg.Log.Info("Event to Tag mappings already seeded, skipping...")
 		return nil
@@ -461,20 +601,20 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 		pkg.Log.Error("failed to list event to tag mappings: %v", err)
 	}
 
-	events, err := q.ListEventsQuery(context.Background(), conn)
+	events, err := q.ViewEventSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
 	}
 
-	tags, err := q.ListTagsQuery(context.Background(), conn)
+	tags, err := q.ViewTagSeedQuery(context.Background(), conn)
 	if err != nil {
 		pkg.Log.Error("Error listing tags: %v\n", err)
 		return err
 	}
 
 	// Manually map the first two events to tags
-	manualMappings := []db.InsertEventTagMappingQueryParams{
+	manualMappings := []db.SeedEventTagMappingQueryParams{
 		{
 			EventID: events[0].ID,
 			TagID:   tags[0].ID,
@@ -485,7 +625,7 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 		},
 	}
 	for _, mapping := range manualMappings {
-		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting manual event tag mapping: %v\n", err)
 			return err
@@ -496,11 +636,11 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	for i := 2; i < len(events); i++ {
 		event := events[i]
 		tag := tags[i%len(tags)]
-		mapping := db.InsertEventTagMappingQueryParams{
+		mapping := db.SeedEventTagMappingQueryParams{
 			TagID:   tag.ID,
 			EventID: event.ID,
 		}
-		err := q.InsertEventTagMappingQuery(context.Background(), conn, mapping)
+		err := q.SeedEventTagMappingQuery(context.Background(), conn, mapping)
 		if err != nil {
 			pkg.Log.Error("Error inserting event tag mapping: %v\n", err)
 			return err
