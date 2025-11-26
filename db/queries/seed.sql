@@ -1,4 +1,22 @@
--- name: InsertEventQuery :exec
+-- name: SeedAmritaStudentQuery :exec
+INSERT INTO student(
+  name, 
+  email,
+  password,
+  phone_number,
+  is_amrita_student,
+  amrita_roll_number
+) VALUES ($1, $2, $3, $4, $5, $6);
+
+-- name: SeedNonAmritaStudentQuery :exec
+INSERT INTO student(
+  name,
+  email,
+  password,
+  phone_number
+) VALUES ($1, $2, $3, $4);
+
+-- name: SeedEventQuery :exec
 INSERT INTO event(
   name, 
   blurb, 
@@ -15,23 +33,24 @@ INSERT INTO event(
   attendance_mode
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
--- name: InsertOrganizerQuery :exec
+-- name: SeedOrganizerQuery :exec
 INSERT INTO organizer(
   name, 
   email, 
+  password,
   org_type, 
   student_head, 
   student_co_head, 
   faculty_head
-) VALUES ($1, $2, $3, $4, $5, $6);
+) VALUES ($1, $2, $3, $4, $5, $6, $7);
 
--- name: InsertEventToOrganizerMappingQuery :exec
+-- name: SeedEventToOrganizerMappingQuery :exec
 INSERT INTO event_to_organizer_mapping(
   event_id, 
   organizer_id
 ) VALUES ($1, $2);
 
--- name: InsertEventScheduleQuery :exec
+-- name: SeedEventScheduleQuery :exec
 INSERT INTO event_schedule(
   event_id, 
   event_date, 
@@ -40,31 +59,37 @@ INSERT INTO event_schedule(
   venue
 ) VALUES ($1, $2, $3, $4, $5);
 
--- name: InsertPeopleQuery :exec
+-- name: SeedPeopleQuery :exec
 INSERT INTO people(
   name, 
   phone_number
 ) VALUES ($1, $2);
 
--- name: InsertPeopleToEventMappingQuery :exec
+-- name: SeedPeopleToEventMappingQuery :exec
 INSERT INTO people_to_event_mapping(
   event_id, 
   person_id
 ) VALUES ($1, $2);
 
--- name: InsertTagsQuery :exec
+-- name: SeedTagsQuery :exec
 INSERT INTO tags(
   name, 
   abbreviation
 ) VALUES ($1, $2);
 
--- name: InsertEventTagMappingQuery :exec
+-- name: SeedEventTagMappingQuery :exec
 INSERT INTO event_tag_mapping(
   tag_id, 
   event_id
 ) VALUES ($1, $2);
 
--- name: ListEventsQuery :many
+-- name: ViewStudentSeedQuery :many
+SELECT
+  COUNT(*)
+FROM student;
+  
+
+-- name: ViewEventSeedQuery :many
 SELECT 
   id, 
   name, 
@@ -82,7 +107,7 @@ SELECT
   attendance_mode
 FROM event;
 
--- name: ListPeopleQuery :many
+-- name: ViewPeopleSeedQuery :many
 SELECT 
   id, 
   name, 
@@ -91,14 +116,14 @@ SELECT
   email
 FROM people;
 
--- name: ListEventToOrganizerMappingQuery :many
+-- name: ViewEventToOrganizerMappingSeedQuery :many
 SELECT 
   id, 
   event_id, 
   organizer_id
 FROM event_to_organizer_mapping;
 
--- name: ListEventScheduleQuery :many
+-- name: ViewEventScheduleSeedQuery :many
 SELECT 
   id, 
   event_id, 
@@ -108,19 +133,37 @@ SELECT
   venue
 FROM event_schedule;
 
--- name: ListPeopleToEventMappingQuery :many
+-- name: ViewPeopleToEventMappingSeedQuery :many
 SELECT 
   id, 
   event_id, 
   person_id
 FROM people_to_event_mapping;
 
--- name: ListEventTagMappingQuery :many
+-- name: ViewEventTagMappingSeedQuery :many
 SELECT 
   id, 
   tag_id, 
   event_id
 FROM event_tag_mapping;
+
+-- name: ViewOrganizerSeedQuery :many
+SELECT
+  id,
+  name as organizer_name,
+  email as organizer_email,
+  org_type as organizer_type,
+  student_head,
+  student_co_head,
+  faculty_head
+FROM organizer;
+
+-- name: ViewTagSeedQuery :many
+SELECT
+    id,
+    name,
+    abbreviation
+FROM tags;
 
 -- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
@@ -133,3 +176,4 @@ TRUNCATE TABLE
   people_to_event_mapping, 
   event_tag_mapping 
 CASCADE;
+
