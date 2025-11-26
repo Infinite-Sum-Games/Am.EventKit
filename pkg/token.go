@@ -139,9 +139,6 @@ func ParseToken(token, tokenType string) (bool, *paseto.Token) {
 func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	ok, parsedAuthToken := ParseToken(authToken, "access_token")
 	if !ok {
-		if _, err := VerifyRefreshToken(c, refreshToken); err != nil {
-			return false
-		}
 		return false
 	}
 	ok, parsedRefToken := ParseToken(refreshToken, "refresh_token")
@@ -163,10 +160,10 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	}
 
 	// Setting up variables in *gin.Context for passing around in handlers
-	c.Set("userId", authData["audience"])
-	c.Set("email", authData["jti"])
-	c.Set("USER-ROLE", authData["USER-ROLE"])
-	c.Set("ORGANIZER-ROLE", authData["ORGANIZER-ROLE"])
+	c.Set("userId", refData["audience"])
+	c.Set("email", refData["jti"])
+	c.Set("USER-ROLE", refData["USER-ROLE"])
+	c.Set("ORGANIZER-ROLE", refData["ORGANIZER-ROLE"])
 
 	return true
 }
@@ -184,11 +181,14 @@ func VerifyTempToken(c *gin.Context, tempToken string) bool {
 }
 
 func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, error) {
-	email, ok := c.Get("email")
+	ok, parsedRefToken := ParseToken(refreshToken, "refresh_token")
 	if !ok {
-		Log.WarnCtx(c, "[GIN-ERROR]: Email not passed down in context")
-		return nil, fmt.Errorf("could not fetch email from gin.Context")
+		Log.ErrorCtx(c, "[REQ-ERROR]: Failed to parse refresh_token", nil)
+		return nil, fmt.Errorf("Failed to parse refresh token")
 	}
+
+	refreshClaims := parsedRefToken.Claims()
+	email := refreshClaims["jti"]
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -200,7 +200,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	defer conn.Release()
 
 	q := db.New()
-	token, err := q.CheckRefreshTokenQuery(ctx, conn, fmt.Sprintf("%v", email))
+	token, err := q.CheckRefreshTokenQuery(ctx, conn, email)
 
 	// Possible scenarios
 	// 1. RefreshToken does not exist

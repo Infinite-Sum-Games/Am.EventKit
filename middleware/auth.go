@@ -33,7 +33,6 @@ func Auth(c *gin.Context) {
 	}
 
 	if accessErr == http.ErrNoCookie {
-
 		// Check if refresh token is valid. If yes, mint a new access token
 		// otherwise go back to old token
 		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
@@ -59,6 +58,12 @@ func Auth(c *gin.Context) {
 			pkg.Log.FatalCtx(c, "[COOKIE-ERROR]: Failed to mint new auth token", err)
 			return
 		}
+
+		// Setup the context for further requests
+		c.Set("userId", userId)
+		c.Set("email", email)
+		c.Set("USER-ROLE", isStudent)
+		c.Set("ORGANIZER-ROLE", isOrganizer)
 
 		pkg.SetAuthCookie(c, authToken)
 	}
