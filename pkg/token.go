@@ -188,7 +188,8 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	}
 
 	refreshClaims := parsedRefToken.Claims()
-	email := refreshClaims["jti"]
+	emailClaim := refreshClaims["jti"]
+	email := fmt.Sprintf("%s", emailClaim)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
