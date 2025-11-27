@@ -15,14 +15,11 @@ params:path {
 }
 
 docs {
-  # GET /api/v1/events/:eventId
+  ## Get Event by EventID
   
-    - Input JSON: none
-    - Path params:
-      - `eventId` (UUID)
-  
-    ## 200 OK
-    ```json
+  ## 200 OK (Event exists with given UUID)
+  ```json
+  {
     "message": "Event fetched successfully",
       {
         "event": {
@@ -73,20 +70,27 @@ docs {
         ]
       }
     }
-    ```
+  }
+  ```
   
-    ## 400 Bad Request (invalid UUID)
-    ```json
-    { "message": "Request not processed due to invalid parameters" }
-    ```
+  ## 400 Bad Request (invalid UUID)
+  ```json
+  { 
+    "message": "Request not processed due to invalid parameters" 
+  }
+  ```
   
-    ## 404 Not Found
-    ```json
-    { "message": "Event not found" }
-    ```
+  ## 404 Not Found
+  ```json
+  { 
+    "message": "Event not found" 
+  }
+  ```
   
-    ## 500 Internal Server Error
-    ```json
-    { "message": "Oops! Something happened. Please try again later" }
-    ```
+  ## 500 Internal Server Error
+  ```json
+  { 
+    "message": "Oops! Something happened. Please try again later" 
+  }
+  ```
 }
