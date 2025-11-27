@@ -9,6 +9,7 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 func FetchUserSession(c *gin.Context) {
@@ -37,6 +38,13 @@ func FetchUserSession(c *gin.Context) {
 	q := db.New()
 
 	result, err := q.FetchUserSessionQuery(ctx, conn, email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No session found for user",
+		})
+		pkg.Log.WarnCtx(c, "[SESSION-WARN]: User is potentially deleted but cookies exist")
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
