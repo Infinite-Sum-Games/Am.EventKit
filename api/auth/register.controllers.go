@@ -88,7 +88,11 @@ func RegisterUserAccount(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
+		}
+	}()
 
 	q := db.New()
 	ok, err = q.FindEmailQuery(ctx, tx, req.Email)
@@ -244,7 +248,11 @@ func VerifyUserOtp(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to begin transaction.", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
+		}
+	}()
 
 	q := db.New()
 
