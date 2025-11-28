@@ -7,7 +7,40 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const createTagQuery = `-- name: CreateTagQuery :exec
+INSERT INTO tags (name, abbreviation)
+VALUES ($1, $2)
+`
+
+type CreateTagQueryParams struct {
+	Name         string `json:"name"`
+	Abbreviation string `json:"abbreviation"`
+}
+
+func (q *Queries) CreateTagQuery(ctx context.Context, db DBTX, arg CreateTagQueryParams) error {
+	_, err := db.Exec(ctx, createTagQuery, arg.Name, arg.Abbreviation)
+	return err
+}
+
+const getTagByIDQuery = `-- name: GetTagByIDQuery :one
+SELECT 
+    id,
+    name,
+    abbreviation
+FROM tags
+WHERE id = $1
+`
+
+func (q *Queries) GetTagByIDQuery(ctx context.Context, db DBTX, id uuid.UUID) (Tag, error) {
+	row := db.QueryRow(ctx, getTagByIDQuery, id)
+	var i Tag
+	err := row.Scan(&i.ID, &i.Name, &i.Abbreviation)
+	return i, err
+}
 
 const listTagsQuery = `-- name: ListTagsQuery :many
 SELECT
