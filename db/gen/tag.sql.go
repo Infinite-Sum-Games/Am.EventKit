@@ -26,6 +26,19 @@ func (q *Queries) CreateTagQuery(ctx context.Context, db DBTX, arg CreateTagQuer
 	return err
 }
 
+const deleteTagByIDQuery = `-- name: DeleteTagByIDQuery :execrows
+DELETE FROM tags
+WHERE id = $1
+`
+
+func (q *Queries) DeleteTagByIDQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteTagByIDQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getTagByIDQuery = `-- name: GetTagByIDQuery :one
 SELECT 
     id,
@@ -68,4 +81,27 @@ func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTagByIDQuery = `-- name: UpdateTagByIDQuery :execrows
+UPDATE tags
+SET
+    name = $2,
+    abbreviation = $3
+WHERE
+    id = $1
+`
+
+type UpdateTagByIDQueryParams struct {
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Abbreviation string    `json:"abbreviation"`
+}
+
+func (q *Queries) UpdateTagByIDQuery(ctx context.Context, db DBTX, arg UpdateTagByIDQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateTagByIDQuery, arg.ID, arg.Name, arg.Abbreviation)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
