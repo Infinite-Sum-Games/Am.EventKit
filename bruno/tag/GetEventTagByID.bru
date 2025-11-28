@@ -18,3 +18,35 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # GET /api/v1/tags/:tagId
+  
+  - Input JSON: none
+  - Path params:
+    - tagId (uuid) — required
+  - Query params: none
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Tag fetched successfully",
+    "tag": {
+      "id": "f3a9c5b2-1234-4e8d-9abc-111122223333",
+      "name": "Tech",
+      "abbreviation": "TECH"
+    }
+  }
+  ```
+  
+  ## 400 Bad Request (invalid UUID)
+  ```json
+  { "message": "Invalid tag ID format" }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}

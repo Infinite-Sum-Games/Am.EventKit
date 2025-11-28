@@ -21,3 +21,37 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # POST /api/v1/tags
+  
+  - Input JSON:
+  ```json
+  {
+    "name": "Tech",
+    "abbreviation": "TECH"
+  }
+  ```
+  
+  - Path params: none
+  - Query params: none
+  - Headers: Content-Type: application/json
+  
+  ## 201 Created
+  ```json
+  { "message": "Tag created successfully" }
+  ```
+  
+  ## 400 Bad Request (validation / missing fields)
+  ```json
+  {
+    "message": "Invalid request body",
+    "error": "binding error details..."
+  }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}
