@@ -1,0 +1,17 @@
+[Unit]
+Description=Anokha 2025 Go Backend
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=anokha
+Workingdirectory=/home/anokha/anokha-2025-backend
+
+ENVIRONMENT=PATH=/usr/local/go/bin:/usr/bin:/bin
+
+ExecStart=/usr/bin/make run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -8,12 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/* CSRF Verification Process
+*  1. Collect CSRF token from Header and Cookie
+*  2.
+ */
+
 func VerifyCsrf(c *gin.Context) {
 	csrfToken := c.Request.Header["X-Csrf-Token"]
 	if len(csrfToken) != 1 {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Could not find CSRF header.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -21,8 +26,8 @@ func VerifyCsrf(c *gin.Context) {
 	csrfFromHeader := csrfToken[0] // extracting into string var for reuse
 	if csrfFromHeader == "" {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Found empty CSRF header.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -31,7 +36,7 @@ func VerifyCsrf(c *gin.Context) {
 	if csrfErr == http.ErrNoCookie {
 		pkg.Log.WarnCtx(c, "[CSRF-WARN]: Could not find CSRF token in cookie.")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message": "Missing security token.",
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -44,15 +49,46 @@ func VerifyCsrf(c *gin.Context) {
 				csrfFromCookie,
 				csrfFromHeader,
 			))
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-			"message": "Security tokens do not match.",
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
 
-	pkg.Log.InfoCtx(
-		c,
-		"[SUCCESS]: Verified CSRF token successfully.",
-	)
+	// Check whether the CSRF token is parsable
+	ok, token := pkg.ParseToken(csrfFromCookie, "csrf_token")
+	if !ok {
+		pkg.Log.ErrorCtx(c,
+			"[CSRF-ERROR]: Failed to parse token",
+			fmt.Errorf("given string is not a CSRF token"),
+		)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Access denied",
+		})
+		return
+	}
+
+	// After parsing, extract the subject
+	tokenAud, tokenAudErr := token.GetAudience()
+	if tokenAudErr != nil {
+		pkg.Log.ErrorCtx(c,
+			"[CSRF-ERROR]: Could not find audience; bad token",
+			fmt.Errorf("given string is not a CSRF token"),
+		)
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "User is forbidden.",
+		})
+		return
+	}
+
+	// After extraction, check the path
+	if tokenAud != pkg.CsrfRoutes[c.FullPath()] {
+		pkg.Log.ErrorCtx(c, "[CSRF-ERROR]: Invalid token for submitted form", nil)
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "User is forbidden.",
+		})
+		return
+	}
+
 	c.Next()
 }

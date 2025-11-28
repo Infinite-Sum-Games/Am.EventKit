@@ -1,0 +1,48 @@
+meta {
+  name: getAllEvents
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/events
+  body: json
+  auth: inherit
+}
+
+docs {
+  # GET /api/v1/events
+  
+    - Input JSON: none
+    - Path params: none
+    - Query params: none
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Events list fetched successfully",
+      "events": [
+        {
+          "event_id": "a2b0d9f8-1a23-4c56-98ef-1234567890ab",
+          "event_image_url": "https://cdn.example.com/e/cover.jpg",
+          "event_name": "Robotics Challenge",
+          "event_status": "ACTIVE",
+          "event_description": "Short blurb here",
+          "event_date": "2025-02-10",
+          "is_group": true,
+          "tags": ["Tech", "Robotics"],
+          "event_price": "199.00",
+          "is_registered": false,
+          "is_starred": false,
+          "max_seats": 100,
+          "seats_filled": 42
+        }
+      ]
+    }
+    ```
+  
+    ## 500 Internal Server Error
+    ```json
+    { "message": "Oops! Something happened. Please try again later" }
+    ```
+}

@@ -1,0 +1,20 @@
+meta {
+  name: registerIndividualEvent
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/events/solo/register/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: event-uuid
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

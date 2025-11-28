@@ -1,0 +1,58 @@
+meta {
+  name: checkEmailExist
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/user/check
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "riteshkoushik39@gmail.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Check Email Existance
+  
+  This endpoint would allow you to check whether an already registered email is being entered for registration again. 
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Email is available."
+  }
+  ```
+  
+  ## 400 Bad Request
+  If you do not follow the request structure appropriately or if your JSON fields fail validation, this arises. Please refer to the `Body` section of this request to see the structure.
+  ```json
+  {
+    "message": "The request is malformed."
+  }
+  ```
+  
+  ## 409 Conflict
+  ```json
+  {
+    "message": "Email already registered."
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  This arises, due to issues in the server code. Report to the backend team immediately if you see this. Make sure to check the server logs in-case this happens.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
+}

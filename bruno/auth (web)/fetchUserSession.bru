@@ -1,0 +1,46 @@
+meta {
+  name: fetchUserSession
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/user/session
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Fetch User Session
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "User session obtained successfully",
+    "name": "Ritesh Koushik",
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu"
+  }
+  ````
+  
+  ## 404 Not Found
+  This can happen if the user account is deleted or banned by admin but on the client side, the cookies still exist. If it happens, hit the `/logout` endpoint.
+  ```json
+  {
+    "message": "No session found for user",
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  Inform the backend team if you see this. It can happen due to DB failures, auth failures 
+  and other bad things.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
+}

@@ -1,0 +1,24 @@
+meta {
+  name: logoutOrganizer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/organizer/logout
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  ## Logout Organizer
+  
+  This endpoint is meant to clear cookies. As this is being used by a mobile app which does not have a cookie-jar unlike as browser, we are yet to figure out the specifics on how to implement it. 
+  
+  > Yet to implement
+}

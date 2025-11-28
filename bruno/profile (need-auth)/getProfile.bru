@@ -1,0 +1,56 @@
+meta {
+  name: getProfile
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/user/profile
+  body: none
+  auth: inherit
+}
+
+headers {
+  : 
+}
+
+docs {
+  # GET api/v1/user/profile
+  
+  - Input JSON: none
+  - Path params: none
+  - Query params: none
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "User profile fetched successfully",
+    "profile": {
+      "name": "Sample",
+      "department_name": "CSE",
+      "email": "sample@gmail.com",
+      "phone_number": "8888888888",
+      "is_amrita_student": true,
+      "amrita_roll_number": "CB.SC.U4CSE23634",
+      "college_name": "Amrita",
+      "college_city": "Coimbatore",
+      "academic_year": "2027"
+    }
+  }
+  ```
+  
+  ## 404 Not Found
+  ```json
+  {
+    "message": "User profile does not exist"
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later"
+  }
+  ```
+  
+}

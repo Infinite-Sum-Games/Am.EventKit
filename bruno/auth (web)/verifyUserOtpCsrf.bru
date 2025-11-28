@@ -1,0 +1,39 @@
+meta {
+  name: verifyUserOtpCsrf
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/auth/user/register/otp/verify
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Verify User OTP (CSRF)
+  
+  This route gives you the CSRF token required to fill the OTP form for registering as a student on the Anokha website. Without this, your request will be rejected.
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Verify onboarding action initiated successfully",
+    "key": "csrf-token-string"
+  }
+  ```
+  The CSRF token must be sent in the subsequent request under the `X-Csrf-Token` header.
+  
+  ## 500 Internal Server Error
+  If you see this, report to the backend team immediately.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
+}

@@ -1,0 +1,16 @@
+meta {
+  name: getTickets
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/profile/events
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

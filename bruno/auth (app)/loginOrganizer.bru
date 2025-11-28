@@ -1,0 +1,23 @@
+meta {
+  name: loginOrganizer
+  type: http
+  seq: 2
+}
+
+post {
+  url: {baseUrl}}/auth/organizer/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "cse@amrita.edu", // fake emails following <dept-abbr>@amrita.edu pattern
+    "password": "SHA-256(hash-password)"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
