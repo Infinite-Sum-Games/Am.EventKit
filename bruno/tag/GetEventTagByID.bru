@@ -1,0 +1,20 @@
+meta {
+  name: GetEventTagByID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/tags/:tagId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  tagId: 5497f552-23ab-4ba8-b439-ec469b672eb0
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
