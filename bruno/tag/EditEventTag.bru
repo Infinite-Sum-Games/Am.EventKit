@@ -25,3 +25,46 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # PATCH /api/v1/tags/:tagId
+  
+  - Path params:
+    - tagId (uuid) — required
+  - Input JSON:
+  ```json
+  {
+    "name": "Tech & AI",
+    "abbreviation": "TECH"
+  }
+  ```
+  
+  Responses
+  - 200 OK
+  ```json
+  { "message": "Tag updated successfully" }
+  ```
+  
+  - 400 Bad Request (invalid UUID)
+  ```json
+  { "message": "Invalid tag ID format" }
+  ```
+  
+  - 400 Bad Request (validation error / missing fields)
+  ```json
+  {
+    "message": "Invalid request body"
+  }
+  ```
+  
+  - 404 Not Found (tag does not exist)
+  ```json
+  { "message": "Tag does not exist" }
+  ```
+  
+  - 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}
