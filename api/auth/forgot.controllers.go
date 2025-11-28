@@ -71,7 +71,11 @@ func ForgotUserPassword(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
+		}
+	}()
 
 	otpStr, otpSlice, err := pkg.GenerateOTP()
 	if err != nil {

@@ -50,7 +50,11 @@ func LoginUser(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
+		}
+	}()
 
 	q := db.New()
 	password, err := pkg.Hash(req.HashedPassword)
@@ -174,7 +178,11 @@ func LoginOrganizer(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
 		return
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
+		}
+	}()
 
 	q := db.New()
 

@@ -184,7 +184,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	ok, parsedRefToken := ParseToken(refreshToken, "refresh_token")
 	if !ok {
 		Log.ErrorCtx(c, "[REQ-ERROR]: Failed to parse refresh_token", nil)
-		return nil, fmt.Errorf("Failed to parse refresh token")
+		return nil, fmt.Errorf("failed to parse refresh token")
 	}
 
 	refreshClaims := parsedRefToken.Claims()
