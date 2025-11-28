@@ -1,0 +1,45 @@
+meta {
+  name: GetAllEventTags
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/tags
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # GET /api/v1/tags
+  
+    - Input JSON: none
+    - Path params: none
+    - Query params: none
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Tags list fetched successfully",
+      "tags": [
+        { "id": "f3a9c5b2-1234-4e8d-9abc-111122223333", "name": "Tech", "abbreviation": "TECH" },
+        { "id": "a7c2e9d8-5678-4e8d-9abc-444455556666", "name": "Art", "abbreviation": "ART" }
+      ]
+    }
+    ```
+  
+    ## 500 Internal Server Error (DB failure)
+    ```json
+    { "message": "Oops! Something happened. Please try again later" }
+    ```
+  
+    ## 500 Internal Server Error (connection failure)
+    ```json
+    { "message": "Oops! Something happened. Please try again later" }
+    ```
+}
