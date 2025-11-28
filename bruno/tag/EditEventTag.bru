@@ -1,0 +1,27 @@
+meta {
+  name: EditEventTag
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/tags/:tagId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  tagId: 5497f552-23ab-4ba8-b439-ec469b672eb0
+}
+
+body:json {
+  { 
+    "name": "ao", 
+    "abbreviation": "anokha" 
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

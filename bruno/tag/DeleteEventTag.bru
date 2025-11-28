@@ -1,0 +1,20 @@
+meta {
+  name: DeleteEventTag
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/tags/:tagId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  tagId: 6b09c0c2-aa47-42a4-9a95-8ebde1c85748
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
