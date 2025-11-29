@@ -39,22 +39,6 @@ func (q *Queries) DeleteTagByIDQuery(ctx context.Context, db DBTX, id uuid.UUID)
 	return result.RowsAffected(), nil
 }
 
-const getTagByIDQuery = `-- name: GetTagByIDQuery :one
-SELECT 
-    id,
-    name,
-    abbreviation
-FROM tags
-WHERE id = $1
-`
-
-func (q *Queries) GetTagByIDQuery(ctx context.Context, db DBTX, id uuid.UUID) (Tag, error) {
-	row := db.QueryRow(ctx, getTagByIDQuery, id)
-	var i Tag
-	err := row.Scan(&i.ID, &i.Name, &i.Abbreviation)
-	return i, err
-}
-
 const listTagsQuery = `-- name: ListTagsQuery :many
 SELECT
     id,

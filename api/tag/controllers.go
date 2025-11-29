@@ -53,7 +53,7 @@ func CreateEventTag(c *gin.Context) {
 	var req models.CreateTagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid request body",
+			"message": "Request is malformed",
 			"error":   err.Error(),
 		})
 		return
@@ -96,15 +96,16 @@ func EditEventTag(c *gin.Context) {
 	tagID, err := uuid.Parse(tagIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid tag ID format",
+			"message": "Request is malformed",
 		})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
 		return
 	}
 
 	var req models.CreateTagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid request body",
+			"message": "Request is malformed",
 			"error":   err.Error(),
 		})
 		return
@@ -137,6 +138,7 @@ func EditEventTag(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Tag does not exist",
 		})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Tag does not exist for update", nil)
 		return
 	}
 
@@ -154,7 +156,7 @@ func DeleteEventTag(c *gin.Context) {
 	tagID, err := uuid.Parse(tagIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid tag ID format",
+			"message": "Request is malformed",
 		})
 		return
 	}
@@ -164,7 +166,7 @@ func DeleteEventTag(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[TAG-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -182,6 +184,7 @@ func DeleteEventTag(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Tag does not exist",
 		})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Tag does not exist for delete", nil)
 		return
 	}
 
