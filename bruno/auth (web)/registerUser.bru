@@ -27,10 +27,10 @@ body:json {
 script:pre-request {
   const jar = bru.cookies.jar();
   
-  const path = bru.getEnvName("baseUrl") + "/auth/user/register";
+  const path = bru.getEnvVar("baseUrl") + "/auth/user/register";
   const cookieValue = await jar.getCookie(path, "csrf_token");
   
-  req.setHeader("X-Csrf-Token", cookieValue);
+  req.setHeader("X-Csrf-Token", cookieValue.value);
 }
 
 docs {
