@@ -46,46 +46,6 @@ func GetAllEventTags(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func GetEventTagByID(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	tagIDStr := c.Param("tagId")
-	tagID, err := uuid.Parse(tagIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid tag ID format",
-		})
-		return
-	}
-
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
-
-	q := db.New()
-	tag, err := q.GetTagByIDQuery(ctx, conn, tagID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to fetch tag", err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Tag fetched successfully",
-		"tag":     tag,
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func CreateEventTag(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
