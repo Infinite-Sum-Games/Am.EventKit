@@ -12,6 +12,7 @@ import (
 
 func SetAuthCookie(c *gin.Context, authTokenString string) {
 	// c.SetSameSite(http.SameSiteNoneMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"access_token",       // key
 		authTokenString,      // value
@@ -24,7 +25,7 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 }
 
 func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
-	// c.SetSameSite(http.SameSiteNoneMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"refresh_token",      // key
 		refreshTokenString,   // value
@@ -38,6 +39,7 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 
 func SetTempCookie(c *gin.Context, tempTokenString string) {
 	// c.SetSameSite(http.SameSiteNoneMode)
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"temp_token",         // key
 		tempTokenString,      // value
@@ -50,6 +52,7 @@ func SetTempCookie(c *gin.Context, tempTokenString string) {
 }
 
 func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
+	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"csrf_token",         // key
 		csrfTokenString,      // value
