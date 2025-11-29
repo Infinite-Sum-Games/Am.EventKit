@@ -5,16 +5,26 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/auth/login
-  body: none
+  url: {{baseUrl}}/auth/user/login
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu",
+    "password": "your-hashed-password-here"
+  }
 }
 
 script:pre-request {
   const jar = bru.cookies.jar();
   
-  const path = bru.getEnvName("baseUrl") + "/auth/login";
+  const path = bru.getEnvName("baseUrl") + "/auth/user/login";
+  console.log(path);
+  
   const cookieValue = await jar.getCookie(path, "csrf_token");
+  console.log(cookieValue);
   
   req.setHeader("X-Csrf-Token", cookieValue.value);
 }

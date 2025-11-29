@@ -15,7 +15,7 @@ body:json {
     "name": "Ritesh Koushik",
     "email": "riteshkoushik39@gmail.com",
     "password": "password123",
-    "phone_number": "9994622650",
+    "phone_number": "9199919999",
     "is_amrita_student": true,
     "amrita_roll_number": "CB.EN.U4CSE22253",
     "college_name": "Amrita Vishwa Vidyapeetham",
@@ -28,7 +28,10 @@ script:pre-request {
   const jar = bru.cookies.jar();
   
   const path = bru.getEnvVar("baseUrl") + "/auth/user/register";
+  console.log(path);
+  
   const cookieValue = await jar.getCookie(path, "csrf_token");
+  console.log(cookieValue);
   
   req.setHeader("X-Csrf-Token", cookieValue.value);
 }

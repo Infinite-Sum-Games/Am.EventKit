@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/auth/user/otp/verify
+  url: {{baseUrl}}/auth/user/register/otp/resend
   body: none
   auth: inherit
 }
@@ -13,4 +13,8 @@ get {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  # OTP Resend
 }

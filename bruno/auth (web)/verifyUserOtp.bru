@@ -5,16 +5,25 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/auth/user/otp/verify
-  body: none
+  url: {{baseUrl}}/auth/user/register/otp/verify
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "otp": "123456"
+  }
 }
 
 script:pre-request {
   const jar = bru.cookies.jar();
   
   const path = bru.getEnvName("baseUrl") + "/auth/user/otp/verify";
+  console.log(path);
+  
   const cookieValue = await jar.getCookie(path, "csrf_token");
+  console.log(cookieValue);
   
   req.setHeader("X-Csrf-Token", cookieValue.value);
 }
