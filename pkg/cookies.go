@@ -54,7 +54,7 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 		"csrf_token",         // key
 		csrfTokenString,      // value
 		5*60,                 // maxAge (5 minutes)
-		"/",                  // path to be constructed for restriction
+		c.FullPath(),         // path to be constructed for restriction
 		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure
 		true,                 // httpOnly
