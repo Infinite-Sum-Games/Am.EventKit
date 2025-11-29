@@ -198,6 +198,7 @@ CREATE TABLE people_to_event_mapping (
   id SERIAL NOT NULL,
   event_id UUID NOT NULL,
   person_id UUID NOT NULL,
+  event_day INTEGER[] NOT NULL,
 
   CONSTRAINT "people_to_event_mapping_pkey" PRIMARY KEY (id),
 
