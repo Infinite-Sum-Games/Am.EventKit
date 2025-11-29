@@ -11,6 +11,7 @@ import (
 )
 
 func SetAuthCookie(c *gin.Context, authTokenString string) {
+	// c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		"access_token",       // key
 		authTokenString,      // value
@@ -23,6 +24,7 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 }
 
 func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
+	// c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		"refresh_token",      // key
 		refreshTokenString,   // value
@@ -35,6 +37,7 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 }
 
 func SetTempCookie(c *gin.Context, tempTokenString string) {
+	// c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		"temp_token",         // key
 		tempTokenString,      // value
@@ -50,8 +53,8 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 	c.SetCookie(
 		"csrf_token",         // key
 		csrfTokenString,      // value
-		300,                  // maxAge (5 minutes)
-		c.FullPath(),         // path to be constructed for restriction
+		5*60,                 // maxAge (5 minutes)
+		"/",                  // path to be constructed for restriction
 		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure
 		true,                 // httpOnly
