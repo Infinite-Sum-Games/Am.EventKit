@@ -50,12 +50,8 @@ func CreateEventTag(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var req models.CreateTagRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-			"error":   err.Error(),
-		})
+	req, ok := pkg.ValidateRequest[models.CreateTagRequest](c)
+	if !ok {
 		return
 	}
 
@@ -102,12 +98,8 @@ func EditEventTag(c *gin.Context) {
 		return
 	}
 
-	var req models.CreateTagRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-			"error":   err.Error(),
-		})
+	req, ok := pkg.ValidateRequest[models.CreateTagRequest](c)
+	if !ok {
 		return
 	}
 
