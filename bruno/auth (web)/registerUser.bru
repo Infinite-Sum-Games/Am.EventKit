@@ -26,9 +26,9 @@ body:json {
 
 script:pre-request {
   const jar = bru.cookies.jar();
-  const cookieValue = jar.getCookie("http://localhost:9000", "csrf_token");
   
-  console.log("Grabbed cookie:", cookieValue);
+  const path = bru.getEnvName("baseUrl") + "/auth/user/register";
+  const cookieValue = await jar.getCookie(path, "csrf_token");
   
   req.setHeader("X-Csrf-Token", cookieValue);
 }
