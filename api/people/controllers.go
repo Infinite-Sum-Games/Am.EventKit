@@ -7,8 +7,10 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 func FetchAllPeople(c *gin.Context) {
@@ -132,7 +134,72 @@ func FetchPeopleByDay(c *gin.Context) {
 }
 
 func AddNewPerson(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.AddNewPersonWithEventParams](c)
+	if !ok {
+		return
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		return
+	}
+
+	defer func() {
+		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+		}
+	}()
+
+	q := db.New()
+
+	people, err := q.AddNewPersonQuery(ctx, tx, db.AddNewPersonQueryParams{
+		Name:        req.Name,
+		PhoneNumber: req.PhoneNumber,
+		Profession:  pkg.ToPgText(req.Profession),
+		Email:       pkg.ToPgText(req.Email),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to add new person", err)
+		return
+	}
+
+	person_to_event_mapping, err := q.MapPersonToEventQuery(ctx, tx, db.MapPersonToEventQueryParams{
+		PersonID: req.PersonID,
+		EventID:  req.EventID,
+		EventDay: req.EventDay,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to map person to event", err)
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":                 "Person added successfully",
+		"person_details":          people,
+		"person_to_event_mapping": person_to_event_mapping,
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func UpdatePersonDetails(c *gin.Context) {
