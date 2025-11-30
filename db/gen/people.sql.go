@@ -51,13 +51,15 @@ func (q *Queries) AddNewPersonQuery(ctx context.Context, db DBTX, arg AddNewPers
 	return i, err
 }
 
-const deletePersonQuery = `-- name: DeletePersonQuery :exec
+const deletePersonQuery = `-- name: DeletePersonQuery :one
 DELETE FROM people WHERE id = $1
+RETURNING id
 `
 
-func (q *Queries) DeletePersonQuery(ctx context.Context, db DBTX, id uuid.UUID) error {
-	_, err := db.Exec(ctx, deletePersonQuery, id)
-	return err
+func (q *Queries) DeletePersonQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, deletePersonQuery, id)
+	err := row.Scan(&id)
+	return id, err
 }
 
 const fetchAllPeopleQuery = `-- name: FetchAllPeopleQuery :many

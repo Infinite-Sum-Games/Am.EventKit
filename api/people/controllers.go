@@ -276,5 +276,62 @@ func UpdatePersonDetails(c *gin.Context) {
 }
 
 func DeletePerson(c *gin.Context) {
+	id := c.Param("id")
+	personId, err := uuid.Parse(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Request not processed due to invalid parameters",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid person ID parameter", err)
+		return
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		return
+	}
+
+	defer func() {
+		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+		}
+	}()
+
+	q := db.New()
+
+	deletedPerson, err := q.DeletePersonQuery(ctx, tx, personId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to delete person", err)
+		return
+	} else if len(deletedPerson) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Person not found",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for deletion", nil)
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Person deleted successfully",
+		"deleted_person": deletedPerson,
+	})
+	pkg.Log.SuccessCtx(c)
 }

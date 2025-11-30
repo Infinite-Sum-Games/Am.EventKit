@@ -54,5 +54,6 @@ phone_number,
 profession,
 email;
 
--- name: DeletePersonQuery :exec
-DELETE FROM people WHERE id = $1;
+-- name: DeletePersonQuery :one
+DELETE FROM people WHERE id = $1
+RETURNING id;
