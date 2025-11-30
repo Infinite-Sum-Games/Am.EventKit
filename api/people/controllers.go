@@ -68,3 +68,50 @@ func FetchPeopleByDepartment(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func FetchPeopleByEvent(c *gin.Context) {
+	event := c.Param("event")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	people, err := q.FetchPeopleByEventQuery(ctx, conn, event)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people by event", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "People list fetched successfully",
+		"people":  people,
+	})
+	pkg.Log.SuccessCtx(c)
+
+}
+
+func FetchPeopleByDay(c *gin.Context) {
+
+}
+
+func AddNewPerson(c *gin.Context) {
+
+}
+
+func UpdatePersonDetails(c *gin.Context) {
+
+}
+
+func DeletePerson(c *gin.Context) {
+
+}
