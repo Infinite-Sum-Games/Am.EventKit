@@ -101,6 +101,33 @@ func FetchPeopleByEvent(c *gin.Context) {
 }
 
 func FetchPeopleByDay(c *gin.Context) {
+	day := c.Param("day")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	people, err := q.FetchPeopleByDayQuery(ctx, conn, day)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people by day", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "People list fetched successfully",
+		"people":  people,
+	})
+	pkg.Log.SuccessCtx(c)
 
 }
 
