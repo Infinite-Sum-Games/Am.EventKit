@@ -20,7 +20,7 @@ func FetchUserProfile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
 		return
 	}
 
@@ -72,7 +72,7 @@ func EditUserProfileCsrf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
 		return
 	}
 
@@ -101,7 +101,7 @@ func EditUserProfile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
 		return
 	}
 
@@ -149,7 +149,7 @@ func EditUserProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "User profile does not exist",
 		})
-		pkg.Log.FatalCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
 		return
 	}
 
