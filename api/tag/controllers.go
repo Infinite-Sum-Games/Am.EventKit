@@ -150,6 +150,7 @@ func DeleteEventTag(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Request is malformed",
 		})
+		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
 		return
 	}
 
