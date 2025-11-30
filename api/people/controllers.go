@@ -10,6 +10,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -203,7 +204,75 @@ func AddNewPerson(c *gin.Context) {
 }
 
 func UpdatePersonDetails(c *gin.Context) {
+	id := c.Param("id")
+	personId, err := uuid.Parse(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Request not processed due to invalid parameters",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid person ID parameter", err)
+		return
+	}
 
+	req, ok := pkg.ValidateRequest[models.UpdatePersonEventRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		return
+	}
+
+	defer func() {
+		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
+			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+		}
+	}()
+
+	q := db.New()
+
+	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, tx, db.UpdatePersonDetailsQueryParams{
+		ID:          personId,
+		Name:        req.Name,
+		PhoneNumber: req.PhoneNumber,
+		Profession:  pkg.ToPgText(req.Profession),
+		Email:       pkg.ToPgText(req.Email),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to update person details", err)
+		return
+	} else if updatedPerson.ID == uuid.Nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Person not found",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for update", nil)
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Person details updated successfully",
+		"updated_person": updatedPerson,
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func DeletePerson(c *gin.Context) {
