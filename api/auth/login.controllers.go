@@ -111,6 +111,8 @@ func LoginUser(c *gin.Context) {
 			return
 		}
 		pkg.SetRefreshCookie(c, token.String)
+	} else {
+		pkg.SetRefreshCookie(c, result.RefreshToken.String)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -159,7 +161,6 @@ func LoginOrganizerCsrf(c *gin.Context) {
 }
 
 func LoginOrganizer(c *gin.Context) {
-	// For organizers, email should be like - <department>@cb.amrita.edu
 	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
 	if !ok {
 		return
@@ -185,34 +186,29 @@ func LoginOrganizer(c *gin.Context) {
 
 	q := db.New()
 
-	password, err := pkg.Hash(req.HashedPassword)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to hash password", err)
-		return
-	}
-
-	result, err := q.LoginOrganizerQuery(ctx, tx, db.LoginOrganizerQueryParams{
-		Email:    req.Email,
-		Password: password,
-	})
+	result, err := q.LoginOrganizerQuery(ctx, tx, req.Email)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "No organizer with given email and password found",
+			"message": "No organizer with given credentials exist",
 		})
 
-		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Invalid email and password")
+		pkg.Log.WarnCtx(c, "[AUTH-WARN]: No organizer with given email")
 		return
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Could not login organizer", err)
 		return
+	}
+
+	err = pkg.CompareHash(result.Password, req.HashedPassword)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No organizer with given credentials exist",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Password hash does not match", err)
 	}
 
 	// Check if there is a refreshToken already. If it exists, just mint an
@@ -244,8 +240,9 @@ func LoginOrganizer(c *gin.Context) {
 			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Could not add refresh token to DB", err)
 			return
 		}
-
 		pkg.SetRefreshCookie(c, token.String)
+	} else {
+		pkg.SetRefreshCookie(c, result.RefreshToken.String)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

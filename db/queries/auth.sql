@@ -113,12 +113,12 @@ WHERE
 SELECT
   id,
   email,
+  password,
   refresh_token
 FROM
   organizer
 WHERE
-  email = $1
-  AND password = $2;
+  email = $1;
 
 -- name: PasswordChangeOtpQuery :one
 INSERT INTO password_reset (

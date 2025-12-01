@@ -102,29 +102,30 @@ const loginOrganizerQuery = `-- name: LoginOrganizerQuery :one
 SELECT
   id,
   email,
+  password,
   refresh_token
 FROM
   organizer
 WHERE
   email = $1
-  AND password = $2
 `
-
-type LoginOrganizerQueryParams struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 type LoginOrganizerQueryRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
+	Password     string      `json:"password"`
 	RefreshToken pgtype.Text `json:"refresh_token"`
 }
 
-func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, arg LoginOrganizerQueryParams) (LoginOrganizerQueryRow, error) {
-	row := db.QueryRow(ctx, loginOrganizerQuery, arg.Email, arg.Password)
+func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, email string) (LoginOrganizerQueryRow, error) {
+	row := db.QueryRow(ctx, loginOrganizerQuery, email)
 	var i LoginOrganizerQueryRow
-	err := row.Scan(&i.ID, &i.Email, &i.RefreshToken)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.RefreshToken,
+	)
 	return i, err
 }
 
