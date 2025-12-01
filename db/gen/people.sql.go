@@ -93,20 +93,33 @@ func (q *Queries) FetchAllPeopleQuery(ctx context.Context, db DBTX) ([]Person, e
 }
 
 const fetchPeopleByDayQuery = `-- name: FetchPeopleByDayQuery :many
-SELECT id, name, phone_number, profession, email FROM people WHERE ARRAY_CONTAINS(event_day, $1)
+SELECT
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people
+INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
+WHERE people_to_event_mapping.event_day && $1
 `
 
-func (q *Queries) FetchPeopleByDayQuery(ctx context.Context, db DBTX, arrayContains interface{}) ([]Person, error) {
-	rows, err := db.Query(ctx, fetchPeopleByDayQuery, arrayContains)
+type FetchPeopleByDayQueryRow struct {
+	Name        string      `json:"name"`
+	PhoneNumber string      `json:"phone_number"`
+	Profession  pgtype.Text `json:"profession"`
+	Email       pgtype.Text `json:"email"`
+}
+
+func (q *Queries) FetchPeopleByDayQuery(ctx context.Context, db DBTX, eventDay []int32) ([]FetchPeopleByDayQueryRow, error) {
+	rows, err := db.Query(ctx, fetchPeopleByDayQuery, eventDay)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Person
+	var items []FetchPeopleByDayQueryRow
 	for rows.Next() {
-		var i Person
+		var i FetchPeopleByDayQueryRow
 		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.PhoneNumber,
 			&i.Profession,
@@ -123,41 +136,27 @@ func (q *Queries) FetchPeopleByDayQuery(ctx context.Context, db DBTX, arrayConta
 }
 
 const fetchPeopleByDepartmentQuery = `-- name: FetchPeopleByDepartmentQuery :many
-SELECT people.id, people.name, phone_number, profession, people.email, people_to_event_mapping.id, people_to_event_mapping.event_id, person_id, event_day, event_to_organizer_mapping.id, event_to_organizer_mapping.event_id, organizer_id, organizer.id, organizer.name, organizer.email, password, org_type, student_head, student_co_head, faculty_head, refresh_token, created_at, updated_at FROM people 
+SELECT 
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people 
 INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
 INNER JOIN event_to_organizer_mapping ON people_to_event_mapping.event_id = event_to_organizer_mapping.event_id
 INNER JOIN organizer ON event_to_organizer_mapping.organizer_id = organizer.id
-WHERE organizer.name = $1
+WHERE organizer.id = $1
 `
 
 type FetchPeopleByDepartmentQueryRow struct {
-	ID            uuid.UUID         `json:"id"`
-	Name          string            `json:"name"`
-	PhoneNumber   string            `json:"phone_number"`
-	Profession    pgtype.Text       `json:"profession"`
-	Email         pgtype.Text       `json:"email"`
-	ID_2          int32             `json:"id_2"`
-	EventID       uuid.UUID         `json:"event_id"`
-	PersonID      uuid.UUID         `json:"person_id"`
-	EventDay      []int32           `json:"event_day"`
-	ID_3          int32             `json:"id_3"`
-	EventID_2     uuid.UUID         `json:"event_id_2"`
-	OrganizerID   uuid.UUID         `json:"organizer_id"`
-	ID_4          uuid.UUID         `json:"id_4"`
-	Name_2        string            `json:"name_2"`
-	Email_2       string            `json:"email_2"`
-	Password      string            `json:"password"`
-	OrgType       OrganizerTypeEnum `json:"org_type"`
-	StudentHead   string            `json:"student_head"`
-	StudentCoHead pgtype.Text       `json:"student_co_head"`
-	FacultyHead   string            `json:"faculty_head"`
-	RefreshToken  pgtype.Text       `json:"refresh_token"`
-	CreatedAt     pgtype.Timestamp  `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
+	Name        string      `json:"name"`
+	PhoneNumber string      `json:"phone_number"`
+	Profession  pgtype.Text `json:"profession"`
+	Email       pgtype.Text `json:"email"`
 }
 
-func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, name string) ([]FetchPeopleByDepartmentQueryRow, error) {
-	rows, err := db.Query(ctx, fetchPeopleByDepartmentQuery, name)
+func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, id uuid.UUID) ([]FetchPeopleByDepartmentQueryRow, error) {
+	rows, err := db.Query(ctx, fetchPeopleByDepartmentQuery, id)
 	if err != nil {
 		return nil, err
 	}
@@ -166,29 +165,10 @@ func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, nam
 	for rows.Next() {
 		var i FetchPeopleByDepartmentQueryRow
 		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.PhoneNumber,
 			&i.Profession,
 			&i.Email,
-			&i.ID_2,
-			&i.EventID,
-			&i.PersonID,
-			&i.EventDay,
-			&i.ID_3,
-			&i.EventID_2,
-			&i.OrganizerID,
-			&i.ID_4,
-			&i.Name_2,
-			&i.Email_2,
-			&i.Password,
-			&i.OrgType,
-			&i.StudentHead,
-			&i.StudentCoHead,
-			&i.FacultyHead,
-			&i.RefreshToken,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -201,45 +181,26 @@ func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, nam
 }
 
 const fetchPeopleByEventQuery = `-- name: FetchPeopleByEventQuery :many
-SELECT people.id, people.name, phone_number, profession, email, people_to_event_mapping.id, event_id, person_id, event_day, event.id, event.name, blurb, description, cover_image_url, price, is_per_head, rules, event_type, is_group, max_teamsize, min_teamsize, total_seats, seats_filled, event_status, event_mode, attendance_mode, created_at, updated_at FROM people
+SELECT
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people
 INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
 INNER JOIN event ON people_to_event_mapping.event_id = event.id
-WHERE event.name = $1
+WHERE event.id = $1
 `
 
 type FetchPeopleByEventQueryRow struct {
-	ID             uuid.UUID          `json:"id"`
-	Name           string             `json:"name"`
-	PhoneNumber    string             `json:"phone_number"`
-	Profession     pgtype.Text        `json:"profession"`
-	Email          pgtype.Text        `json:"email"`
-	ID_2           int32              `json:"id_2"`
-	EventID        uuid.UUID          `json:"event_id"`
-	PersonID       uuid.UUID          `json:"person_id"`
-	EventDay       []int32            `json:"event_day"`
-	ID_3           uuid.UUID          `json:"id_3"`
-	Name_2         string             `json:"name_2"`
-	Blurb          string             `json:"blurb"`
-	Description    string             `json:"description"`
-	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
-	Price          pgtype.Numeric     `json:"price"`
-	IsPerHead      bool               `json:"is_per_head"`
-	Rules          string             `json:"rules"`
-	EventType      EventTypeEnum      `json:"event_type"`
-	IsGroup        bool               `json:"is_group"`
-	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
-	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
-	TotalSeats     int32              `json:"total_seats"`
-	SeatsFilled    int32              `json:"seats_filled"`
-	EventStatus    EventStatusEnum    `json:"event_status"`
-	EventMode      EventModeEnum      `json:"event_mode"`
-	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
-	CreatedAt      pgtype.Timestamp   `json:"created_at"`
-	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
+	Name        string      `json:"name"`
+	PhoneNumber string      `json:"phone_number"`
+	Profession  pgtype.Text `json:"profession"`
+	Email       pgtype.Text `json:"email"`
 }
 
-func (q *Queries) FetchPeopleByEventQuery(ctx context.Context, db DBTX, name string) ([]FetchPeopleByEventQueryRow, error) {
-	rows, err := db.Query(ctx, fetchPeopleByEventQuery, name)
+func (q *Queries) FetchPeopleByEventQuery(ctx context.Context, db DBTX, id uuid.UUID) ([]FetchPeopleByEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchPeopleByEventQuery, id)
 	if err != nil {
 		return nil, err
 	}
@@ -248,34 +209,10 @@ func (q *Queries) FetchPeopleByEventQuery(ctx context.Context, db DBTX, name str
 	for rows.Next() {
 		var i FetchPeopleByEventQueryRow
 		if err := rows.Scan(
-			&i.ID,
 			&i.Name,
 			&i.PhoneNumber,
 			&i.Profession,
 			&i.Email,
-			&i.ID_2,
-			&i.EventID,
-			&i.PersonID,
-			&i.EventDay,
-			&i.ID_3,
-			&i.Name_2,
-			&i.Blurb,
-			&i.Description,
-			&i.CoverImageUrl,
-			&i.Price,
-			&i.IsPerHead,
-			&i.Rules,
-			&i.EventType,
-			&i.IsGroup,
-			&i.MaxTeamsize,
-			&i.MinTeamsize,
-			&i.TotalSeats,
-			&i.SeatsFilled,
-			&i.EventStatus,
-			&i.EventMode,
-			&i.AttendanceMode,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

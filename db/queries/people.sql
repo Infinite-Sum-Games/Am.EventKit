@@ -2,19 +2,37 @@
 SELECT * FROM people;
 
 -- name: FetchPeopleByDepartmentQuery :many
-SELECT * FROM people 
+SELECT 
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people 
 INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
 INNER JOIN event_to_organizer_mapping ON people_to_event_mapping.event_id = event_to_organizer_mapping.event_id
 INNER JOIN organizer ON event_to_organizer_mapping.organizer_id = organizer.id
-WHERE organizer.name = $1;
+WHERE organizer.id = $1;
+
 -- name: FetchPeopleByEventQuery :many
-SELECT * FROM people
+SELECT
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people
 INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
 INNER JOIN event ON people_to_event_mapping.event_id = event.id
-WHERE event.name = $1;
+WHERE event.id = $1;
 
 -- name: FetchPeopleByDayQuery :many
-SELECT * FROM people WHERE ARRAY_CONTAINS(event_day, $1);
+SELECT
+people.name, 
+people.phone_number, 
+people.profession, 
+people.email
+FROM people
+INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
+WHERE people_to_event_mapping.event_day && $1;
 
 -- name: AddNewPersonQuery :one
 INSERT INTO people (
