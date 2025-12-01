@@ -22,7 +22,7 @@ func FetchAllPeople(c *gin.Context) {
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -60,7 +60,7 @@ func FetchPeopleByDepartment(c *gin.Context) {
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -98,7 +98,7 @@ func FetchPeopleByEvent(c *gin.Context) {
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -138,7 +138,7 @@ func FetchPeopleByDay(c *gin.Context) {
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -161,7 +161,7 @@ func FetchPeopleByDay(c *gin.Context) {
 }
 
 func AddNewPerson(c *gin.Context) {
-	req, ok := pkg.ValidateRequest[models.AddNewPersonWithEventParams](c)
+	req, ok := pkg.ValidateRequest[models.CreateNewPersonWithEventRequest](c)
 	if !ok {
 		return
 	}
@@ -174,13 +174,13 @@ func AddNewPerson(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
 		return
 	}
 
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+			pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
 		}
 	}()
 
@@ -217,7 +217,7 @@ func AddNewPerson(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
 
@@ -253,13 +253,13 @@ func UpdatePersonDetails(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
 		return
 	}
 
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+			pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
 		}
 	}()
 
@@ -290,7 +290,7 @@ func UpdatePersonDetails(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
 
@@ -320,13 +320,13 @@ func DeletePerson(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to begin DB transaction", err)
 		return
 	}
 
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
+			pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to rollback DB transaction", err)
 		}
 	}()
 
@@ -351,7 +351,7 @@ func DeletePerson(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
 
