@@ -1,19 +1,20 @@
 package pkg
 
 import (
-	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// Totally over-engineered OTP generation function :(
+// Totally over-engineered OTP generation function :) (Fixed!)
 func GenerateOTP() (string, []string, error) {
-	rand.Seed(time.Now().UnixNano())
-	num := rand.Intn(900000) + 100000
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
+	num := r.Intn(900000) + 100000
 	strNum := strconv.Itoa(num)
 	strSlice := strings.Split(strNum, "")
-	fmt.Println(strSlice)
+
 	return strNum, strSlice, nil
 }
