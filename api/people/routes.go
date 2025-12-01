@@ -6,14 +6,14 @@ import (
 )
 
 func PeopleRoutes(r *gin.RouterGroup) {
-	r.GET("/people", mw.Auth, FetchAllPeople)
-	r.GET("/people/department/:dept", mw.Auth, FetchPeopleByDepartment)
-	r.GET("/people/event/:event", mw.Auth, FetchPeopleByEvent)
-	r.GET("/people/day/:day", mw.Auth, FetchPeopleByDay)
+	r.GET("/", FetchAllPeople)
+	r.GET("/department/:dept", FetchPeopleByDepartment)
+	r.GET("/event/:event", FetchPeopleByEvent)
+	r.GET("/day/:day", mw.Auth, FetchPeopleByDay)
 
-	r.POST("/people", mw.Auth, AddNewPerson)
+	r.POST("/", AddNewPerson)
 
-	r.PUT("/people/:id", mw.Auth, UpdatePersonDetails)
+	r.PUT("/:id", UpdatePersonDetails)
 
-	r.DELETE("/people/:id", mw.Auth, DeletePerson)
+	r.DELETE("/:id", DeletePerson)
 }
