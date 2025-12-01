@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -123,14 +124,15 @@ func StartApp() {
 
 	// Initialize server
 	server := &http.Server{
-		Addr:    ":" + "9000",
+		Addr:    ":" + strconv.Itoa(cmd.Env.Port),
 		Handler: SetupRouter(mail.Mail),
 	}
 
 	go func() {
-		pkg.Log.Info("[OK]: Start the server on port 9000")
+		portStr := strconv.Itoa(cmd.Env.Port)
+		pkg.Log.Info("[OK]: Start the server on port " + portStr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			pkg.Log.Fatal("could not listen on port 9000", err)
+			pkg.Log.Fatal("could not listen on port "+portStr, err)
 		} // Blocking in nature (?)
 	}()
 
