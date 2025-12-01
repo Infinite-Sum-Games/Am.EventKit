@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
-	"strconv"
 
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
@@ -132,7 +132,7 @@ func StartApp() {
 		portStr := strconv.Itoa(cmd.Env.Port)
 		pkg.Log.Info("[OK]: Start the server on port " + portStr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			pkg.Log.Fatal("could not listen on port " + portStr, err)
+			pkg.Log.Fatal("could not listen on port "+portStr, err)
 		} // Blocking in nature (?)
 	}()
 
