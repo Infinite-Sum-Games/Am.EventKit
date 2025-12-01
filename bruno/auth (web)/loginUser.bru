@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "email": "cb.en.u4cse22038@cb.students.amrita.edu",
+    "email": "cb.en.u4cse22538@cb.students.amrita.edu",
     "password": "password123"
   }
 }
@@ -32,4 +32,41 @@ script:pre-request {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  # Login User
+  > Remember to fetch the CSRF token first before proceeding with the request
+  
+  ## 200 OK
+  ```json
+  {
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu",
+    "message": "User logged in successfully",
+    "name": "Ritesh Koushik"
+  }
+  ```
+  
+  ## 401 Unauthorized
+  Missing CSRF token
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 404 Not Found
+  Either email or password is wrong, the same error will be shown
+  ```json
+  {
+    "message": "Invalid credentials"
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
 }
