@@ -1,0 +1,29 @@
+meta {
+  name: AddNewPerson
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/people
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "phone_number": "0000000000",
+    "profession": "Speaker",
+    "email": "john@example.com",
+  
+    "event_id": "18631a21-0a16-4f04-bd7f-9de07e08c061",
+    "person_id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71",
+    "event_day": [1, 2]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

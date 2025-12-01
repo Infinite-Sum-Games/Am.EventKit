@@ -1,0 +1,16 @@
+meta {
+  name: deletePerson
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/people/3546e324-390c-4134-a13e-1c7b79b0b193
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
