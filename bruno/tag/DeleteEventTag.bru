@@ -1,0 +1,50 @@
+meta {
+  name: DeleteEventTag
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/tags/:tagId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  tagId: 6b09c0c2-aa47-42a4-9a95-8ebde1c85748
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Delete tag by UUID
+  
+  - Path params:
+    - tagId (uuid) — required
+  - Input JSON: none
+  
+  Responses
+  - 200 OK
+  ```json
+  { "message": "Tag deleted successfully" }
+  ```
+  
+  - 400 Bad Request (invalid UUID)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  - 404 Not Found (tag does not exist)
+  ```json
+  { "message": "Tag does not exist" }
+  ```
+  
+  - 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}

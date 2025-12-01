@@ -1,0 +1,68 @@
+meta {
+  name: EditEventTag
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/tags/:tagId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  tagId: 5497f552-23ab-4ba8-b439-ec469b672eb0
+}
+
+body:json {
+  { 
+    "name": "ao", 
+    "abbreviation": "anokha" 
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Edit tag by UUID
+  
+  - Path params:
+    - tagId (uuid) — required
+  - Input JSON:
+  ```json
+  {
+    "name": "Tech & AI",
+    "abbreviation": "TECH"
+  }
+  ```
+  
+  Responses
+  - 200 OK
+  ```json
+  { "message": "Tag updated successfully" }
+  ```
+  
+  - 400 Bad Request (invalid UUID)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  - 400 Bad Request (validation error / missing fields)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  - 404 Not Found (tag does not exist)
+  ```json
+  { "message": "Tag does not exist" }
+  ```
+  
+  - 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}
