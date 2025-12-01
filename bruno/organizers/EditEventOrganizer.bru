@@ -1,0 +1,73 @@
+meta {
+  name: EditEventOrganizer
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/organizers/:organizerId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  tagId: d27edfb6-7ba1-44d6-a111-130d7f20f2a1
+}
+
+body:json {
+  {
+    "name": "Artificial Intelligence and Data Science",
+    "email": "aid@cb.amrita.edu",
+    "password": "pass123",
+    "org_type": "DEPARTMENT",
+    "student_head": "Andrew Karpathy",
+    "student_co_head": "Andrew Ng",
+    "faculty_head": "Dr. Sam Altman"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+
+docs {
+  # Edit organizer
+  
+  - Path params:
+    - organizerId (uuid) — required
+  
+  Input JSON:
+  ```json
+  {
+    "name": "Updated Name",
+    "email": "updated@cb.amrita.edu",
+    "password": "newpass",
+    "org_type": "CLUB",
+    "student_head": "Head",
+    "student_co_head": "Co-head",
+    "faculty_head": "Faculty"
+  }
+  ```
+  Responses
+  ## 200 OK
+  ```json
+  { "message": "Organizer updated successfully" }
+  ```
+  
+  ## 400 Bad Request (invalid UUID / validation error / missing fields)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  ## 404 Not Found (organizer does not exist)
+  ```json
+  { "message": "Organizer does not exist" }
+  ``` 
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}

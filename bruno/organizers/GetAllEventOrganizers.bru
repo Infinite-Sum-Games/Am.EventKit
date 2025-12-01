@@ -1,0 +1,70 @@
+meta {
+  name: GetAllEventOrganizers
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/organizers
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # List all organizers
+  
+  - Input JSON: none
+  - Path params: none
+  - Query params: none
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Organizers list fetched successfully",
+    "organizers": [
+      {
+        "id": "4a1e47d7-3854-482a-9866-401b9bda4c0d",
+        "organizer_name": "Computer Science and Engineering",
+        "organizer_email": "cse@cb.amrita.edu",
+        "organizer_type": "DEPARTMENT",
+        "student_head": "Tharun Kumarr A",
+        "student_co_head": null,
+        "faculty_head": "Dr. Ritwik M"
+      },
+      {
+        "id": "6d940e77-c6db-4313-b261-c3e236c61060",
+        "organizer_name": "Amrita Centre for Entrepreneurship",
+        "organizer_email": "ace@cb.amrita.edu",
+        "organizer_type": "CLUB",
+        "student_head": "Thanus Kumaar A",
+        "student_co_head": null,
+        "faculty_head": "Dr. Dhanya MD"
+      },
+      {
+        "id": "23c710f8-0505-40ef-9d32-6a677f7d849b",
+        "organizer_name": "Institution of Telecommunication Engineers",
+        "organizer_email": "iete@cb.amrita.edu",
+        "organizer_type": "CLUB",
+        "student_head": "Thanus Kumaar A",
+        "student_co_head": null,
+        "faculty_head": "Dr. Ritwik M"
+      }
+    ]
+  }
+  ```
+  
+  ## 500 Internal Server Error (DB failure)
+  ```json
+      { "message": "Oops! Something happened. Please try again later" }
+  ```
+    
+  ## 500 Internal Server Error (connection failure)
+  ```json
+      { "message": "Oops! Something happened. Please try again later" }
+  ```
+}
