@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
+	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 
 	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	mail "github.com/Thanus-Kumaar/anokha-2025-backend/mail"
@@ -57,11 +59,13 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	userRouter := v1.Group("/user")
 	eventRouter := v1.Group("/events")
 	peopleRouter := v1.Group("/people")
+	tagRouter := v1.Group("/tags")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
+	apiTag.TagRoutes(tagRouter)
 	apiAttend.AttendanceRoutes(attendanceRouter)
 	apiPeople.PeopleRoutes(peopleRouter)
 
@@ -123,14 +127,15 @@ func StartApp() {
 
 	// Initialize server
 	server := &http.Server{
-		Addr:    ":" + "9000",
+		Addr:    ":" + strconv.Itoa(cmd.Env.Port),
 		Handler: SetupRouter(mail.Mail),
 	}
 
 	go func() {
-		pkg.Log.Info("[OK]: Start the server on port 9000")
+		portStr := strconv.Itoa(cmd.Env.Port)
+		pkg.Log.Info("[OK]: Start the server on port " + portStr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			pkg.Log.Fatal("could not listen on port 9000", err)
+			pkg.Log.Fatal("could not listen on port "+portStr, err)
 		} // Blocking in nature (?)
 	}()
 

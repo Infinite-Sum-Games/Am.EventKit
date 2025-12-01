@@ -1,0 +1,54 @@
+meta {
+  name: CreateEventTag
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/tags
+  body: json
+  auth: inherit
+}
+
+body:json {
+  { 
+    "name": "ao", 
+    "abbreviation": "anokha" 
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Create a new tag
+  
+  - Input JSON:
+  ```json
+  {
+    "name": "Tech",
+    "abbreviation": "TECH"
+  }
+  ```
+  
+  - Path params: none
+  - Query params: none
+  - Headers: Content-Type: application/json
+  
+  ## 201 Created
+  ```json
+  { "message": "Tag created successfully" }
+  ```
+  
+  ## 400 Bad Request (validation / missing fields)
+  ```json
+  {"message": "Request is malformed"}
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}
