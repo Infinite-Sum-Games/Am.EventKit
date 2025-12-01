@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
@@ -43,7 +44,15 @@ func FetchAllPeople(c *gin.Context) {
 }
 
 func FetchPeopleByDepartment(c *gin.Context) {
-	dept := c.Param("dept")
+	id := c.Param("dept_id")
+	dept_id, err := uuid.Parse(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Request not processed due to invalid parameters",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid department ID parameter", err)
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -58,7 +67,7 @@ func FetchPeopleByDepartment(c *gin.Context) {
 
 	q := db.New()
 
-	people, err := q.FetchPeopleByDepartmentQuery(ctx, conn, dept)
+	people, err := q.FetchPeopleByDepartmentQuery(ctx, conn, dept_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people by department", err)
@@ -73,7 +82,15 @@ func FetchPeopleByDepartment(c *gin.Context) {
 }
 
 func FetchPeopleByEvent(c *gin.Context) {
-	event := c.Param("event")
+	id := c.Param("event_id")
+	event_id, err := uuid.Parse(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Request not processed due to invalid parameters",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid event ID parameter", err)
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -88,7 +105,7 @@ func FetchPeopleByEvent(c *gin.Context) {
 
 	q := db.New()
 
-	people, err := q.FetchPeopleByEventQuery(ctx, conn, event)
+	people, err := q.FetchPeopleByEventQuery(ctx, conn, event_id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people by event", err)
@@ -105,6 +122,15 @@ func FetchPeopleByEvent(c *gin.Context) {
 
 func FetchPeopleByDay(c *gin.Context) {
 	day := c.Param("day")
+	day_int, err := strconv.Atoi(day)
+	if err != nil || day_int < 1 || day_int > 3 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Request not processed due to invalid parameters",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid day parameter", err)
+		return
+	}
+	dayArray := []int32{int32(day_int)}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -119,7 +145,7 @@ func FetchPeopleByDay(c *gin.Context) {
 
 	q := db.New()
 
-	people, err := q.FetchPeopleByDayQuery(ctx, conn, day)
+	people, err := q.FetchPeopleByDayQuery(ctx, conn, dayArray)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people by day", err)
