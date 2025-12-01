@@ -20,14 +20,25 @@ docs {
   
   This endpoint cleans up all cookies set by the server. On the client side, please clear any and all stores, local-storage and any other relevant data.
   
-  ## 401 Unauthorized
+  ## 200 OK
   ```json
   {
-    "message": ""
+    "message": "User logged out successfully"
+  }
+  ```
+  
+  ## 401 Unauthorized
+  Missing auth or refresh token
+  ```json
+  {
+    "message": "Access denied."
   }
   ```
   
   ## 500 Internal Server Error
   ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
   ````
 }
