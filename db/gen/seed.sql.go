@@ -241,17 +241,19 @@ func (q *Queries) SeedPeopleQuery(ctx context.Context, db DBTX, arg SeedPeopleQu
 const seedPeopleToEventMappingQuery = `-- name: SeedPeopleToEventMappingQuery :exec
 INSERT INTO people_to_event_mapping(
   event_id, 
-  person_id
-) VALUES ($1, $2)
+  person_id,
+  event_day
+) VALUES ($1, $2, $3)
 `
 
 type SeedPeopleToEventMappingQueryParams struct {
 	EventID  uuid.UUID `json:"event_id"`
 	PersonID uuid.UUID `json:"person_id"`
+	EventDay []int32   `json:"event_day"`
 }
 
 func (q *Queries) SeedPeopleToEventMappingQuery(ctx context.Context, db DBTX, arg SeedPeopleToEventMappingQueryParams) error {
-	_, err := db.Exec(ctx, seedPeopleToEventMappingQuery, arg.EventID, arg.PersonID)
+	_, err := db.Exec(ctx, seedPeopleToEventMappingQuery, arg.EventID, arg.PersonID, arg.EventDay)
 	return err
 }
 

@@ -68,8 +68,9 @@ INSERT INTO people(
 -- name: SeedPeopleToEventMappingQuery :exec
 INSERT INTO people_to_event_mapping(
   event_id, 
-  person_id
-) VALUES ($1, $2);
+  person_id,
+  event_day
+) VALUES ($1, $2, $3);
 
 -- name: SeedTagsQuery :exec
 INSERT INTO tags(
