@@ -102,29 +102,30 @@ const loginOrganizerQuery = `-- name: LoginOrganizerQuery :one
 SELECT
   id,
   email,
+  password,
   refresh_token
 FROM
   organizer
 WHERE
   email = $1
-  AND password = $2
 `
-
-type LoginOrganizerQueryParams struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 type LoginOrganizerQueryRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
+	Password     string      `json:"password"`
 	RefreshToken pgtype.Text `json:"refresh_token"`
 }
 
-func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, arg LoginOrganizerQueryParams) (LoginOrganizerQueryRow, error) {
-	row := db.QueryRow(ctx, loginOrganizerQuery, arg.Email, arg.Password)
+func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, email string) (LoginOrganizerQueryRow, error) {
+	row := db.QueryRow(ctx, loginOrganizerQuery, email)
 	var i LoginOrganizerQueryRow
-	err := row.Scan(&i.ID, &i.Email, &i.RefreshToken)
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.RefreshToken,
+	)
 	return i, err
 }
 
@@ -133,34 +134,31 @@ SELECT
   id,
   name,
   email,
+  password,
   refresh_token
 FROM
   student
 WHERE
   email = $1
-  AND password = $2
   AND account_status = 'VERIFIED'
 `
-
-type LoginUserQueryParams struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
 
 type LoginUserQueryRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Name         string      `json:"name"`
 	Email        string      `json:"email"`
+	Password     string      `json:"password"`
 	RefreshToken pgtype.Text `json:"refresh_token"`
 }
 
-func (q *Queries) LoginUserQuery(ctx context.Context, db DBTX, arg LoginUserQueryParams) (LoginUserQueryRow, error) {
-	row := db.QueryRow(ctx, loginUserQuery, arg.Email, arg.Password)
+func (q *Queries) LoginUserQuery(ctx context.Context, db DBTX, email string) (LoginUserQueryRow, error) {
+	row := db.QueryRow(ctx, loginUserQuery, email)
 	var i LoginUserQueryRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.Password,
 		&i.RefreshToken,
 	)
 	return i, err
@@ -175,22 +173,20 @@ INSERT INTO student (
   is_amrita_student,
   amrita_roll_number,
   college_name,
-  college_city,
-  account_status
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  college_city
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
 type OnboardStudentQueryParams struct {
-	Name             string                `json:"name"`
-	Email            string                `json:"email"`
-	Password         string                `json:"password"`
-	PhoneNumber      string                `json:"phone_number"`
-	IsAmritaStudent  pgtype.Bool           `json:"is_amrita_student"`
-	AmritaRollNumber pgtype.Text           `json:"amrita_roll_number"`
-	CollegeName      string                `json:"college_name"`
-	CollegeCity      string                `json:"college_city"`
-	AccountStatus    NullAccountStatusEnum `json:"account_status"`
+	Name             string      `json:"name"`
+	Email            string      `json:"email"`
+	Password         string      `json:"password"`
+	PhoneNumber      string      `json:"phone_number"`
+	IsAmritaStudent  pgtype.Bool `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
+	CollegeName      string      `json:"college_name"`
+	CollegeCity      string      `json:"college_city"`
 }
 
 func (q *Queries) OnboardStudentQuery(ctx context.Context, db DBTX, arg OnboardStudentQueryParams) (uuid.UUID, error) {
@@ -203,7 +199,6 @@ func (q *Queries) OnboardStudentQuery(ctx context.Context, db DBTX, arg OnboardS
 		arg.AmritaRollNumber,
 		arg.CollegeName,
 		arg.CollegeCity,
-		arg.AccountStatus,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)

@@ -5,9 +5,9 @@ After=network.target postgresql.service
 [Service]
 Type=simple
 User=anokha
-Workingdirectory=/home/anokha/anokha-2025-backend
+WorkingDirectory=/home/anokha/anokha-2025/anokha-2025-backend
 
-ENVIRONMENT=PATH=/usr/local/go/bin:/usr/bin:/bin
+Environment=PATH=/usr/local/go/bin:/usr/bin:/bin
 
 ExecStart=/usr/bin/make run
 Restart=on-failure

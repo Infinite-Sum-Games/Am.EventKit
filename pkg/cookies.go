@@ -10,7 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO: Have conditional rendering of None and Lax
 func SetAuthCookie(c *gin.Context, authTokenString string) {
+	c.SetSameSite(http.SameSiteNoneMode)
+	// c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"access_token",       // key
 		authTokenString,      // value
@@ -23,6 +26,8 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 }
 
 func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
+	c.SetSameSite(http.SameSiteNoneMode)
+	// c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"refresh_token",      // key
 		refreshTokenString,   // value
@@ -35,6 +40,8 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 }
 
 func SetTempCookie(c *gin.Context, tempTokenString string) {
+	c.SetSameSite(http.SameSiteNoneMode)
+	// c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"temp_token",         // key
 		tempTokenString,      // value
@@ -47,10 +54,12 @@ func SetTempCookie(c *gin.Context, tempTokenString string) {
 }
 
 func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
+	c.SetSameSite(http.SameSiteNoneMode)
+	// c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
 		"csrf_token",         // key
 		csrfTokenString,      // value
-		300,                  // maxAge (5 minutes)
+		5*60,                 // maxAge (5 minutes)
 		c.FullPath(),         // path to be constructed for restriction
 		cmd.Env.CookieDomain, // domain
 		cmd.Env.CookieSecure, // secure

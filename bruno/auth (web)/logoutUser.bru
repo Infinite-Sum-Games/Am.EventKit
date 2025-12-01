@@ -4,7 +4,7 @@ meta {
   seq: 9
 }
 
-post {
+get {
   url: {{baseUrl}}/auth/user/logout
   body: none
   auth: inherit
@@ -13,4 +13,32 @@ post {
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  # Logout User
+  
+  This endpoint cleans up all cookies set by the server. On the client side, please clear any and all stores, local-storage and any other relevant data.
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "User logged out successfully"
+  }
+  ```
+  
+  ## 401 Unauthorized
+  Missing auth or refresh token
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ````
 }
