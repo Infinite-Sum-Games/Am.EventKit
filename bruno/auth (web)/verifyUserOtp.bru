@@ -12,14 +12,14 @@ post {
 
 body:json {
   {
-    "otp": "123456"
+    "otp": "951749"
   }
 }
 
 script:pre-request {
   const jar = bru.cookies.jar();
   
-  const path = bru.getEnvName("baseUrl") + "/auth/user/otp/verify";
+  const path = bru.getEnvVar("baseUrl") + "/auth/user/register/otp/verify";
   console.log(path);
   
   const cookieValue = await jar.getCookie(path, "csrf_token");

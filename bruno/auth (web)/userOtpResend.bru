@@ -27,5 +27,18 @@ docs {
   ```
   
   ## 401 Unauthorized
+  This arises due to missing temporary token. A temporary token is setup to control the duration allowed for filling out the OTP form. Without this, an endless request of CSRF requests and OTP requests would be made.
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
   
 }
