@@ -13,14 +13,14 @@ post {
 body:json {
   {
     "email": "cb.en.u4cse22038@cb.students.amrita.edu",
-    "password": "your-hashed-password-here"
+    "password": "password123"
   }
 }
 
 script:pre-request {
   const jar = bru.cookies.jar();
   
-  const path = bru.getEnvName("baseUrl") + "/auth/user/login";
+  const path = bru.getEnvVar("baseUrl") + "/auth/user/login";
   console.log(path);
   
   const cookieValue = await jar.getCookie(path, "csrf_token");
