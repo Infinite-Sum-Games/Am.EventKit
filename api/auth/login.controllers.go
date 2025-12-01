@@ -57,24 +57,13 @@ func LoginUser(c *gin.Context) {
 	}()
 
 	q := db.New()
-	password, err := pkg.Hash(req.HashedPassword)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to hash password", err)
-		return
-	}
 
-	result, err := q.LoginUserQuery(ctx, tx, db.LoginUserQueryParams{
-		Email:    req.Email,
-		Password: password,
-	})
+	result, err := q.LoginUserQuery(ctx, tx, req.Email)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "No user with given email and password",
+			"message": "Invalid credentials",
 		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Username and password do not exist", err)
+		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Email does not exist")
 		return
 	}
 	if err != nil {
@@ -82,6 +71,16 @@ func LoginUser(c *gin.Context) {
 			"message": "Oops! Something happened. Please try again later.",
 		})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to fetch login details", err)
+		return
+	}
+
+	// Password verification
+	err = pkg.CompareHash(result.Password, req.HashedPassword)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Invalid credentials",
+		})
+		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Password verification failed", err)
 		return
 	}
 

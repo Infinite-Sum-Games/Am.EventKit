@@ -417,23 +417,23 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
 
 -- +goose down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS solo_event_participant CASCADE;
-DROP TABLE IF EXISTS team_events_attendance CASCADE;
-DROP TABLE IF EXISTS team_members CASCADE;
-DROP TABLE IF EXISTS teams CASCADE;
-DROP TABLE IF EXISTS bookings CASCADE;
-DROP TABLE IF EXISTS event_tag_mapping CASCADE;
-DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS event_to_organizer_mapping CASCADE;
-DROP TABLE IF EXISTS people_to_event_mapping CASCADE;
-DROP TABLE IF EXISTS people CASCADE;
-DROP TABLE IF EXISTS event_schedule CASCADE;
-DROP TABLE IF EXISTS favourites CASCADE;
-DROP TABLE IF EXISTS event CASCADE;
-DROP TABLE IF EXISTS organizer CASCADE;
-DROP TABLE IF EXISTS student_onboarding CASCADE;
-DROP TABLE IF EXISTS password_reset CASCADE;
-DROP TABLE IF EXISTS student CASCADE;
+DROP TABLE IF EXISTS solo_event_participant;
+DROP TABLE IF EXISTS team_events_attendance;
+DROP TABLE IF EXISTS team_members;
+DROP TABLE IF EXISTS teams;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS event_tag_mapping;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS event_to_organizer_mapping;
+DROP TABLE IF EXISTS people_to_event_mapping;
+DROP TABLE IF EXISTS people;
+DROP TABLE IF EXISTS event_schedule;
+DROP TABLE IF EXISTS favourites;
+DROP TABLE IF EXISTS event;
+DROP TABLE IF EXISTS organizer;
+DROP TABLE IF EXISTS student_onboarding;
+DROP TABLE IF EXISTS password_reset;
+DROP TABLE IF EXISTS student;
 
 DROP TYPE IF EXISTS attendance_mode_enum;
 DROP TYPE IF EXISTS event_mode_enum;

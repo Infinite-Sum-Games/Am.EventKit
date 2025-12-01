@@ -92,9 +92,8 @@ INSERT INTO student (
   is_amrita_student,
   amrita_roll_number,
   college_name,
-  college_city,
-  account_status
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  college_city
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id;
 
 -- name: LoginUserQuery :one
@@ -102,12 +101,12 @@ SELECT
   id,
   name,
   email,
+  password,
   refresh_token
 FROM
   student
 WHERE
   email = $1
-  AND password = $2
   AND account_status = 'VERIFIED';
 
 -- name: LoginOrganizerQuery :one
