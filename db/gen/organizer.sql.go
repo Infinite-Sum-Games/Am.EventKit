@@ -12,6 +12,57 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createOrganizerQuery = `-- name: CreateOrganizerQuery :exec
+INSERT INTO organizer (
+  name,
+  email,
+  password,
+  org_type,
+  student_head,
+  student_co_head,
+  faculty_head
+)
+VALUES (
+  $1, $2, $3, $4, $5, $6, $7
+)
+`
+
+type CreateOrganizerQueryParams struct {
+	Name          string            `json:"name"`
+	Email         string            `json:"email"`
+	Password      string            `json:"password"`
+	OrgType       OrganizerTypeEnum `json:"org_type"`
+	StudentHead   string            `json:"student_head"`
+	StudentCoHead pgtype.Text       `json:"student_co_head"`
+	FacultyHead   string            `json:"faculty_head"`
+}
+
+func (q *Queries) CreateOrganizerQuery(ctx context.Context, db DBTX, arg CreateOrganizerQueryParams) error {
+	_, err := db.Exec(ctx, createOrganizerQuery,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.OrgType,
+		arg.StudentHead,
+		arg.StudentCoHead,
+		arg.FacultyHead,
+	)
+	return err
+}
+
+const deleteOrganizerByIDQuery = `-- name: DeleteOrganizerByIDQuery :execrows
+DELETE FROM organizer
+WHERE id = $1
+`
+
+func (q *Queries) DeleteOrganizerByIDQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteOrganizerByIDQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const listOrganizersQuery = `-- name: ListOrganizersQuery :many
 SELECT
   id,
@@ -60,4 +111,46 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateOrganizerByIDQuery = `-- name: UpdateOrganizerByIDQuery :execrows
+UPDATE organizer
+SET
+  name = $2,
+  email = $3,
+  password = $4,
+  org_type = $5,
+  student_head = $6,
+  student_co_head = $7,
+  faculty_head = $8
+WHERE
+  id = $1
+`
+
+type UpdateOrganizerByIDQueryParams struct {
+	ID            uuid.UUID         `json:"id"`
+	Name          string            `json:"name"`
+	Email         string            `json:"email"`
+	Password      string            `json:"password"`
+	OrgType       OrganizerTypeEnum `json:"org_type"`
+	StudentHead   string            `json:"student_head"`
+	StudentCoHead pgtype.Text       `json:"student_co_head"`
+	FacultyHead   string            `json:"faculty_head"`
+}
+
+func (q *Queries) UpdateOrganizerByIDQuery(ctx context.Context, db DBTX, arg UpdateOrganizerByIDQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateOrganizerByIDQuery,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.OrgType,
+		arg.StudentHead,
+		arg.StudentCoHead,
+		arg.FacultyHead,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

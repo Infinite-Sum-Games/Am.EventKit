@@ -26,6 +26,9 @@ docs {
   
   This endpoint would allow you to check whether an already registered email is being entered for registration again. 
   
+  > It does not allow every valid email but only the email whose MX record exists. It does a DNS 
+  check in the background as well. 
+  
   ## 200 OK
   ```json
   {

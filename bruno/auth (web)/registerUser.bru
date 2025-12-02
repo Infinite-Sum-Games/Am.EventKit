@@ -13,11 +13,11 @@ post {
 body:json {
   {
     "name": "Ritesh Koushik",
-    "email": "riteshkoushik39@gmail.com",
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu",
     "password": "password123",
-    "phone_number": "9994622650",
+    "phone_number": "9199919999",
     "is_amrita_student": true,
-    "amrita_roll_number": "CB.EN.U4CSE22253",
+    "amrita_roll_number": "CB.EN.U4CSE22038",
     "college_name": "Amrita Vishwa Vidyapeetham",
     "college_city": "Coimbatore"
   }
@@ -26,11 +26,14 @@ body:json {
 
 script:pre-request {
   const jar = bru.cookies.jar();
-  const cookieValue = jar.getCookie("http://localhost:9000", "csrf_token");
   
-  console.log("Grabbed cookie:", cookieValue);
+  const path = bru.getEnvVar("baseUrl") + "/auth/user/register";
+  console.log(path);
   
-  req.setHeader("X-Csrf-Token", cookieValue);
+  const cookieValue = await jar.getCookie(path, "csrf_token");
+  console.log(cookieValue);
+  
+  req.setHeader("X-Csrf-Token", cookieValue.value);
 }
 
 docs {

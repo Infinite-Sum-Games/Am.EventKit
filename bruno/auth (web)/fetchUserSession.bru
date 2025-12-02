@@ -1,11 +1,11 @@
 meta {
   name: fetchUserSession
   type: http
-  seq: 14
+  seq: 15
 }
 
 get {
-  url: {{baseUrl}}/user/session
+  url: {{baseUrl}}/auth/user/session
   body: none
   auth: inherit
 }
@@ -26,6 +26,14 @@ docs {
     "email": "cb.en.u4cse22038@cb.students.amrita.edu"
   }
   ````
+  
+  ## 401 Unauthorized
+  If the user is not logged in, then this error is throw as a lack of auth cookies.
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
   
   ## 404 Not Found
   This can happen if the user account is deleted or banned by admin but on the client side, the cookies still exist. If it happens, hit the `/logout` endpoint.
