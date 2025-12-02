@@ -5,13 +5,13 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/organizers/8dd9e06c-25d0-44c7-9a6c-a4d330b197c8
+  url: {{baseUrl}}/organizers/:organizerId
   body: none
   auth: inherit
 }
 
 params:path {
-  tagId: 8dd9e06c-25d0-44c7-9a6c-a4d330b197c8
+  organizerId: 
 }
 
 settings {
@@ -31,17 +31,17 @@ docs {
    ```json
   { "message": "Organizer deleted successfully" }
   ```
-
+  
   - 400 Bad Request (invalid UUID)
   ```json
   { "message": "Request is malformed" }
   ```
-
+  
   - 404 Not Found (organizer does not exist)
   ```json
   { "message": "Organizer does not exist" }
   ```
-
+  
   - 500 Internal Server Error (DB / server failure)
   ```json
   { "message": "Oops! Something happened. Please try again later" }
