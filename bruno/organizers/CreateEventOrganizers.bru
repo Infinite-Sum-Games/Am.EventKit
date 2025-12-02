@@ -1,0 +1,64 @@
+meta {
+  name: CreateEventOrganizers
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/organizers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Artificial Intelligence and Data Science",
+    "email": "aid@cb.amrita.edu",
+    "password": "pass123",
+    "org_type": "DEPARTMENT",
+    "student_head": "Andrew Karpathy",
+    "student_co_head": "Andrew Ng",
+    "faculty_head": "Dr.Sam Altman"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Create organizer
+
+  - Path params: none
+  - Query params: none
+  - Headers: Content-Type: application/json
+  
+  - Input JSON:
+  ```json
+  {
+    "name": "Artificial Intelligence and Data Science",
+    "email": "aid@cb.amrita.edu",
+    "password": "pass123",
+    "org_type": "DEPARTMENT",
+    "student_head": "Andrew Karpathy",
+    "student_co_head": "Andrew Ng",
+    "faculty_head": "Dr.Sam Altman"
+  }
+  ```
+  ## 201 Created
+  ```json
+  { "message": "Organizer created successfully" }
+  ```
+  
+  ## 400 Bad Request (validation / missing fields)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}

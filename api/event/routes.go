@@ -15,8 +15,6 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.POST("/register/:eventId")
 	r.GET("/register/:eventId")
 
-	r.GET("/organizers", GetAllOrganizers)
-
 	r.PUT("/favourite/:eventId", mw.Auth, StarEvent)
 	r.DELETE("/favourite/:eventId", mw.Auth, UnstarEvent)
 }
