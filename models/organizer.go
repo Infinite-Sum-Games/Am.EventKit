@@ -25,5 +25,8 @@ func (r CreateOrganizerRequest) Validate() error {
 		v.Field(&r.OrgType, v.Required, v.In("DEPARTMENT", "CLUB")),
 		v.Field(&r.StudentHead, v.Required, v.RuneLength(3, 100)),
 		v.Field(&r.FacultyHead, v.Required, v.RuneLength(3, 100)),
+
+		// Optional fields
+		v.Field(&r.StudentCoHead, v.When(r.StudentCoHead != "", v.RuneLength(3, 100))),
 	)
 }
