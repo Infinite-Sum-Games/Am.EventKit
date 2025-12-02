@@ -71,8 +71,8 @@ func AddNewPerson(c *gin.Context) {
 	people, err := q.AddNewPersonQuery(ctx, tx, db.AddNewPersonQueryParams{
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
-		Profession:  pkg.ToPgText(req.Profession),
-		Email:       pkg.ToPgText(req.Email),
+		Profession:  pkg.ToPgTextPtr(req.Profession),
+		Email:       pkg.ToPgTextPtr(req.Email),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -151,8 +151,8 @@ func UpdatePersonDetails(c *gin.Context) {
 		ID:          personId,
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
-		Profession:  pkg.ToPgText(req.Profession),
-		Email:       pkg.ToPgText(req.Email),
+		Profession:  pkg.ToPgTextPtr(req.Profession),
+		Email:       pkg.ToPgTextPtr(req.Email),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
