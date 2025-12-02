@@ -20,7 +20,9 @@ func FetchAllPeople(c *gin.Context) {
 
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
@@ -30,7 +32,9 @@ func FetchAllPeople(c *gin.Context) {
 
 	people, err := q.FetchAllPeopleQuery(ctx, conn)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to fetch people", err)
 		return
 	}
@@ -82,11 +86,12 @@ func AddNewPerson(c *gin.Context) {
 		return
 	}
 
-	personToEventMapping, err := q.MapPersonToEventQuery(ctx, tx, db.MapPersonToEventQueryParams{
-		PersonID: req.PersonID,
-		EventID:  req.EventID,
-		EventDay: req.EventDay,
-	})
+	personToEventMapping, err := q.MapPersonToEventQuery(ctx, tx,
+		db.MapPersonToEventQueryParams{
+			PersonID: req.PersonID,
+			EventID:  req.EventID,
+			EventDay: req.EventDay,
+		})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -147,13 +152,14 @@ func UpdatePersonDetails(c *gin.Context) {
 
 	q := db.New()
 
-	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, tx, db.UpdatePersonDetailsQueryParams{
-		ID:          personId,
-		Name:        req.Name,
-		PhoneNumber: req.PhoneNumber,
-		Profession:  pkg.ToPgTextPtr(req.Profession),
-		Email:       pkg.ToPgTextPtr(req.Email),
-	})
+	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, tx,
+		db.UpdatePersonDetailsQueryParams{
+			ID:          personId,
+			Name:        req.Name,
+			PhoneNumber: req.PhoneNumber,
+			Profession:  pkg.ToPgTextPtr(req.Profession),
+			Email:       pkg.ToPgTextPtr(req.Email),
+		})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
