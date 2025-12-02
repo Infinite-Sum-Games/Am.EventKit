@@ -13,8 +13,8 @@ import (
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
-	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
 	apiOrganizers "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
+	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
 
