@@ -72,9 +72,9 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
  */
 func NullifyCookies(c *gin.Context) {
 
-	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
-	c.SetCookie("refesh_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
-	c.SetCookie("csrf_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
+	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
+	c.SetCookie("refresh_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
+	c.SetCookie("csrf_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
 
 	email, exists := c.Get("email")
 	if !exists {
