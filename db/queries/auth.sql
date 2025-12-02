@@ -39,7 +39,6 @@ SET
   updated_at = NOW()
 WHERE
 	email = $1
-	AND status = 'active'
 RETURNING
 	refresh_token;
 

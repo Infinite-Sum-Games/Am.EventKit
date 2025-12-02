@@ -92,26 +92,18 @@ func NullifyCookies(c *gin.Context) {
 func RevokeRefreshToken(c *gin.Context, email string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	tx, err := cmd.DBPool.Begin(ctx)
+
+	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Revoke Refresh Token in DB", err)
 		return
 	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			Log.ErrorCtx(c, "[AUTH-ERROR]: Error in checking database for refresh tokens", err)
-		}
-	}()
+	defer conn.Release()
 
 	q := db.New()
-	result, err := q.RevokeRefreshTokenQuery(ctx, tx, email)
-	if err != nil || result.String != "" {
+	_, err = q.RevokeRefreshTokenQuery(ctx, conn, email)
+	if err != nil {
 		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
-		return
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		Log.FatalCtx(c, "[AUTH-FATAL]: Failed to commit txn while revoking refresh-token", err)
 		return
 	}
 
