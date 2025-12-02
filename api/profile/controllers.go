@@ -20,7 +20,7 @@ func FetchUserProfile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
 		return
 	}
 
@@ -72,7 +72,7 @@ func EditUserProfileCsrf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
 		return
 	}
 
@@ -101,7 +101,7 @@ func EditUserProfile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: No email after crossing auth middleware.", nil)
+		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
 		return
 	}
 
