@@ -7,10 +7,6 @@ import (
 
 func PeopleRoutes(r *gin.RouterGroup) {
 	r.GET("/", mw.Auth, FetchAllPeople)
-	r.GET("/department/:dept_id", mw.Auth, FetchPeopleByDepartment)
-	r.GET("/event/:event_id", mw.Auth, FetchPeopleByEvent)
-	r.GET("/day/:day", mw.Auth, FetchPeopleByDay)
-
 	r.POST("/", mw.Auth, AddNewPerson)
 
 	r.PUT("/:id", mw.Auth, UpdatePersonDetails)

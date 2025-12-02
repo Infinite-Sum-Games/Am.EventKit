@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type AddNewPersonWithEventParams struct {
+type CreateNewPersonWithEventRequest struct {
 	Name        string    `json:"name"`
 	PhoneNumber string    `json:"phone_number"`
 	Profession  *string   `json:"profession"`
@@ -18,10 +18,11 @@ type AddNewPersonWithEventParams struct {
 	EventDay    []int32   `json:"event_day"`
 }
 
-func (p AddNewPersonWithEventParams) Validate() error {
+func (p CreateNewPersonWithEventRequest) Validate() error {
 	return v.ValidateStruct(&p,
 		v.Field(&p.Name, v.Required, v.Length(2, 100)),
-		v.Field(&p.PhoneNumber, v.Required, v.Match(regexp.MustCompile(`^[0-9]{10}$`))),
+		v.Field(&p.PhoneNumber, v.Required,
+			v.Match(regexp.MustCompile(`^[0-9]{10}$`))),
 		v.Field(&p.Profession, v.When(p.Profession != nil,
 			v.Length(1, 100),
 		)),
