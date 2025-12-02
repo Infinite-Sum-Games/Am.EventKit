@@ -49,7 +49,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
-        'org_abbreviation', o.abbr,
+        'org_abbreviation', LEFT(LOWER(o.email), 3),
         'org_type', o.org_type
       )) FILTER (WHERE o.id IS NOT NULL),
       '[]'::jsonb
@@ -97,102 +97,94 @@ WHERE e.id = $1
 GROUP BY e.id;
 
 -- name: CreateEventQuery :one
-WITH ins AS (
-  INSERT INTO event (
-    name,
-    blurb,
-    description,
-    cover_image_url,
-    price,
-    is_per_head,
-    rules,
-    event_type,
-    is_group,
-    max_teamsize,
-    min_teamsize,
-    total_seats,
-    seats_filled,
-    event_status,
-    event_mode,
-    attendance_mode
-  ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-  ) RETURNING id
-), ins_sched AS (
-  INSERT INTO event_schedule (event_id, event_date, start_time, end_time, venue)
-  SELECT ins.id, s.event_date, s.start_time, s.end_time, s.venue
-  FROM ins, jsonb_to_recordset($17::jsonb) AS s(event_date date, start_time timestamp, end_time timestamp, venue text)
-), ins_tags AS (
-  INSERT INTO event_tag_mapping (tag_id, event_id)
-  SELECT tag_id, ins.id
-  FROM ins, unnest($18::uuid[]) AS tag_id
-), ins_orgs AS (
-  INSERT INTO event_to_organizer_mapping (event_id, organizer_id)
-  SELECT ins.id, org_id
-  FROM ins, unnest($19::uuid[]) AS org_id
-), ins_people AS (
-  INSERT INTO people_to_event_mapping (event_id, person_id)
-  SELECT ins.id, person_id
-  FROM ins, unnest($20::uuid[]) AS person_id
+INSERT INTO event (
+  name,
+  blurb,
+  description,
+  cover_image_url,
+  price,
+  is_per_head,
+  rules,
+  event_type,
+  is_group,
+  max_teamsize,
+  min_teamsize,
+  total_seats,
+  seats_filled,
+  event_status,
+  event_mode,
+  attendance_mode
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 )
-SELECT id FROM ins;
+RETURNING id;
 
--- name: UpdateEventQuery :one
-WITH upd AS (
-  UPDATE event SET
-    name = $2,
-    blurb = $3,
-    description = $4,
-    cover_image_url = $5,
-    price = $6,
-    is_per_head = $7,
-    rules = $8,
-    event_type = $9,
-    is_group = $10,
-    max_teamsize = $11,
-    min_teamsize = $12,
-    total_seats = $13,
-    seats_filled = $14,
-    event_status = $15,
-    event_mode = $16,
-    attendance_mode = $17
-  WHERE id = $1
-  RETURNING id
-), del_sched AS (
-  DELETE FROM event_schedule WHERE event_id = (SELECT id FROM upd)
-), del_tags AS (
-  DELETE FROM event_tag_mapping WHERE event_id = (SELECT id FROM upd)
-), del_orgs AS (
-  DELETE FROM event_to_organizer_mapping WHERE event_id = (SELECT id FROM upd)
-), del_people AS (
-  DELETE FROM people_to_event_mapping WHERE event_id = (SELECT id FROM upd)
-), ins_sched AS (
-  INSERT INTO event_schedule (event_id, event_date, start_time, end_time, venue)
-  SELECT (SELECT id FROM upd), s.event_date, s.start_time, s.end_time, s.venue
-  FROM jsonb_to_recordset($18::jsonb) AS s(event_date date, start_time timestamp, end_time timestamp, venue text)
-), ins_tags AS (
-  INSERT INTO event_tag_mapping (tag_id, event_id)
-  SELECT tag_id, (SELECT id FROM upd)
-  FROM unnest($19::uuid[]) AS tag_id
-), ins_orgs AS (
-  INSERT INTO event_to_organizer_mapping (event_id, organizer_id)
-  SELECT (SELECT id FROM upd), org_id
-  FROM unnest($20::uuid[]) AS org_id
-), ins_people AS (
-  INSERT INTO people_to_event_mapping (event_id, person_id)
-  SELECT (SELECT id FROM upd), person_id
-  FROM unnest($21::uuid[]) AS person_id
-)
-SELECT id FROM upd;
+-- name: InsertEventScheduleQuery :exec
+INSERT INTO event_schedule (
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  venue
+) VALUES (
+  $1, $2, $3, $4, $5
+);
+
+-- name: InsertEventTagMappingQuery :exec
+INSERT INTO event_tag_mapping (
+  tag_id,
+  event_id
+) VALUES (
+  $1, $2
+);
+
+-- name: InsertEventOrganizerMappingQuery :exec
+INSERT INTO event_to_organizer_mapping (
+  event_id,
+  organizer_id
+) VALUES (
+  $1, $2
+);
+
+-- name: InsertPeopleToEventMappingQuery :exec
+INSERT INTO people_to_event_mapping (
+  event_id,
+  person_id
+) VALUES (
+  $1, $2
+);
+
+-- name: UpdateEventQuery :execrows
+UPDATE event SET
+  name = $2,
+  blurb = $3,
+  description = $4,
+  cover_image_url = $5,
+  price = $6,
+  is_per_head = $7,
+  rules = $8,
+  event_type = $9,
+  is_group = $10,
+  max_teamsize = $11,
+  min_teamsize = $12,
+  total_seats = $13,
+  seats_filled = $14,
+  event_status = $15,
+  event_mode = $16,
+  attendance_mode = $17
+WHERE id = $1;
+
+-- name: DeleteEventSchedulesByEventIDQuery :exec
+DELETE FROM event_schedule WHERE event_id = $1;
+
+-- name: DeleteEventTagMappingsByEventIDQuery :exec
+DELETE FROM event_tag_mapping WHERE event_id = $1;
+
+-- name: DeleteEventOrganizerMappingsByEventIDQuery :exec
+DELETE FROM event_to_organizer_mapping WHERE event_id = $1;
+
+-- name: DeletePeopleToEventMappingsByEventIDQuery :exec
+DELETE FROM people_to_event_mapping WHERE event_id = $1;
 
 -- name: DeleteEventQuery :execrows
-WITH del_sched AS (
-  DELETE FROM event_schedule WHERE event_id = $1
-), del_tags AS (
-  DELETE FROM event_tag_mapping WHERE event_id = $1
-), del_orgs AS (
-  DELETE FROM event_to_organizer_mapping WHERE event_id = $1
-), del_people AS (
-  DELETE FROM people_to_event_mapping WHERE event_id = $1
-)
 DELETE FROM event WHERE id = $1;

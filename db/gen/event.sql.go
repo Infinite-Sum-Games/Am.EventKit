@@ -12,6 +12,121 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createEventQuery = `-- name: CreateEventQuery :one
+INSERT INTO event (
+  name,
+  blurb,
+  description,
+  cover_image_url,
+  price,
+  is_per_head,
+  rules,
+  event_type,
+  is_group,
+  max_teamsize,
+  min_teamsize,
+  total_seats,
+  seats_filled,
+  event_status,
+  event_mode,
+  attendance_mode
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+)
+RETURNING id
+`
+
+type CreateEventQueryParams struct {
+	Name           string             `json:"name"`
+	Blurb          string             `json:"blurb"`
+	Description    string             `json:"description"`
+	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
+	Price          pgtype.Numeric     `json:"price"`
+	IsPerHead      bool               `json:"is_per_head"`
+	Rules          string             `json:"rules"`
+	EventType      EventTypeEnum      `json:"event_type"`
+	IsGroup        bool               `json:"is_group"`
+	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
+	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
+	TotalSeats     int32              `json:"total_seats"`
+	SeatsFilled    int32              `json:"seats_filled"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+}
+
+func (q *Queries) CreateEventQuery(ctx context.Context, db DBTX, arg CreateEventQueryParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, createEventQuery,
+		arg.Name,
+		arg.Blurb,
+		arg.Description,
+		arg.CoverImageUrl,
+		arg.Price,
+		arg.IsPerHead,
+		arg.Rules,
+		arg.EventType,
+		arg.IsGroup,
+		arg.MaxTeamsize,
+		arg.MinTeamsize,
+		arg.TotalSeats,
+		arg.SeatsFilled,
+		arg.EventStatus,
+		arg.EventMode,
+		arg.AttendanceMode,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteEventOrganizerMappingsByEventIDQuery = `-- name: DeleteEventOrganizerMappingsByEventIDQuery :exec
+DELETE FROM event_to_organizer_mapping WHERE event_id = $1
+`
+
+func (q *Queries) DeleteEventOrganizerMappingsByEventIDQuery(ctx context.Context, db DBTX, eventID uuid.UUID) error {
+	_, err := db.Exec(ctx, deleteEventOrganizerMappingsByEventIDQuery, eventID)
+	return err
+}
+
+const deleteEventQuery = `-- name: DeleteEventQuery :execrows
+DELETE FROM event WHERE id = $1
+`
+
+func (q *Queries) DeleteEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteEventQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteEventSchedulesByEventIDQuery = `-- name: DeleteEventSchedulesByEventIDQuery :exec
+DELETE FROM event_schedule WHERE event_id = $1
+`
+
+func (q *Queries) DeleteEventSchedulesByEventIDQuery(ctx context.Context, db DBTX, eventID uuid.UUID) error {
+	_, err := db.Exec(ctx, deleteEventSchedulesByEventIDQuery, eventID)
+	return err
+}
+
+const deleteEventTagMappingsByEventIDQuery = `-- name: DeleteEventTagMappingsByEventIDQuery :exec
+DELETE FROM event_tag_mapping WHERE event_id = $1
+`
+
+func (q *Queries) DeleteEventTagMappingsByEventIDQuery(ctx context.Context, db DBTX, eventID uuid.UUID) error {
+	_, err := db.Exec(ctx, deleteEventTagMappingsByEventIDQuery, eventID)
+	return err
+}
+
+const deletePeopleToEventMappingsByEventIDQuery = `-- name: DeletePeopleToEventMappingsByEventIDQuery :exec
+DELETE FROM people_to_event_mapping WHERE event_id = $1
+`
+
+func (q *Queries) DeletePeopleToEventMappingsByEventIDQuery(ctx context.Context, db DBTX, eventID uuid.UUID) error {
+	_, err := db.Exec(ctx, deletePeopleToEventMappingsByEventIDQuery, eventID)
+	return err
+}
+
 const getEventByIdQuery = `-- name: GetEventByIdQuery :one
 SELECT
     e.id,
@@ -34,7 +149,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
-        'org_abbreviation', o.abbr,
+        'org_abbreviation', LEFT(LOWER(o.email), 3),
         'org_type', o.org_type
       )) FILTER (WHERE o.id IS NOT NULL),
       '[]'::jsonb
@@ -211,4 +326,159 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertEventOrganizerMappingQuery = `-- name: InsertEventOrganizerMappingQuery :exec
+INSERT INTO event_to_organizer_mapping (
+  event_id,
+  organizer_id
+) VALUES (
+  $1, $2
+)
+`
+
+type InsertEventOrganizerMappingQueryParams struct {
+	EventID     uuid.UUID `json:"event_id"`
+	OrganizerID uuid.UUID `json:"organizer_id"`
+}
+
+func (q *Queries) InsertEventOrganizerMappingQuery(ctx context.Context, db DBTX, arg InsertEventOrganizerMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertEventOrganizerMappingQuery, arg.EventID, arg.OrganizerID)
+	return err
+}
+
+const insertEventScheduleQuery = `-- name: InsertEventScheduleQuery :exec
+INSERT INTO event_schedule (
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  venue
+) VALUES (
+  $1, $2, $3, $4, $5
+)
+`
+
+type InsertEventScheduleQueryParams struct {
+	EventID   uuid.UUID        `json:"event_id"`
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Venue     string           `json:"venue"`
+}
+
+func (q *Queries) InsertEventScheduleQuery(ctx context.Context, db DBTX, arg InsertEventScheduleQueryParams) error {
+	_, err := db.Exec(ctx, insertEventScheduleQuery,
+		arg.EventID,
+		arg.EventDate,
+		arg.StartTime,
+		arg.EndTime,
+		arg.Venue,
+	)
+	return err
+}
+
+const insertEventTagMappingQuery = `-- name: InsertEventTagMappingQuery :exec
+INSERT INTO event_tag_mapping (
+  tag_id,
+  event_id
+) VALUES (
+  $1, $2
+)
+`
+
+type InsertEventTagMappingQueryParams struct {
+	TagID   uuid.UUID `json:"tag_id"`
+	EventID uuid.UUID `json:"event_id"`
+}
+
+func (q *Queries) InsertEventTagMappingQuery(ctx context.Context, db DBTX, arg InsertEventTagMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertEventTagMappingQuery, arg.TagID, arg.EventID)
+	return err
+}
+
+const insertPeopleToEventMappingQuery = `-- name: InsertPeopleToEventMappingQuery :exec
+INSERT INTO people_to_event_mapping (
+  event_id,
+  person_id
+) VALUES (
+  $1, $2
+)
+`
+
+type InsertPeopleToEventMappingQueryParams struct {
+	EventID  uuid.UUID `json:"event_id"`
+	PersonID uuid.UUID `json:"person_id"`
+}
+
+func (q *Queries) InsertPeopleToEventMappingQuery(ctx context.Context, db DBTX, arg InsertPeopleToEventMappingQueryParams) error {
+	_, err := db.Exec(ctx, insertPeopleToEventMappingQuery, arg.EventID, arg.PersonID)
+	return err
+}
+
+const updateEventQuery = `-- name: UpdateEventQuery :execrows
+UPDATE event SET
+  name = $2,
+  blurb = $3,
+  description = $4,
+  cover_image_url = $5,
+  price = $6,
+  is_per_head = $7,
+  rules = $8,
+  event_type = $9,
+  is_group = $10,
+  max_teamsize = $11,
+  min_teamsize = $12,
+  total_seats = $13,
+  seats_filled = $14,
+  event_status = $15,
+  event_mode = $16,
+  attendance_mode = $17
+WHERE id = $1
+`
+
+type UpdateEventQueryParams struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	Blurb          string             `json:"blurb"`
+	Description    string             `json:"description"`
+	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
+	Price          pgtype.Numeric     `json:"price"`
+	IsPerHead      bool               `json:"is_per_head"`
+	Rules          string             `json:"rules"`
+	EventType      EventTypeEnum      `json:"event_type"`
+	IsGroup        bool               `json:"is_group"`
+	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
+	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
+	TotalSeats     int32              `json:"total_seats"`
+	SeatsFilled    int32              `json:"seats_filled"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+}
+
+func (q *Queries) UpdateEventQuery(ctx context.Context, db DBTX, arg UpdateEventQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateEventQuery,
+		arg.ID,
+		arg.Name,
+		arg.Blurb,
+		arg.Description,
+		arg.CoverImageUrl,
+		arg.Price,
+		arg.IsPerHead,
+		arg.Rules,
+		arg.EventType,
+		arg.IsGroup,
+		arg.MaxTeamsize,
+		arg.MinTeamsize,
+		arg.TotalSeats,
+		arg.SeatsFilled,
+		arg.EventStatus,
+		arg.EventMode,
+		arg.AttendanceMode,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
