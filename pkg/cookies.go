@@ -71,6 +71,7 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 * Nullify cookies during LogOut and ForbiddenAccess situations
  */
 func NullifyCookies(c *gin.Context) {
+	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
 	c.SetCookie("refresh_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
