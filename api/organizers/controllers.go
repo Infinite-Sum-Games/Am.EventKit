@@ -70,7 +70,7 @@ func CreateOrganizer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to hash password", err)
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to hash password", err)
 		return
 	}
 
@@ -122,7 +122,7 @@ func EditOrganizer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -143,10 +143,9 @@ func EditOrganizer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to update organizer", err)
+		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to update organizer", err)
 		return
 	}
-
 	if rows == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Organizer does not exist",
@@ -195,7 +194,6 @@ func DeleteOrganizer(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to delete organizer", err)
 		return
 	}
-
 	if rows == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Organizer does not exist",
