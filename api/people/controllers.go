@@ -203,24 +203,19 @@ func DeletePerson(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := cmd.DBPool.Begin(ctx)
+	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to begin DB transaction", err)
+		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to acquire connection from DB", err)
 		return
 	}
-
-	defer func() {
-		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to rollback DB transaction", err)
-		}
-	}()
+	defer conn.Release()
 
 	q := db.New()
 
-	deletedPerson, err := q.DeletePersonQuery(ctx, tx, personId)
+	deletedPerson, err := q.DeletePersonQuery(ctx, conn, personId)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Person not found",
@@ -236,17 +231,9 @@ func DeletePerson(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to commit DB transaction", err)
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Person deleted successfully",
-		"deleted_person": deletedPerson,
+		"message":           "Person deleted successfully",
+		"deleted_person_id": deletedPerson,
 	})
 	pkg.Log.SuccessCtx(c)
 }
