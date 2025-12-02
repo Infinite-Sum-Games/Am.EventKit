@@ -72,27 +72,9 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
  */
 func NullifyCookies(c *gin.Context) {
 
-	c.SetCookie("access_token", "", -1, "/", "", false, true)
-	c.SetCookie("refesh_token", "", -1, "/", "", false, true)
-	c.SetCookie("csrf_token", "", -1, "/", "", false, true)
-
-	// If there is an error saying that there is no cookie then we are good
-	// Otherwise we are in problem because nullification failed
-	_, err := c.Cookie("access_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Access-Cookies", err)
-		return
-	}
-	_, err = c.Cookie("refresh_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Refresh-Cookies", err)
-		return
-	}
-	_, err = c.Cookie("csrf_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Csrf-Cookies", err)
-		return
-	}
+	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
+	c.SetCookie("refesh_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
+	c.SetCookie("csrf_token", "", -1, "/", cmd.Env.CookieDomain, false, true)
 
 	email, exists := c.Get("email")
 	if !exists {

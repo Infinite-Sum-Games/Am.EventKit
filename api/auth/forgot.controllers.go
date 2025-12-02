@@ -123,7 +123,7 @@ func ForgotUserPassword(c *gin.Context) {
 		To:      []string{result.Email},
 		Subject: "Password Reset - Anokha 2025",
 		Type:    "otp",
-		Data: mail.OTPTemplateData{
+		Data: &mail.OTPTemplateData{
 			UserName: result.Name,
 			OTP:      otpSlice,
 		},
@@ -147,6 +147,13 @@ func ConfirmPasswordChange(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Password updated successfully. Proceed to login.",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func ResendPasswordChangeOtp(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password reset OTP resent. Please check email for OTP.",
 	})
 	pkg.Log.SuccessCtx(c)
 }
