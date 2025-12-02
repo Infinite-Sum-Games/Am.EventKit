@@ -135,7 +135,7 @@ func UpdatePersonDetails(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := cmd.DBPool.Begin(ctx)
+	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -143,16 +143,11 @@ func UpdatePersonDetails(c *gin.Context) {
 		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to begin DB transaction", err)
 		return
 	}
-
-	defer func() {
-		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to rollback DB transaction", err)
-		}
-	}()
+	defer conn.Release()
 
 	q := db.New()
 
-	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, tx,
+	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, conn,
 		db.UpdatePersonDetailsQueryParams{
 			ID:          personId,
 			Name:        req.Name,
@@ -160,25 +155,18 @@ func UpdatePersonDetails(c *gin.Context) {
 			Profession:  pkg.ToPgTextPtr(req.Profession),
 			Email:       pkg.ToPgTextPtr(req.Email),
 		})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to update person details", err)
-		return
-	} else if updatedPerson.ID == uuid.Nil {
+	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Person not found",
 		})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for update", nil)
 		return
 	}
-
-	if err := tx.Commit(ctx); err != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to commit DB transaction", err)
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to update person details", err)
 		return
 	}
 
@@ -215,7 +203,7 @@ func DeletePerson(c *gin.Context) {
 
 	q := db.New()
 
-	deletedPerson, err := q.DeletePersonQuery(ctx, conn, personId)
+	deletedPersonId, err := q.DeletePersonQuery(ctx, conn, personId)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Person not found",
@@ -233,7 +221,7 @@ func DeletePerson(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":           "Person deleted successfully",
-		"deleted_person_id": deletedPerson,
+		"deleted_person_id": deletedPersonId,
 	})
 	pkg.Log.SuccessCtx(c)
 }
