@@ -221,17 +221,18 @@ func DeletePerson(c *gin.Context) {
 	q := db.New()
 
 	deletedPerson, err := q.DeletePersonQuery(ctx, tx, personId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Person not found",
+		})
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for deletion", nil)
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to delete person", err)
-		return
-	} else if len(deletedPerson) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Person not found",
-		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for deletion", nil)
 		return
 	}
 
