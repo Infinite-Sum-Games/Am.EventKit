@@ -11,7 +11,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func GetAllOrganizers(c *gin.Context) {
@@ -23,7 +22,7 @@ func GetAllOrganizers(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -59,20 +58,29 @@ func CreateOrganizer(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
 
+	hashedPassword, err := pkg.Hash(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to hash password", err)
+		return
+	}
+
 	err = q.CreateOrganizerQuery(ctx, conn, db.CreateOrganizerQueryParams{
 		Name:          req.Name,
 		Email:         req.Email,
-		Password:      req.Password,
+		Password:      hashedPassword,
 		OrgType:       db.OrganizerTypeEnum(req.OrgType),
 		StudentHead:   req.StudentHead,
-		StudentCoHead: ToPgText(req.StudentCoHead),
+		StudentCoHead: pkg.ToPgText(req.StudentCoHead),
 		FacultyHead:   req.FacultyHead,
 	})
 
@@ -128,14 +136,14 @@ func EditOrganizer(c *gin.Context) {
 		Password:      req.Password,
 		OrgType:       db.OrganizerTypeEnum(req.OrgType),
 		StudentHead:   req.StudentHead,
-		StudentCoHead: ToPgText(req.StudentCoHead),
+		StudentCoHead: pkg.ToPgText(req.StudentCoHead),
 		FacultyHead:   req.FacultyHead,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to update organizer", err)
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to update organizer", err)
 		return
 	}
 
@@ -200,11 +208,4 @@ func DeleteOrganizer(c *gin.Context) {
 		"message": "Organizer deleted successfully",
 	})
 	pkg.Log.SuccessCtx(c)
-}
-
-func ToPgText(value string) pgtype.Text {
-	if value == "" {
-		return pgtype.Text{Valid: false}
-	}
-	return pgtype.Text{String: value, Valid: true}
 }
