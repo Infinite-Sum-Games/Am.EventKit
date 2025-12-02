@@ -17,13 +17,14 @@ INSERT INTO people (
   name, 
   phone_number, 
   profession, 
-  email) VALUES ($1, $2, $3, $4)
+  email
+) VALUES ($1, $2, $3, $4)
 RETURNING
-id,
-name,
-phone_number,
-profession,
-email
+  id,
+  name,
+  phone_number,
+  profession,
+  email
 `
 
 type AddNewPersonQueryParams struct {
@@ -52,7 +53,8 @@ func (q *Queries) AddNewPersonQuery(ctx context.Context, db DBTX, arg AddNewPers
 }
 
 const deletePersonQuery = `-- name: DeletePersonQuery :one
-DELETE FROM people WHERE id = $1
+DELETE FROM people 
+WHERE id = $1
 RETURNING id
 `
 
@@ -94,13 +96,15 @@ func (q *Queries) FetchAllPeopleQuery(ctx context.Context, db DBTX) ([]Person, e
 
 const fetchPeopleByDayQuery = `-- name: FetchPeopleByDayQuery :many
 SELECT
-people.name, 
-people.phone_number, 
-people.profession, 
-people.email
-FROM people
-INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
-WHERE people_to_event_mapping.event_day && $1
+  p.name, 
+  p.phone_number, 
+  p.profession, 
+  p.email
+FROM people AS p
+  INNER JOIN people_to_event_mapping AS ptem
+    ON p.id = ptem.person_id
+WHERE 
+  ptem.event_day && $1
 `
 
 type FetchPeopleByDayQueryRow struct {
@@ -137,15 +141,19 @@ func (q *Queries) FetchPeopleByDayQuery(ctx context.Context, db DBTX, eventDay [
 
 const fetchPeopleByDepartmentQuery = `-- name: FetchPeopleByDepartmentQuery :many
 SELECT 
-people.name, 
-people.phone_number, 
-people.profession, 
-people.email
-FROM people 
-INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
-INNER JOIN event_to_organizer_mapping ON people_to_event_mapping.event_id = event_to_organizer_mapping.event_id
-INNER JOIN organizer ON event_to_organizer_mapping.organizer_id = organizer.id
-WHERE organizer.id = $1
+  p.name, 
+  p.phone_number, 
+  p.profession, 
+  p.email
+FROM people AS p
+  INNER JOIN people_to_event_mapping AS ptem 
+    ON p.id = ptem.person_id
+  INNER JOIN event_to_organizer_mapping AS etom 
+    ON ptem.event_id = etom.event_id
+  INNER JOIN organizer AS o 
+    ON etom.organizer_id = o.id
+WHERE 
+  o.id = $1
 `
 
 type FetchPeopleByDepartmentQueryRow struct {
@@ -182,14 +190,17 @@ func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, id 
 
 const fetchPeopleByEventQuery = `-- name: FetchPeopleByEventQuery :many
 SELECT
-people.name, 
-people.phone_number, 
-people.profession, 
-people.email
-FROM people
-INNER JOIN people_to_event_mapping ON people.id = people_to_event_mapping.person_id
-INNER JOIN event ON people_to_event_mapping.event_id = event.id
-WHERE event.id = $1
+  p.name, 
+  p.phone_number, 
+  p.profession, 
+  p.email
+FROM people AS p
+  INNER JOIN people_to_event_mapping AS ptem 
+    ON p.id = ptem.person_id
+  INNER JOIN event AS e
+    ON ptem.event_id = e.id
+WHERE 
+  e.id = $1
 `
 
 type FetchPeopleByEventQueryRow struct {
@@ -228,12 +239,13 @@ const mapPersonToEventQuery = `-- name: MapPersonToEventQuery :one
 INSERT INTO people_to_event_mapping (
   event_id, 
   person_id, 
-  event_day) VALUES ($1, $2, $3)
+  event_day
+) VALUES ($1, $2, $3)
 RETURNING
-id,
-event_id,
-person_id,
-event_day
+  id,
+  event_id,
+  person_id,
+  event_day
 `
 
 type MapPersonToEventQueryParams struct {
@@ -255,18 +267,19 @@ func (q *Queries) MapPersonToEventQuery(ctx context.Context, db DBTX, arg MapPer
 }
 
 const updatePersonDetailsQuery = `-- name: UpdatePersonDetailsQuery :one
-UPDATE people SET 
-name = $2, 
-phone_number = $3, 
-profession = $4,
-email = $5 
+UPDATE people 
+SET 
+  name = $2, 
+  phone_number = $3, 
+  profession = $4,
+  email = $5 
 WHERE id = $1
 RETURNING
-id,
-name,
-phone_number,
-profession,
-email
+  id,
+  name,
+  phone_number,
+  profession,
+  email
 `
 
 type UpdatePersonDetailsQueryParams struct {
