@@ -5,9 +5,13 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/people/3546e324-390c-4134-a13e-1c7b79b0b193
+  url: {{baseUrl}}/people/:peopleId
   body: none
   auth: inherit
+}
+
+params:path {
+  peopleId: 
 }
 
 settings {
