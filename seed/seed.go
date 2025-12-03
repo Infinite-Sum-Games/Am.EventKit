@@ -556,10 +556,12 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		{
 			EventID:  events[0].ID,
 			PersonID: people[0].ID,
+			EventDay: []int32{1, 2},
 		},
 		{
 			EventID:  events[1].ID,
 			PersonID: people[1].ID,
+			EventDay: []int32{1},
 		},
 	}
 	for _, mapping := range manualMappings {
@@ -577,6 +579,7 @@ func SeedPeopleToEventMapping(conn *pgx.Conn) error {
 		mapping := db.SeedPeopleToEventMappingQueryParams{
 			EventID:  event.ID,
 			PersonID: person.ID,
+			EventDay: []int32{int32((i % 3) + 1)},
 		}
 		err := q.SeedPeopleToEventMappingQuery(context.Background(), conn, mapping)
 		if err != nil {

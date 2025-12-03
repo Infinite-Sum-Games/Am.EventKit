@@ -359,6 +359,7 @@ type PeopleToEventMapping struct {
 	ID       int32     `json:"id"`
 	EventID  uuid.UUID `json:"event_id"`
 	PersonID uuid.UUID `json:"person_id"`
+	EventDay []int32   `json:"event_day"`
 }
 
 type Person struct {

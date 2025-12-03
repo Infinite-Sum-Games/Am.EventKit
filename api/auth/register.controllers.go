@@ -363,7 +363,7 @@ func ResendUserOtp(c *gin.Context) {
 		To:      []string{email},
 		Subject: fmt.Sprintf("Resend OTP - Anokha 2025 - %d", time.Now().UnixMilli()),
 		Type:    "otp",
-		Data: mail.OTPTemplateData{
+		Data: &mail.OTPTemplateData{
 			UserName: results.Name,
 			OTP:      strings.Split(results.Otp, ""),
 		},

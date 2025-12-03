@@ -1,0 +1,20 @@
+meta {
+  name: deletePerson
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/people/:peopleId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  peopleId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

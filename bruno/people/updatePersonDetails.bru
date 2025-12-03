@@ -1,0 +1,26 @@
+meta {
+  name: updatePersonDetails
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/people/:peopleId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  peopleId: 
+}
+
+body:json {
+  {
+    "profession": "Coordinator"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -29,3 +29,10 @@ func ParseTime(s string) (time.Time, error) {
 	now := time.Now().UTC()
 	return time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), t.Minute(), t.Second(), 0, time.UTC), nil
 }
+
+func ToPgTextPtr(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{Valid: false}
+	}
+	return pgtype.Text{String: *s, Valid: true}
+}
