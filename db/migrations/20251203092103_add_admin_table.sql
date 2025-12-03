@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS admin (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE admin IF EXISTS admin;
+DROP TABLE IF EXISTS admin;
 -- +goose StatementEnd
