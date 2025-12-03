@@ -43,3 +43,26 @@ func (q *Queries) LoginAdminQuery(ctx context.Context, db DBTX, email string) (L
 	)
 	return i, err
 }
+
+const updateAdminRefreshTokenQuery = `-- name: UpdateAdminRefreshTokenQuery :one
+UPDATE admin
+SET
+  refresh_token = $1,
+  updated_at = NOW()
+WHERE
+  email = $2
+RETURNING
+  refresh_token
+`
+
+type UpdateAdminRefreshTokenQueryParams struct {
+	RefreshToken pgtype.Text `json:"refresh_token"`
+	Email        string      `json:"email"`
+}
+
+func (q *Queries) UpdateAdminRefreshTokenQuery(ctx context.Context, db DBTX, arg UpdateAdminRefreshTokenQueryParams) (pgtype.Text, error) {
+	row := db.QueryRow(ctx, updateAdminRefreshTokenQuery, arg.RefreshToken, arg.Email)
+	var refresh_token pgtype.Text
+	err := row.Scan(&refresh_token)
+	return refresh_token, err
+}
