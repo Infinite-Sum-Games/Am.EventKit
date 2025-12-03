@@ -33,9 +33,9 @@ var (
 )
 
 type Roles struct {
-	isUser      bool
-	isOrganizer bool
-	isAdmin     bool
+	IsUser      bool
+	IsOrganizer bool
+	IsAdmin     bool
 }
 
 func InitPaseto() error {
@@ -75,15 +75,15 @@ func CreateAuthToken(userId, email string, roles Roles) (string, error) {
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
 
-	if err := token.Set("STUDENT-ROLE", roles.isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", roles.isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
 		return "", err
 	}
-	if err := token.Set("ADMIN-ROLE", roles.isAdmin); err != nil {
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
@@ -103,17 +103,17 @@ func CreateRefreshToken(userId, email string, roles Roles) (string, error) {
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
 
-	if err := token.Set("STUDENT-ROLE", roles.isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
 
-	if err := token.Set("ORGANIZER-ROLE", roles.isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
 		return "", err
 	}
 
-	if err := token.Set("ADMIN-ROLE", roles.isAdmin); err != nil {
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
