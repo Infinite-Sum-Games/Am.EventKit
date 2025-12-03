@@ -18,3 +18,36 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # Delete a person
+  
+  - Input JSON: none
+  - Path params:
+    - `id` (UUID of the person to delete)
+  - Query params: none
+  - Headers: none
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Person deleted successfully",
+    "deleted_person_id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71"
+  }
+  ```
+  
+  ## 400 Bad Request (invalid UUID)
+  ```json
+  { "message": "Request not processed due to invalid parameters" }
+  ```
+  
+  ## 404 Not Found
+  ```json
+  { "message": "Person not found" }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}

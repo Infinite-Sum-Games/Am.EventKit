@@ -14,3 +14,35 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # Fetch all people
+  
+  - Input JSON: none
+  - Path params: none
+  - Query params: none
+  - Headers: none
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "People list fetched successfully",
+    "people": [
+      {
+        "id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71",
+        "name": "John Doe",
+        "phone_number": "0000000000",
+        "profession": "Speaker",
+        "email": "john@example.com",
+        "created_at": "2025-12-03T10:00:00Z",
+        "updated_at": "2025-12-03T10:00:00Z"
+      }
+    ]
+  }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}
