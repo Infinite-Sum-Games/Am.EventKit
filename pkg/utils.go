@@ -1,10 +1,10 @@
 package pkg
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"math/big"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
