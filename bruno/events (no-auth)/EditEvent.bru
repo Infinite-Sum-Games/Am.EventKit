@@ -1,0 +1,147 @@
+meta {
+  name: EditEvent
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/events/:eventId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  eventId: c03e2bf2-a0ec-4a54-ad4d-b0b50307c5e5
+}
+
+body:json {
+  {
+    "name": "AI Hackathon - Updated",
+    "blurb": "Updated blurb for the AI hackathon",
+    "description": "Updated description for the 24-hour AI hackathon.",
+    "cover_image_url": "https://example.com/images/ai-hackathon-updated.png",
+    "price": 150.0,
+    "is_per_head": true,
+    "rules": "No plagiarism. Teams must submit code on GitHub. Updated rules apply.",
+    "event_type": "EVENT",
+    "is_group": true,
+    "max_teamsize": 5,
+    "min_teamsize": 2,
+    "total_seats": 120,
+    "seats_filled": 10,
+    "event_status": "ACTIVE",
+    "event_mode": "OFFLINE",
+    "attendance_mode": "SOLO",
+    "organizer_ids": [
+      "45450ef9-d607-490b-b43c-55930954c1ff"
+    ],
+    "tag_ids": [
+      "f49da278-953e-46ef-87f0-85fb41052cac"
+    ],
+    "people_ids": [
+      "4c544c94-d3be-4128-807b-bc215e1f4df1"
+    ],
+    "schedules": [
+      {
+        "event_date": "2025-11-29",
+        "start_time": "11:00:00",
+        "end_time": "13:00:00",
+        "venue": "Main Auditorium"
+      },
+      {
+        "event_date": "2025-11-30",
+        "start_time": "15:00:00",
+        "end_time": "17:00:00",
+        "venue": "Lab 102"
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Edit an existing event
+  
+    - Path params:
+      - `eventId` – UUID of the event to update
+  
+    ## Request Body
+  
+    ```json
+    {
+      "name": "AI Hackathon - Updated",
+      "blurb": "Updated blurb for the AI hackathon",
+      "description": "Updated description for the 24-hour AI hackathon.",
+      "cover_image_url": "https://example.com/images/ai-hackathon-updated.png",
+      "price": 150.0,
+      "is_per_head": true,
+      "rules": "No plagiarism. Teams must submit code on GitHub. Updated rules apply.",
+      "event_type": "EVENT",
+      "is_group": true,
+      "max_teamsize": 5,
+      "min_teamsize": 2,
+      "total_seats": 120,
+      "seats_filled": 10,
+      "event_status": "ACTIVE",
+      "event_mode": "OFFLINE",
+      "attendance_mode": "SOLO",
+      "organizer_ids": [
+        "005611c4-21dc-43dc-a5f1-4b6132744d01"
+      ],
+      "tag_ids": [
+        "31725984-44a0-45c1-bd68-5ba2c22c7648"
+      ],
+      "people_ids": [
+        "65c77c3a-c359-4dc6-a7f6-f7a1a7f07645"
+      ],
+      "schedules": [
+        {
+          "event_date": "2025-11-29",
+          "start_time": "11:00:00",
+          "end_time": "13:00:00",
+          "venue": "Main Auditorium"
+        },
+        {
+          "event_date": "2025-11-30",
+          "start_time": "15:00:00",
+          "end_time": "17:00:00",
+          "venue": "Lab 102"
+        }
+      ]
+    }
+    ```
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Event updated successfully"
+    }
+    ```
+  
+    ## 400 Bad Request
+    ```json
+    {
+      "message": "Request is malformed"
+    }
+    ```
+  
+    ## 404 Not Found
+    ```json
+    {
+      "message": "Event does not exist"
+    }
+    ```
+  
+    ## 500 Internal Server Error
+    ```json
+    {
+      "message": "Oops! Something happened. Please try again later"
+    }
+    ```
+  }
+  
+}
