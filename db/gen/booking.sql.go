@@ -111,6 +111,52 @@ func (q *Queries) CreateTeamMember(ctx context.Context, db DBTX, arg CreateTeamM
 	return id, err
 }
 
+const deleteTeam = `-- name: DeleteTeam :exec
+DELETE 
+FROM teams 
+WHERE booking_id = $1
+`
+
+func (q *Queries) DeleteTeam(ctx context.Context, db DBTX, bookingID uuid.UUID) error {
+	_, err := db.Exec(ctx, deleteTeam, bookingID)
+	return err
+}
+
+const deleteTeamDetailsOfTeam = `-- name: DeleteTeamDetailsOfTeam :exec
+DELETE 
+FROM team_members 
+WHERE team_id = $1
+`
+
+func (q *Queries) DeleteTeamDetailsOfTeam(ctx context.Context, db DBTX, teamID uuid.UUID) error {
+	_, err := db.Exec(ctx, deleteTeamDetailsOfTeam, teamID)
+	return err
+}
+
+const getBookingByTxnID = `-- name: GetBookingByTxnID :one
+SELECT id, txn_id, student_id, event_id, registration_fee, product_info, seats_released, txn_status, team_details, metadata, created_at, updated_at FROM bookings WHERE txn_id = $1
+`
+
+func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) (Booking, error) {
+	row := db.QueryRow(ctx, getBookingByTxnID, txnID)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.TxnID,
+		&i.StudentID,
+		&i.EventID,
+		&i.RegistrationFee,
+		&i.ProductInfo,
+		&i.SeatsReleased,
+		&i.TxnStatus,
+		&i.TeamDetails,
+		&i.Metadata,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getBookingByUserAndEvent = `-- name: GetBookingByUserAndEvent :one
 SELECT 
   id, 
@@ -219,6 +265,33 @@ func (q *Queries) GetTeamBookingByUserAndEvent(ctx context.Context, db DBTX, arg
 	var i GetTeamBookingByUserAndEventRow
 	err := row.Scan(&i.ID, &i.TxnStatus)
 	return i, err
+}
+
+const getTeamIDByBooking = `-- name: GetTeamIDByBooking :one
+SELECT id FROM teams WHERE booking_id = $1
+`
+
+func (q *Queries) GetTeamIDByBooking(ctx context.Context, db DBTX, bookingID uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, getTeamIDByBooking, bookingID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const updateBookingStatus = `-- name: UpdateBookingStatus :exec
+UPDATE bookings
+SET txn_status = $2
+WHERE id = $1
+`
+
+type UpdateBookingStatusParams struct {
+	ID        uuid.UUID `json:"id"`
+	TxnStatus string    `json:"txn_status"`
+}
+
+func (q *Queries) UpdateBookingStatus(ctx context.Context, db DBTX, arg UpdateBookingStatusParams) error {
+	_, err := db.Exec(ctx, updateBookingStatus, arg.ID, arg.TxnStatus)
+	return err
 }
 
 const updateEventSeats = `-- name: UpdateEventSeats :exec

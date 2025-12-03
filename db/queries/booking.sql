@@ -79,3 +79,24 @@ WHERE
 UPDATE event
 SET seats_filled = seats_filled + $1
 WHERE id = $2;
+
+-- name: GetBookingByTxnID :one
+SELECT * FROM bookings WHERE txn_id = $1;
+
+-- name: GetTeamIDByBooking :one
+SELECT id FROM teams WHERE booking_id = $1;
+
+-- name: DeleteTeam :exec
+DELETE 
+FROM teams 
+WHERE booking_id = $1;
+
+-- name: DeleteTeamDetailsOfTeam :exec
+DELETE 
+FROM team_members 
+WHERE team_id = $1;
+
+-- name: UpdateBookingStatus :exec
+UPDATE bookings
+SET txn_status = $2
+WHERE id = $1;
