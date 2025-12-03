@@ -4,7 +4,8 @@ SELECT
     e.cover_image_url AS event_image_url,
     e.name AS event_name,
     e.event_status,
-    e.blurb AS event_description,
+    e.description AS event_description,
+    e.blurb AS event_blurb,
     MIN(es.event_date) AS event_date,
     e.is_group,
 
@@ -14,8 +15,6 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    FALSE AS is_registered,
-    FALSE AS is_starred,
     e.total_seats AS max_seats,
     e.seats_filled
 
