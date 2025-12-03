@@ -27,3 +27,63 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+docs {
+  # Add a new person
+  
+  Input JSON:
+  ```json
+  {
+    "name": "John Doe",
+    "phone_number": "0000000000",
+    "profession": "Speaker",
+    "email": "john@example.com",
+    "event_id": "18631a21-0a16-4f04-bd7f-9de07e08c061",
+    "event_day": [1, 2]
+  }
+  ```
+  
+  - Path params: none
+  - Query params: none
+  - Headers: Content-Type: application/json
+  
+  ## 200 OK
+  ```json
+  {
+      "message": "Person added successfully",
+      "person_details": {
+          "id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71",
+          "name": "John Doe",
+          "phone_number": "0000000000",
+          "profession": "Speaker",
+          "email": "john@example.com",
+          "created_at": "2025-12-03T10:00:00Z",
+          "updated_at": "2025-12-03T10:00:00Z"
+      },
+      "person_to_event_mapping": {
+          "person_id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71",
+          "event_id": "18631a21-0a16-4f04-bd7f-9de07e08c061",
+          "event_day": [1, 2]
+      }
+  }
+  ```
+  
+  ## 400 Bad Request (validation / missing fields)
+  ```json
+  {"message": "Request is malformed"}
+  ```
+  
+  ## 401 Unauthorized
+  Admin not logged in, or cookies have not set.
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+  
+}
