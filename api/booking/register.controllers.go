@@ -300,5 +300,4 @@ func BookEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Booking successful! Please complete the payment."})
 	pkg.Log.SuccessCtx(c)
-	return
 }
