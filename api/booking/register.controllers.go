@@ -1,4 +1,4 @@
-package booking
+package api
 
 import (
 	"context"
