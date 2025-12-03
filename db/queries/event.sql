@@ -4,8 +4,7 @@ SELECT
     e.cover_image_url AS event_image_url,
     e.name AS event_name,
     e.event_status,
-    e.description AS event_description,
-    e.blurb AS event_blurb,
+    e.blurb AS event_description,
     MIN(es.event_date) AS event_date,
     e.is_group,
 

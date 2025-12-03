@@ -254,8 +254,7 @@ SELECT
     e.cover_image_url AS event_image_url,
     e.name AS event_name,
     e.event_status,
-    e.description AS event_description,
-    e.blurb AS event_blurb,
+    e.blurb AS event_description,
     MIN(es.event_date) AS event_date,
     e.is_group,
 
@@ -283,7 +282,6 @@ type GetEventsQueryRow struct {
 	EventName        string          `json:"event_name"`
 	EventStatus      EventStatusEnum `json:"event_status"`
 	EventDescription string          `json:"event_description"`
-	EventBlurb       string          `json:"event_blurb"`
 	EventDate        interface{}     `json:"event_date"`
 	IsGroup          bool            `json:"is_group"`
 	Tags             interface{}     `json:"tags"`
@@ -307,7 +305,6 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 			&i.EventName,
 			&i.EventStatus,
 			&i.EventDescription,
-			&i.EventBlurb,
 			&i.EventDate,
 			&i.IsGroup,
 			&i.Tags,
