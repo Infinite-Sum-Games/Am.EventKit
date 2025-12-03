@@ -149,7 +149,7 @@ func EditUserProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "User profile does not exist",
 		})
-		pkg.Log.FatalCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
 		return
 	}
 
