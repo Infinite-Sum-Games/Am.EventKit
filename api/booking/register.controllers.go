@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"fmt"
+
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
@@ -87,6 +89,8 @@ func BookEvent(c *gin.Context) {
 
 	// TODO: string{leaderEmail} is written asuming that frontend doesnt add the leader details in the team array
 	allMembers := []string{leaderEmail}
+	emailCount := make(map[string]int)
+	hasDuplicates := false
 
 	if isGroupEvent {
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -99,6 +103,22 @@ func BookEvent(c *gin.Context) {
 		// Creating the group list
 		for _, m := range req.TeamMembers {
 			allMembers = append(allMembers, m.StudentEmail)
+		}
+
+		// Checking if duplicate emails are present in team details
+		for _, email := range allMembers {
+			emailCount[email]++
+			if emailCount[email] > 1 {
+				hasDuplicates = true
+				break
+			}
+		}
+		if hasDuplicates {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Duplicate team members found",
+			})
+			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Team details are not proper (Duplicates found)", err)
+			return
 		}
 		// Validating team size
 		if len(allMembers) < int(event.MinTeamsize.Int32) || len(allMembers) > int(event.MaxTeamsize.Int32) {
@@ -137,8 +157,6 @@ func BookEvent(c *gin.Context) {
 	}
 
 	totalFee = totalFee + (totalFee * 0.18)
-
-	// TODO: Should I take ceil for each multiplication or final number or finally after adding tax?
 	totalFee = math.Ceil(totalFee)
 
 	// Checking if all users are registered and not already booked
@@ -159,26 +177,26 @@ func BookEvent(c *gin.Context) {
 			return
 		}
 
-		// Checking if each user is leader for existing booking / same query used for solo event registration
-		_, err = q.GetBookingByUserAndEvent(ctx, tx, db.GetBookingByUserAndEventParams{
-			StudentID: student.ID,
-			EventID:   eventId,
-		})
-		if err != nil && err != pgx.ErrNoRows {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later.",
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot check if member present in booking", err)
-			return
-		}
-		// not pgx.ErrNoRows, which means there is an entry
-		if err == nil {
-			c.JSON(http.StatusConflict, gin.H{
-				"message": "You are already registered for this event: " + memberEmail,
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student already registered for event", nil)
-			return
-		}
+		// // Checking if each user is leader for existing booking / same query used for solo event registration
+		// _, err = q.GetBookingByUserAndEvent(ctx, tx, db.GetBookingByUserAndEventParams{
+		// 	StudentID: student.ID,
+		// 	EventID:   eventId,
+		// })
+		// if err != nil && err != pgx.ErrNoRows {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{
+		// 		"message": "Oops! Something happened. Please try again later.",
+		// 	})
+		// 	pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot check if member present in booking", err)
+		// 	return
+		// }
+		// // not pgx.ErrNoRows, which means there is an entry
+		// if err == nil {
+		// 	c.JSON(http.StatusConflict, gin.H{
+		// 		"message": "You are already registered for this event: " + memberEmail,
+		// 	})
+		// 	pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student already registered for event", nil)
+		// 	return
+		// }
 
 		// Check for existing team booking
 		_, err = q.GetTeamBookingByUserAndEvent(ctx, tx,
@@ -208,7 +226,7 @@ func BookEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid event ID", err)
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid user ID", err)
 		return
 	}
 
@@ -220,13 +238,21 @@ func BookEvent(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to convert float to numeric", err)
 		return
 	}
+	txnId := pkg.GenerateTxnID(leaderId, eventId)
+	prodInfo := fmt.Sprintf(
+		"ERI-%s-%s-%d-%.2f",
+		leaderId.String(),
+		eventId.String(),
+		len(allMembers),
+		totalFee,
+	)
 	bookingID, err := q.CreateBooking(ctx, tx, db.CreateBookingParams{
 		EventID:         eventId,
 		StudentID:       leaderId,
-		TxnID:           pkg.GenerateTxnID(leaderId, eventId),
+		TxnID:           txnId,
 		RegistrationFee: registrationFee,
 		TxnStatus:       "PENDING",
-		ProductInfo:     "Booking for " + eventId.String(), //TODO: I forgot what to put here?
+		ProductInfo:     prodInfo,
 		SeatsReleased:   int32(len(allMembers)),
 	})
 	if err != nil {
@@ -298,5 +324,18 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Booking successful! Please complete the payment."})
+	// Generating the hash
+	// TODO: Check salt
+	hashedData := pkg.GenerateSHA512Hash(txnId, leaderEmail, fmt.Sprintf("%.2f", totalFee), prodInfo, eventId.String(), "What_sHOULD-i-GIVE here?")
+
+	// TODO: Question? Is leader name and phone number absolutely necessary? If yes, i need to get those details
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Booking successful! Please complete the payment.",
+		"txnId":           txnId,
+		"registrationFee": totalFee,
+		"productInfo":     prodInfo,
+		"userEmail":       leaderEmail,
+		"hash":            hashedData,
+	})
+
 }

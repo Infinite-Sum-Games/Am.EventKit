@@ -45,34 +45,23 @@ FROM
 WHERE 
   id = $1;
 
--- name: GetBookingByUserAndEvent :one
+-- name: GetAnyBookingByUserAndEvent :one
 SELECT 
-  id, 
-  txn_status 
-FROM 
-  bookings 
-WHERE 
-  student_id = $1 
-  AND event_id = $2
-  AND txn_status != 'failed';
-
--- name: GetTeamBookingByUserAndEvent :one
-SELECT 
-  b.id, 
+  b.id,
   b.txn_status
-FROM 
-  bookings b
-JOIN 
-  teams t 
+FROM bookings b
+LEFT JOIN teams t 
   ON b.id = t.booking_id
-JOIN 
-  team_members tm 
+LEFT JOIN team_members tm 
   ON t.id = tm.team_id
 WHERE 
-  tm.student_id = $1 
+  (
+    b.student_id = $1
+    OR tm.student_id = $1
+  )
   AND b.event_id = $2
-  AND b.txn_status != 'failed';
-
+  AND b.txn_status != 'failed'
+LIMIT 1;
 
 -- Hopefully, we can use this for removing decrement too (should try)
 -- name: UpdateEventSeats :exec
