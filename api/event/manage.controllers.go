@@ -423,7 +423,6 @@ func EditEvent(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-// DeleteEvent removes an event and all mappings in a transaction.
 func DeleteEvent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
