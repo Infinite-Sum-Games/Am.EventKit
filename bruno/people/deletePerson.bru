@@ -38,7 +38,15 @@ docs {
   
   ## 400 Bad Request (invalid UUID)
   ```json
-  { "message": "Request not processed due to invalid parameters" }
+  { "message": "Request is malformed" }
+  ```
+  
+  ## 401 Unauthorized
+  Admin not logged in, or cookies have not set.
+  ```json
+  {
+    "message": "Access denied."
+  }
   ```
   
   ## 404 Not Found

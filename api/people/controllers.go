@@ -88,7 +88,7 @@ func AddNewPerson(c *gin.Context) {
 
 	personToEventMapping, err := q.MapPersonToEventQuery(ctx, tx,
 		db.MapPersonToEventQueryParams{
-			PersonID: req.PersonID,
+			PersonID: people.ID,
 			EventID:  req.EventID,
 			EventDay: req.EventDay,
 		})
@@ -171,8 +171,12 @@ func UpdatePersonDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":        "Person details updated successfully",
-		"updated_person": updatedPerson,
+		"message":      "Person details updated successfully",
+		"id":           updatedPerson.ID,
+		"name":         updatedPerson.Name,
+		"email":        updatedPerson.Email,
+		"profession":   updatedPerson.Profession,
+		"phone_number": updatedPerson.PhoneNumber,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -182,7 +186,7 @@ func DeletePerson(c *gin.Context) {
 	personId, err := uuid.Parse(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Request not processed due to invalid parameters",
+			"message": "Request is malformed",
 		})
 		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid person ID parameter", err)
 		return
