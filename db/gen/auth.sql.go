@@ -311,8 +311,10 @@ func (q *Queries) PasswordChangeVerifyOtpQuery(ctx context.Context, db DBTX, arg
 
 const resendPasswordChangeOtpQuery = `-- name: ResendPasswordChangeOtpQuery :one
 SELECT 
+  name,
   email,
-  otp
+  otp,
+  expiry_at
 FROM
   password_reset
 WHERE
@@ -321,14 +323,21 @@ WHERE
 `
 
 type ResendPasswordChangeOtpQueryRow struct {
-	Email string `json:"email"`
-	Otp   string `json:"otp"`
+	Name     string           `json:"name"`
+	Email    string           `json:"email"`
+	Otp      string           `json:"otp"`
+	ExpiryAt pgtype.Timestamp `json:"expiry_at"`
 }
 
 func (q *Queries) ResendPasswordChangeOtpQuery(ctx context.Context, db DBTX, email string) (ResendPasswordChangeOtpQueryRow, error) {
 	row := db.QueryRow(ctx, resendPasswordChangeOtpQuery, email)
 	var i ResendPasswordChangeOtpQueryRow
-	err := row.Scan(&i.Email, &i.Otp)
+	err := row.Scan(
+		&i.Name,
+		&i.Email,
+		&i.Otp,
+		&i.ExpiryAt,
+	)
 	return i, err
 }
 

@@ -210,8 +210,10 @@ RETURNING
 
 -- name: ResendPasswordChangeOtpQuery :one
 SELECT 
+  name,
   email,
-  otp
+  otp,
+  expiry_at
 FROM
   password_reset
 WHERE
