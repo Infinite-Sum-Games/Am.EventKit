@@ -12,6 +12,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -41,10 +42,14 @@ func CreateEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to begin transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
 		return
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
+		}
+	}()
 
 	eventID, err := q.CreateEventQuery(ctx, tx, db.CreateEventQueryParams{
 		Name:           req.Name,
@@ -194,7 +199,7 @@ func CreateEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to commit transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to commit transaction", err)
 		return
 	}
 
@@ -236,10 +241,14 @@ func EditEvent(c *gin.Context) {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to begin transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
 		return
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
+		}
+	}()
 
 	// 1) update base event
 	rows, err := q.UpdateEventQuery(ctx, tx, db.UpdateEventQueryParams{
@@ -413,7 +422,7 @@ func EditEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to commit transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to commit transaction", err)
 		return
 	}
 
@@ -453,10 +462,14 @@ func DeleteEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to begin transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
 		return
 	}
-	defer func() { _ = tx.Rollback(ctx) }()
+	defer func() {
+		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
+			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
+		}
+	}()
 
 	// delete all mappings first
 	clearFuncs := []func(context.Context) error{
@@ -495,7 +508,7 @@ func DeleteEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to commit transaction", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to commit transaction", err)
 		return
 	}
 
