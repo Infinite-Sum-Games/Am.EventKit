@@ -293,3 +293,11 @@ DELETE FROM people_to_event_mapping WHERE event_id = $1;
 
 -- name: DeleteEventQuery :execrows
 DELETE FROM event WHERE id = $1;
+
+-- name: ToggleEventStatusQuery :execrows
+UPDATE event
+SET event_status = CASE
+    WHEN event_status = 'ACTIVE' THEN 'CLOSED'
+    ELSE 'ACTIVE'
+END
+WHERE id = $1;
