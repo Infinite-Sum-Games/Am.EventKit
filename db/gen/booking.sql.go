@@ -111,40 +111,44 @@ func (q *Queries) CreateTeamMember(ctx context.Context, db DBTX, arg CreateTeamM
 	return id, err
 }
 
-const getAnyBookingByUserAndEvent = `-- name: GetAnyBookingByUserAndEvent :one
-SELECT 
-  b.id,
-  b.txn_status
+const getAnyBookingByUsersAndEvent = `-- name: GetAnyBookingByUsersAndEvent :many
+SELECT DISTINCT tm.student_id
 FROM bookings b
-LEFT JOIN teams t 
-  ON b.id = t.booking_id
-LEFT JOIN team_members tm 
-  ON t.id = tm.team_id
+LEFT JOIN 
+  teams t 
+ON b.id = t.booking_id
+LEFT JOIN 
+  team_members tm 
+ON t.id = tm.team_id
 WHERE 
-  (
-    b.student_id = $1
-    OR tm.student_id = $1
-  )
-  AND b.event_id = $2
-  AND b.txn_status != 'FAILED'
-LIMIT 1
+  tm.student_id = ANY($1::uuid[])
+AND b.event_id = $2
+AND b.txn_status != 'FAILED'
 `
 
-type GetAnyBookingByUserAndEventParams struct {
-	StudentID uuid.UUID `json:"student_id"`
-	EventID   uuid.UUID `json:"event_id"`
+type GetAnyBookingByUsersAndEventParams struct {
+	Column1 []uuid.UUID `json:"column_1"`
+	EventID uuid.UUID   `json:"event_id"`
 }
 
-type GetAnyBookingByUserAndEventRow struct {
-	ID        uuid.UUID `json:"id"`
-	TxnStatus string    `json:"txn_status"`
-}
-
-func (q *Queries) GetAnyBookingByUserAndEvent(ctx context.Context, db DBTX, arg GetAnyBookingByUserAndEventParams) (GetAnyBookingByUserAndEventRow, error) {
-	row := db.QueryRow(ctx, getAnyBookingByUserAndEvent, arg.StudentID, arg.EventID)
-	var i GetAnyBookingByUserAndEventRow
-	err := row.Scan(&i.ID, &i.TxnStatus)
-	return i, err
+func (q *Queries) GetAnyBookingByUsersAndEvent(ctx context.Context, db DBTX, arg GetAnyBookingByUsersAndEventParams) ([]pgtype.UUID, error) {
+	rows, err := db.Query(ctx, getAnyBookingByUsersAndEvent, arg.Column1, arg.EventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.UUID
+	for rows.Next() {
+		var student_id pgtype.UUID
+		if err := rows.Scan(&student_id); err != nil {
+			return nil, err
+		}
+		items = append(items, student_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAnyPendingBookingByUser = `-- name: GetAnyPendingBookingByUser :many

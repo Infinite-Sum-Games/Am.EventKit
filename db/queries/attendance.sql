@@ -68,6 +68,10 @@ ORDER BY es.start_time ASC;
 SELECT * FROM student
 WHERE email = $1;
 
+-- name: GetStudentsByEmails :many
+SELECT * FROM student
+WHERE email = ANY($1::text[]);
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,

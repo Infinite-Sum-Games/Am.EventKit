@@ -45,23 +45,19 @@ FROM
 WHERE 
   id = $1;
 
--- name: GetAnyBookingByUserAndEvent :one
-SELECT 
-  b.id,
-  b.txn_status
+-- name: GetAnyBookingByUsersAndEvent :many
+SELECT DISTINCT tm.student_id
 FROM bookings b
-LEFT JOIN teams t 
-  ON b.id = t.booking_id
-LEFT JOIN team_members tm 
-  ON t.id = tm.team_id
+LEFT JOIN 
+  teams t 
+ON b.id = t.booking_id
+LEFT JOIN 
+  team_members tm 
+ON t.id = tm.team_id
 WHERE 
-  (
-    b.student_id = $1
-    OR tm.student_id = $1
-  )
-  AND b.event_id = $2
-  AND b.txn_status != 'FAILED'
-LIMIT 1;
+  tm.student_id = ANY($1::uuid[])
+AND b.event_id = $2
+AND b.txn_status != 'FAILED';
 
 -- name: GetAnyPendingBookingByUser :many
 SELECT id
