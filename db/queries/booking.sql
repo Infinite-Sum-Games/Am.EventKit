@@ -46,18 +46,25 @@ WHERE
   id = $1;
 
 -- name: GetAnyBookingByUsersAndEvent :many
-SELECT DISTINCT tm.student_id
+(
+SELECT b.student_id
 FROM bookings b
-LEFT JOIN 
-  teams t 
-ON b.id = t.booking_id
-LEFT JOIN 
-  team_members tm 
-ON t.id = tm.team_id
-WHERE 
-  tm.student_id = ANY($1::uuid[])
-AND b.event_id = $2
-AND b.txn_status != 'FAILED';
+WHERE b.student_id = ANY($1::uuid[])
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+)
+UNION
+(
+SELECT tm.student_id
+FROM bookings b
+JOIN teams t 
+  ON t.booking_id = b.id
+JOIN team_members tm 
+  ON tm.team_id = t.id
+WHERE tm.student_id = ANY($1::uuid[])
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+);
 
 -- name: GetAnyPendingBookingByUser :many
 SELECT id

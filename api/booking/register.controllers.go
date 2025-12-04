@@ -214,15 +214,7 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 	if len(existing) > 0 {
-		conflictPg := existing[0]
-		conflictId, err := uuid.FromBytes(conflictPg.Bytes[:])
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later.",
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to get UUID from bytes", err)
-			return
-		}
+		conflictId := existing[0]
 		conflictEmail := studentMap[conflictId].Email
 
 		c.JSON(http.StatusConflict, gin.H{

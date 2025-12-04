@@ -112,18 +112,25 @@ func (q *Queries) CreateTeamMember(ctx context.Context, db DBTX, arg CreateTeamM
 }
 
 const getAnyBookingByUsersAndEvent = `-- name: GetAnyBookingByUsersAndEvent :many
-SELECT DISTINCT tm.student_id
+(
+SELECT b.student_id
 FROM bookings b
-LEFT JOIN 
-  teams t 
-ON b.id = t.booking_id
-LEFT JOIN 
-  team_members tm 
-ON t.id = tm.team_id
-WHERE 
-  tm.student_id = ANY($1::uuid[])
-AND b.event_id = $2
-AND b.txn_status != 'FAILED'
+WHERE b.student_id = ANY($1::uuid[])
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+)
+UNION
+(
+SELECT tm.student_id
+FROM bookings b
+JOIN teams t 
+  ON t.booking_id = b.id
+JOIN team_members tm 
+  ON tm.team_id = t.id
+WHERE tm.student_id = ANY($1::uuid[])
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+)
 `
 
 type GetAnyBookingByUsersAndEventParams struct {
@@ -131,15 +138,15 @@ type GetAnyBookingByUsersAndEventParams struct {
 	EventID uuid.UUID   `json:"event_id"`
 }
 
-func (q *Queries) GetAnyBookingByUsersAndEvent(ctx context.Context, db DBTX, arg GetAnyBookingByUsersAndEventParams) ([]pgtype.UUID, error) {
+func (q *Queries) GetAnyBookingByUsersAndEvent(ctx context.Context, db DBTX, arg GetAnyBookingByUsersAndEventParams) ([]uuid.UUID, error) {
 	rows, err := db.Query(ctx, getAnyBookingByUsersAndEvent, arg.Column1, arg.EventID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.UUID
+	var items []uuid.UUID
 	for rows.Next() {
-		var student_id pgtype.UUID
+		var student_id uuid.UUID
 		if err := rows.Scan(&student_id); err != nil {
 			return nil, err
 		}
