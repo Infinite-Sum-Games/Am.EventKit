@@ -159,65 +159,72 @@ func BookEvent(c *gin.Context) {
 	totalFee = totalFee + (totalFee * 0.18)
 	totalFee = math.Ceil(totalFee)
 
-	// Checking if all users are registered and not already booked
-	for _, memberEmail := range allMembers {
-		student, err := q.GetStudentByEmail(ctx, tx, memberEmail)
-		if err != nil {
-			if err == pgx.ErrNoRows {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": "Student not registered in anokha: " + memberEmail,
-				})
-				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student not registered in anokha", err)
-				return
+	// Fetching all student details for the team
+	students, err := q.GetStudentsByEmails(ctx, tx, allMembers)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to get student/member detail from email", err)
+		return
+	}
+	studentMap := make(map[uuid.UUID]db.Student)
+	for _, s := range students {
+		studentMap[s.ID] = s
+	}
+	emailToId := make(map[string]uuid.UUID)
+	for _, s := range students {
+		emailToId[s.Email] = s.ID
+	}
+
+	// Checking if someone is not registered in anokha
+	if len(students) != len(allMembers) {
+		missing := ""
+		for _, email := range allMembers {
+			if _, ok := emailToId[email]; !ok {
+				missing = email
+				break
 			}
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Student not registered: " + missing,
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student not registered in anokha"+missing, err)
+		return
+	}
+
+	var ids []uuid.UUID
+	for _, s := range students {
+		ids = append(ids, s.ID)
+	}
+
+	existing, err := q.GetAnyBookingByUsersAndEvent(ctx, tx, db.GetAnyBookingByUsersAndEventParams{
+		Column1: ids,
+		EventID: eventId,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to check bookings of user and event", err)
+		return
+	}
+	if len(existing) > 0 {
+		conflictPg := existing[0]
+		conflictId, err := uuid.FromBytes(conflictPg.Bytes[:])
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",
 			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to check student existence", err)
+			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to get UUID from bytes", err)
 			return
 		}
+		conflictEmail := studentMap[conflictId].Email
 
-		// // Checking if each user is leader for existing booking / same query used for solo event registration
-		// _, err = q.GetBookingByUserAndEvent(ctx, tx, db.GetBookingByUserAndEventParams{
-		// 	StudentID: student.ID,
-		// 	EventID:   eventId,
-		// })
-		// if err != nil && err != pgx.ErrNoRows {
-		// 	c.JSON(http.StatusInternalServerError, gin.H{
-		// 		"message": "Oops! Something happened. Please try again later.",
-		// 	})
-		// 	pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot check if member present in booking", err)
-		// 	return
-		// }
-		// // not pgx.ErrNoRows, which means there is an entry
-		// if err == nil {
-		// 	c.JSON(http.StatusConflict, gin.H{
-		// 		"message": "You are already registered for this event: " + memberEmail,
-		// 	})
-		// 	pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student already registered for event", nil)
-		// 	return
-		// }
-
-		// Check for existing team booking or individual booking
-		_, err = q.GetAnyBookingByUserAndEvent(ctx, tx,
-			db.GetAnyBookingByUserAndEventParams{
-				StudentID: student.ID,
-				EventID:   eventId,
-			})
-		if err != nil && err != pgx.ErrNoRows {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later.",
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot check if member present in some team", err)
-			return
-		}
-		if err == nil {
-			c.JSON(http.StatusConflict, gin.H{
-				"message": "You are already registered for this event in a team: " + memberEmail,
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student already present in some team of this event", nil)
-			return
-		}
+		c.JSON(http.StatusConflict, gin.H{
+			"message": "User already registered: " + conflictEmail,
+		})
+		return
 	}
 
 	// Geting leader details
@@ -298,20 +305,14 @@ func BookEvent(c *gin.Context) {
 		}
 
 		for _, team_members := range req.TeamMembers {
-			member, err := q.GetStudentByEmail(ctx, tx, team_members.StudentEmail)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Oops! Something happened. Please try again later.",
-				})
-				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to fetch team member during team creation", err)
-				return
-			}
+			id := emailToId[team_members.StudentEmail]
+			details := studentMap[id]
 			_, err = q.CreateTeamMember(ctx, tx, db.CreateTeamMemberParams{
 				TeamID:       teamID,
-				StudentID:    member.ID,
+				StudentID:    id,
 				StudentRole:  team_members.StudentRole,
-				StudentName:  member.Name,
-				StudentEmail: team_members.StudentEmail,
+				StudentName:  details.Name,
+				StudentEmail: details.Email,
 			})
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
