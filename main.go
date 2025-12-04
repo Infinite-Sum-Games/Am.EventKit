@@ -65,6 +65,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
+	apiAuth.AdminAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
 	apiTag.TagRoutes(tagRouter)
