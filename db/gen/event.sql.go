@@ -635,6 +635,23 @@ func (q *Queries) InsertPeopleToEventMappingQuery(ctx context.Context, db DBTX, 
 	return err
 }
 
+const toggleEventStatusQuery = `-- name: ToggleEventStatusQuery :execrows
+UPDATE event
+SET event_status = CASE
+    WHEN event_status = 'ACTIVE' THEN 'CLOSED'
+    ELSE 'ACTIVE'
+END
+WHERE id = $1
+`
+
+func (q *Queries) ToggleEventStatusQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, toggleEventStatusQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateEventQuery = `-- name: UpdateEventQuery :execrows
 UPDATE event SET
   name = $2,
