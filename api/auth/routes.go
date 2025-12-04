@@ -32,3 +32,7 @@ func OrganizerAuthRoutes(r *gin.RouterGroup) {
 	r.POST("/organizer/login", LoginOrganizer)
 	r.GET("/organizer/logout", mw.Auth, Logout)
 }
+
+func AdminAuthRoutes(r *gin.RouterGroup) {
+	r.POST("/admin/login", LoginAdmin)
+}
