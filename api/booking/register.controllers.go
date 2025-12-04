@@ -18,7 +18,8 @@ import (
 )
 
 func BookEvent(c *gin.Context) {
-	// if it is group event, the email is considered as leader's email, we can keep the same naming convention for solo event too
+	// if it is group event, the email is considered as leader's email,
+	// we can keep the same naming convention for solo event too
 	leaderEmail := c.GetString("email")
 	if leaderEmail == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -80,14 +81,15 @@ func BookEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Booking for this event is not allowed as event is inactive",
 		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to book seat due to event unavailability", err)
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Event unavailable", err)
 		return
 	}
 
 	var req models.TeamBookingRequest
 	isGroupEvent := event.IsGroup
 
-	// TODO: string{leaderEmail} is written asuming that frontend doesnt add the leader details in the team array
+	// TODO: string{leaderEmail} is written asuming that frontend doesnt
+	// add the leader details in the team array
 	allMembers := []string{leaderEmail}
 	emailCount := make(map[string]int)
 	hasDuplicates := false
@@ -117,11 +119,13 @@ func BookEvent(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Duplicate team members found",
 			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Team details are not proper (Duplicates found)", err)
+			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Duplicate team details found", err)
 			return
 		}
 		// Validating team size
-		if len(allMembers) < int(event.MinTeamsize.Int32) || len(allMembers) > int(event.MaxTeamsize.Int32) {
+		lesser := len(allMembers) < int(event.MinTeamsize.Int32)
+		greater := len(allMembers) > int(event.MaxTeamsize.Int32)
+		if lesser || greater {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Team size does not meet event requirements.",
 			})
@@ -346,7 +350,13 @@ func BookEvent(c *gin.Context) {
 
 	// Generating the hash
 	// TODO: Check salt
-	hashedData := pkg.GenerateSHA512Hash(txnId, leaderEmail, fmt.Sprintf("%.2f", totalFee), prodInfo, eventId.String(), "What_sHOULD-i-GIVE here?")
+	hashedData := pkg.GenerateSHA512Hash(
+		txnId,
+		leaderEmail,
+		fmt.Sprintf("%.2f", totalFee),
+		prodInfo,
+		leaderStrcut.Name,
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Booking successful! Please complete the payment.",
