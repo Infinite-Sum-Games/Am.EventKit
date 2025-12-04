@@ -111,33 +111,67 @@ func (q *Queries) CreateTeamMember(ctx context.Context, db DBTX, arg CreateTeamM
 	return id, err
 }
 
-const getBookingByUserAndEvent = `-- name: GetBookingByUserAndEvent :one
+const getAnyBookingByUserAndEvent = `-- name: GetAnyBookingByUserAndEvent :one
 SELECT 
-  id, 
-  txn_status 
-FROM 
-  bookings 
+  b.id,
+  b.txn_status
+FROM bookings b
+LEFT JOIN teams t 
+  ON b.id = t.booking_id
+LEFT JOIN team_members tm 
+  ON t.id = tm.team_id
 WHERE 
-  student_id = $1 
-  AND event_id = $2
-  AND txn_status != 'failed'
+  (
+    b.student_id = $1
+    OR tm.student_id = $1
+  )
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+LIMIT 1
 `
 
-type GetBookingByUserAndEventParams struct {
+type GetAnyBookingByUserAndEventParams struct {
 	StudentID uuid.UUID `json:"student_id"`
 	EventID   uuid.UUID `json:"event_id"`
 }
 
-type GetBookingByUserAndEventRow struct {
+type GetAnyBookingByUserAndEventRow struct {
 	ID        uuid.UUID `json:"id"`
 	TxnStatus string    `json:"txn_status"`
 }
 
-func (q *Queries) GetBookingByUserAndEvent(ctx context.Context, db DBTX, arg GetBookingByUserAndEventParams) (GetBookingByUserAndEventRow, error) {
-	row := db.QueryRow(ctx, getBookingByUserAndEvent, arg.StudentID, arg.EventID)
-	var i GetBookingByUserAndEventRow
+func (q *Queries) GetAnyBookingByUserAndEvent(ctx context.Context, db DBTX, arg GetAnyBookingByUserAndEventParams) (GetAnyBookingByUserAndEventRow, error) {
+	row := db.QueryRow(ctx, getAnyBookingByUserAndEvent, arg.StudentID, arg.EventID)
+	var i GetAnyBookingByUserAndEventRow
 	err := row.Scan(&i.ID, &i.TxnStatus)
 	return i, err
+}
+
+const getAnyPendingBookingByUser = `-- name: GetAnyPendingBookingByUser :many
+SELECT id
+FROM bookings
+WHERE student_id = $1
+AND txn_status = 'PENDING'
+`
+
+func (q *Queries) GetAnyPendingBookingByUser(ctx context.Context, db DBTX, studentID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := db.Query(ctx, getAnyPendingBookingByUser, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getEventForBooking = `-- name: GetEventForBooking :one
@@ -183,41 +217,6 @@ func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID)
 		&i.SeatsFilled,
 		&i.EventStatus,
 	)
-	return i, err
-}
-
-const getTeamBookingByUserAndEvent = `-- name: GetTeamBookingByUserAndEvent :one
-SELECT 
-  b.id, 
-  b.txn_status
-FROM 
-  bookings b
-JOIN 
-  teams t 
-  ON b.id = t.booking_id
-JOIN 
-  team_members tm 
-  ON t.id = tm.team_id
-WHERE 
-  tm.student_id = $1 
-  AND b.event_id = $2
-  AND b.txn_status != 'failed'
-`
-
-type GetTeamBookingByUserAndEventParams struct {
-	StudentID uuid.UUID `json:"student_id"`
-	EventID   uuid.UUID `json:"event_id"`
-}
-
-type GetTeamBookingByUserAndEventRow struct {
-	ID        uuid.UUID `json:"id"`
-	TxnStatus string    `json:"txn_status"`
-}
-
-func (q *Queries) GetTeamBookingByUserAndEvent(ctx context.Context, db DBTX, arg GetTeamBookingByUserAndEventParams) (GetTeamBookingByUserAndEventRow, error) {
-	row := db.QueryRow(ctx, getTeamBookingByUserAndEvent, arg.StudentID, arg.EventID)
-	var i GetTeamBookingByUserAndEventRow
-	err := row.Scan(&i.ID, &i.TxnStatus)
 	return i, err
 }
 

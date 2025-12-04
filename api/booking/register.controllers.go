@@ -198,9 +198,9 @@ func BookEvent(c *gin.Context) {
 		// 	return
 		// }
 
-		// Check for existing team booking
-		_, err = q.GetTeamBookingByUserAndEvent(ctx, tx,
-			db.GetTeamBookingByUserAndEventParams{
+		// Check for existing team booking or individual booking
+		_, err = q.GetAnyBookingByUserAndEvent(ctx, tx,
+			db.GetAnyBookingByUserAndEventParams{
 				StudentID: student.ID,
 				EventID:   eventId,
 			})
@@ -220,13 +220,32 @@ func BookEvent(c *gin.Context) {
 		}
 	}
 
-	leaderIdString := c.GetString("userId")
-	leaderId, err := uuid.Parse(leaderIdString)
+	// Geting leader details
+	leaderStrcut, err := q.GetStudentByEmail(ctx, tx, leaderEmail)
+
+	leaderId := leaderStrcut.ID
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
 		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid user ID", err)
+		return
+	}
+
+	// Checking if the leader has any pending transactions across all events
+	pendingBookings, err := q.GetAnyPendingBookingByUser(ctx, tx, leaderId)
+	if err != nil && err != pgx.ErrNoRows {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Could not fetch pending events of leader", err)
+		return
+	}
+	if err == nil && len(pendingBookings) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "User has pending registrations for other events!",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: User has pending registrations for other events!", nil)
 		return
 	}
 
@@ -267,7 +286,7 @@ func BookEvent(c *gin.Context) {
 		teamID, err := q.CreateTeam(ctx, tx, db.CreateTeamParams{
 			TeamName:   req.TeamName,
 			EventID:    eventId,
-			LeaderName: leaderEmail, // TODO: Should i fetch leader details using query again?
+			LeaderName: leaderStrcut.Name,
 			BookingID:  bookingID,
 		})
 		if err != nil {
@@ -328,10 +347,11 @@ func BookEvent(c *gin.Context) {
 	// TODO: Check salt
 	hashedData := pkg.GenerateSHA512Hash(txnId, leaderEmail, fmt.Sprintf("%.2f", totalFee), prodInfo, eventId.String(), "What_sHOULD-i-GIVE here?")
 
-	// TODO: Question? Is leader name and phone number absolutely necessary? If yes, i need to get those details
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Booking successful! Please complete the payment.",
 		"txnId":           txnId,
+		"name":            leaderStrcut.Name,
+		"phone":           leaderStrcut.PhoneNumber,
 		"registrationFee": totalFee,
 		"productInfo":     prodInfo,
 		"userEmail":       leaderEmail,

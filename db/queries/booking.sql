@@ -60,8 +60,14 @@ WHERE
     OR tm.student_id = $1
   )
   AND b.event_id = $2
-  AND b.txn_status != 'failed'
+  AND b.txn_status != 'FAILED'
 LIMIT 1;
+
+-- name: GetAnyPendingBookingByUser :many
+SELECT id
+FROM bookings
+WHERE student_id = $1
+AND txn_status = 'PENDING';
 
 -- Hopefully, we can use this for removing decrement too (should try)
 -- name: UpdateEventSeats :exec
