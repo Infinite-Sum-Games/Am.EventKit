@@ -119,27 +119,6 @@ FROM
 WHERE
   email = $1;
 
--- name: PasswordChangeOtpQuery :one
-INSERT INTO password_reset (
-  name,
-  email,
-  password,
-  otp,
-  expiry_at
-) 
-SELECT
-  s.name, 
-  s.email, 
-  $2, 
-  $3, 
-  $4
-FROM
-  student s
-WHERE 
-  s.email = $1
-  AND s.account_status = 'VERIFIED'
-RETURNING 
-  email, name;
 
 -- name: PasswordChangeVerifyOtpQuery :one
 SELECT 
@@ -191,3 +170,50 @@ RETURNING
   id, 
   email,
   expiry_at;
+
+-- name: PasswordChangeOtpQuery :one
+INSERT INTO password_reset (
+  name,
+  email,
+  password,
+  otp,
+  expiry_at
+) 
+SELECT
+  s.name, 
+  s.email, 
+  $2, 
+  $3, 
+  $4
+FROM
+  student s
+WHERE 
+  s.email = $1
+  AND s.account_status = 'VERIFIED'
+RETURNING 
+  email, name;
+
+-- name: ConfirmPasswordChangeOtpQuery :one
+UPDATE student AS s
+SET
+  s.password = pr.password
+FROM
+  password_reset pr
+WHERE
+  s.email = pr.email
+  AND pr.email = $1
+  AND pr.otp = $2
+  AND pr.expiry_at > NOW() 
+  AND s.account_status = 'VERIFIED'
+RETURNING 
+  s.email;
+
+-- name: ResendPasswordChangeOtpQuery :one
+SELECT 
+  email,
+  otp
+FROM
+  password_reset
+WHERE
+  email = $1
+  AND expiry_at > NOW();

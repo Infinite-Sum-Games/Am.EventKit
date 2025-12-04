@@ -25,6 +25,34 @@ func (q *Queries) CheckRefreshTokenQuery(ctx context.Context, db DBTX, email str
 	return refresh_token, err
 }
 
+const confirmPasswordChangeOtpQuery = `-- name: ConfirmPasswordChangeOtpQuery :one
+UPDATE student AS s
+SET
+  s.password = pr.password
+FROM
+  password_reset pr
+WHERE
+  s.email = pr.email
+  AND pr.email = $1
+  AND pr.otp = $2
+  AND pr.expiry_at > NOW() 
+  AND s.account_status = 'VERIFIED'
+RETURNING 
+  s.email
+`
+
+type ConfirmPasswordChangeOtpQueryParams struct {
+	Email string `json:"email"`
+	Otp   string `json:"otp"`
+}
+
+func (q *Queries) ConfirmPasswordChangeOtpQuery(ctx context.Context, db DBTX, arg ConfirmPasswordChangeOtpQueryParams) (string, error) {
+	row := db.QueryRow(ctx, confirmPasswordChangeOtpQuery, arg.Email, arg.Otp)
+	var email string
+	err := row.Scan(&email)
+	return email, err
+}
+
 const findEmailQuery = `-- name: FindEmailQuery :one
 SELECT EXISTS (
   SELECT 1 
@@ -278,6 +306,29 @@ func (q *Queries) PasswordChangeVerifyOtpQuery(ctx context.Context, db DBTX, arg
 	row := db.QueryRow(ctx, passwordChangeVerifyOtpQuery, arg.Email, arg.Otp)
 	var i PasswordChangeVerifyOtpQueryRow
 	err := row.Scan(&i.Email, &i.Password)
+	return i, err
+}
+
+const resendPasswordChangeOtpQuery = `-- name: ResendPasswordChangeOtpQuery :one
+SELECT 
+  email,
+  otp
+FROM
+  password_reset
+WHERE
+  email = $1
+  AND expiry_at > NOW()
+`
+
+type ResendPasswordChangeOtpQueryRow struct {
+	Email string `json:"email"`
+	Otp   string `json:"otp"`
+}
+
+func (q *Queries) ResendPasswordChangeOtpQuery(ctx context.Context, db DBTX, email string) (ResendPasswordChangeOtpQueryRow, error) {
+	row := db.QueryRow(ctx, resendPasswordChangeOtpQuery, email)
+	var i ResendPasswordChangeOtpQueryRow
+	err := row.Scan(&i.Email, &i.Otp)
 	return i, err
 }
 
