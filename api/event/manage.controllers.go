@@ -455,3 +455,50 @@ func DeleteEvent(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func ToggleEventStatus(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	eventIDStr := c.Param("eventId")
+	eventID, err := uuid.Parse(eventIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Request is malformed",
+		})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID format for toggle", err)
+		return
+	}
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection for toggle", err)
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	rows, err := q.ToggleEventStatusQuery(ctx, conn, eventID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to toggle event status", err)
+		return
+	}
+	if rows == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event does not exist",
+		})
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Event does not exist for toggle", nil)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Event status toggled successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
