@@ -637,10 +637,12 @@ func (q *Queries) InsertPeopleToEventMappingQuery(ctx context.Context, db DBTX, 
 
 const toggleEventStatusQuery = `-- name: ToggleEventStatusQuery :execrows
 UPDATE event
-SET event_status = CASE
-    WHEN event_status = 'ACTIVE' THEN 'CLOSED'
-    ELSE 'ACTIVE'
-END
+SET event_status = (
+    CASE
+        WHEN event_status = 'ACTIVE'::event_status_enum THEN 'CLOSED'::event_status_enum
+        ELSE 'ACTIVE'::event_status_enum
+    END
+)
 WHERE id = $1
 `
 

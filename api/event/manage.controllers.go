@@ -30,7 +30,7 @@ func CreateEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -201,7 +201,7 @@ func EditEvent(c *gin.Context) {
 	conn, err := cmd.DBPool.Acquire(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -389,7 +389,7 @@ func DeleteEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
 		return
 	}
 	defer conn.Release()
@@ -475,7 +475,7 @@ func ToggleEventStatus(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection for toggle", err)
+		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection for toggle", err)
 		return
 	}
 	defer conn.Release()
