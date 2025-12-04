@@ -25,6 +25,8 @@ type EnvConfig struct {
 	SMTPPort      int    `mapstructure:"smtp_port"`
 	SMTPUsername  string `mapstructure:"smtp_username"`
 	SMTPPassword  string `mapstructure:"smtp_password"`
+	PayUKey       string `mapstructure:"payu_key"`
+	PayUSalt      string `mapstructure:"payu_salt"`
 }
 
 var Env *EnvConfig
@@ -101,5 +103,6 @@ func validateConfig(envConfig *EnvConfig) error {
 			v.Required,
 			v.Length(1, 100),
 		),
+		v.Field(&envConfig.PayUKey, v.Required),
 	)
 }
