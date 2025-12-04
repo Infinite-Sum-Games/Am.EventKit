@@ -7,7 +7,7 @@ import (
 
 func PeopleRoutes(r *gin.RouterGroup) {
 	r.GET("/", mw.Auth, FetchAllPeople)
-	r.POST("/", mw.Auth, AddNewPerson)
-	r.PUT("/:id", mw.Auth, UpdatePersonDetails)
-	r.DELETE("/:id", mw.Auth, DeletePerson)
+	r.POST("/", mw.Auth, mw.CheckAdmin, AddNewPerson)
+	r.PUT("/:id", mw.Auth, mw.CheckAdmin, UpdatePersonDetails)
+	r.DELETE("/:id", mw.Auth, mw.CheckAdmin, DeletePerson)
 }
