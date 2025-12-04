@@ -79,40 +79,9 @@ func CreateEvent(c *gin.Context) {
 
 	// 2) schedules
 	for _, sch := range req.Schedules {
-		if err := sch.Validate(); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid schedule", err)
-			return
-		}
-
-		eventDate, err := time.Parse("2006-01-02", sch.EventDate)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event_date format", err)
-			return
-		}
-
-		startTime, err := pkg.ParseTime(sch.StartTime)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid start_time format", err)
-			return
-		}
-
-		endTime, err := pkg.ParseTime(sch.EndTime)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid end_time format", err)
-			return
-		}
+		eventDate, _ := time.Parse("2006-01-02", sch.EventDate)
+		startTime, _ := time.Parse(time.RFC3339, sch.StartTime)
+		endTime, _ := time.Parse(time.RFC3339, sch.EndTime)
 
 		if err := q.InsertEventScheduleQuery(ctx, tx, db.InsertEventScheduleQueryParams{
 			EventID:   eventID,
@@ -302,40 +271,9 @@ func EditEvent(c *gin.Context) {
 
 	// 3) re-insert schedules
 	for _, sch := range req.Schedules {
-		if err := sch.Validate(); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid schedule", err)
-			return
-		}
-
-		eventDate, err := time.Parse("2006-01-02", sch.EventDate)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event_date format", err)
-			return
-		}
-
-		startTime, err := pkg.ParseTime(sch.StartTime)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid start_time format", err)
-			return
-		}
-
-		endTime, err := pkg.ParseTime(sch.EndTime)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid end_time format", err)
-			return
-		}
+		eventDate, _ := time.Parse("2006-01-02", sch.EventDate)
+		startTime, _ := time.Parse(time.RFC3339, sch.StartTime)
+		endTime, _ := time.Parse(time.RFC3339, sch.EndTime)
 
 		if err := q.InsertEventScheduleQuery(ctx, tx, db.InsertEventScheduleQueryParams{
 			EventID:   eventID,

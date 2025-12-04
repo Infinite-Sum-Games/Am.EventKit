@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
@@ -19,12 +21,32 @@ type EventScheduleInput struct {
 }
 
 func (s EventScheduleInput) Validate() error {
-	return v.ValidateStruct(&s,
+	if err := v.ValidateStruct(&s,
 		v.Field(&s.EventDate, v.Required, v.Length(10, 10)),
 		v.Field(&s.StartTime, v.Required, v.Length(4, 50)),
 		v.Field(&s.EndTime, v.Required, v.Length(4, 50)),
 		v.Field(&s.Venue, v.Required, v.RuneLength(2, 200)),
-	)
+	); err != nil {
+		return err
+	}
+
+	if _, err := time.Parse("2006-01-02", s.EventDate); err != nil {
+		return err
+	}
+
+	if _, err := time.Parse(time.RFC3339, s.StartTime); err != nil {
+		if _, err2 := time.Parse("15:04", s.StartTime); err2 != nil {
+			return err
+		}
+	}
+
+	if _, err := time.Parse(time.RFC3339, s.EndTime); err != nil {
+		if _, err2 := time.Parse("15:04", s.EndTime); err2 != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type CreateEventRequest struct {
