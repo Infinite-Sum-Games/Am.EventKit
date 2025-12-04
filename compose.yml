@@ -1,19 +1,22 @@
 services:
   # Primary database
   postgres:
-    image: postgres:17-alpine
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: metabase
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     restart: on-failure
     networks:
       - app_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+      - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 30s
@@ -24,6 +27,12 @@ services:
         limits:
           memory: 512M
           cpus: '0.5'
+    command: 
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_cron"
+      - "-c"
+      - "cron.database_name=postgres"
 
   # PostgreSQL Exporter to export Postgres metrics to Prometheus
   # postgres_exporter:
