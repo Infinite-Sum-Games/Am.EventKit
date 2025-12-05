@@ -140,6 +140,7 @@ func (l *LoggerService) enrich(c *gin.Context, e *zerolog.Event) *zerolog.Event 
 	for _, param := range c.Params {
 		pathParams[param.Key] = param.Value
 	}
+	pathParamsStr := fmt.Sprintf("%v", pathParams)
 
 	// Convert query params from map[string][]string → map[string]string
 	queryParams := make(map[string]string)
@@ -150,13 +151,14 @@ func (l *LoggerService) enrich(c *gin.Context, e *zerolog.Event) *zerolog.Event 
 			queryParams[k] = strings.Join(v, ",")
 		}
 	}
+	queryParamsStr := fmt.Sprintf("%v", queryParams)
 
 	return e.
 		Str("req-id", GrabRequestId(c)).
 		Str("route", c.FullPath()).
 		Str("method", c.Request.Method).
-		Interface("path-params", pathParams).
-		Interface("query-params", queryParams).
+		Str("path-params", pathParamsStr).
+		Str("query-params", queryParamsStr).
 		Str("ip", c.ClientIP()).
 		Str("user-agent", c.Request.UserAgent())
 }
@@ -232,6 +234,7 @@ func (l *LoggerService) LogMiddleware(c *gin.Context) {
 	for _, param := range c.Params {
 		pathParams[param.Key] = param.Value
 	}
+	pathParamsStr := fmt.Sprintf("%v", pathParams)
 
 	queryParams := make(map[string]string)
 	for k, v := range c.Request.URL.Query() {
@@ -241,6 +244,7 @@ func (l *LoggerService) LogMiddleware(c *gin.Context) {
 			queryParams[k] = strings.Join(v, ",")
 		}
 	}
+	queryParamsStr := fmt.Sprintf("%v", queryParams)
 
 	l.Logger.WithLevel(zerolog.InfoLevel).
 		Str("req-id", GrabRequestId(c)).
@@ -249,8 +253,8 @@ func (l *LoggerService) LogMiddleware(c *gin.Context) {
 		Int("status", c.Writer.Status()).
 		Int("response-size", c.Writer.Size()).
 		Dur("duration", time.Since(start)).
-		Interface("path-params", pathParams).
-		Interface("query-params", queryParams).
+		Str("path-params", pathParamsStr).
+		Str("query-params", queryParamsStr).
 		Str("ip", c.ClientIP()).
 		Str("user-agent", c.Request.UserAgent())
 }
