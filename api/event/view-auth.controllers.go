@@ -21,7 +21,7 @@ func FetchAllEventsWithAuth(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.FatalCtx(c, "[EVENT-AUTH-ERROR]: Missing email or userId in context"+email+","+userIDStr, nil)
+		pkg.Log.FatalCtx(c, "[EVENT-AUTH-ERROR]: Missing email or userId in context", nil)
 		return
 	}
 

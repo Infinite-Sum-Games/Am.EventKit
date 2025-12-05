@@ -304,7 +304,7 @@ SELECT
       '[]'::jsonb
     ) AS people,
 
-    (COUNT(DISTINCT b.id) > 0) AS is_registered,
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred
 
 FROM event e
@@ -317,6 +317,8 @@ LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
 LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2
+LEFT JOIN teams te ON te.event_id = e.id
+LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $2
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
 
 WHERE e.id = $1
@@ -350,7 +352,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	Schedules        interface{}     `json:"schedules"`
 	Tags             interface{}     `json:"tags"`
 	People           interface{}     `json:"people"`
-	IsRegistered     bool            `json:"is_registered"`
+	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
 }
 
@@ -482,7 +484,7 @@ SELECT
     e.seats_filled,
 
     /* registration and favourite status for the given student */
-    (COUNT(DISTINCT b.id) > 0) AS is_registered,
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred
 
 FROM event e
@@ -491,6 +493,8 @@ LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1
+LEFT JOIN teams te ON te.event_id = e.id
+LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
 
 GROUP BY e.id
@@ -514,7 +518,7 @@ type GetEventsWithAuthQueryRow struct {
 	EventPrice       pgtype.Numeric  `json:"event_price"`
 	MaxSeats         int32           `json:"max_seats"`
 	SeatsFilled      int32           `json:"seats_filled"`
-	IsRegistered     bool            `json:"is_registered"`
+	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
 }
 
