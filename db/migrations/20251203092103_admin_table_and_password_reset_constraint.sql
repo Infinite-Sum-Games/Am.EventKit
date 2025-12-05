@@ -10,8 +10,13 @@ CREATE TABLE IF NOT EXISTS admin (
   updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT admin_pkey PRIMARY KEY (id)
-)
+);
 -- +goose StatementEnd
+
+-- +goose StatementBegin
+ALTER TABLE password_reset
+ADD CONSTRAINT unique_password_reset_email UNIQUE (email);
+-- +goose StatementBegin
 
 -- +goose Down
 -- +goose StatementBegin
