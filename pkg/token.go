@@ -167,18 +167,20 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	// Verification conditions
 	c1 := authData["audience"] != refData["audience"]
 	c2 := authData["jti"] != refData["jti"]
-	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
+	c3 := authData["STUDENT-ROLE"] != refData["STUDENT-ROLE"]
 	c4 := authData["ORGANIZER-ROLE"] != refData["ORGANIZER-ROLE"]
+	c5 := authData["ADMIN-ROLE"] != refData["ADMIN-ROLE"]
 
-	if c1 || c2 || c3 || c4 {
+	if c1 || c2 || c3 || c4 || c5 {
 		return false
 	}
 
 	// Setting up variables in *gin.Context for passing around in handlers
 	c.Set("userId", refData["audience"])
 	c.Set("email", refData["jti"])
-	c.Set("USER-ROLE", refData["USER-ROLE"])
+	c.Set("STUDENT-ROLE", refData["STUDENT-ROLE"])
 	c.Set("ORGANIZER-ROLE", refData["ORGANIZER-ROLE"])
+	c.Set("ADMIN-ROLE", refData["ADMIN-ROLE"])
 
 	return true
 }

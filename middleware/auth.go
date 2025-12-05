@@ -67,8 +67,9 @@ func Auth(c *gin.Context) {
 		// Setup the context for further requests
 		c.Set("userId", userId)
 		c.Set("email", email)
-		c.Set("USER-ROLE", isStudent)
+		c.Set("STUDENT-ROLE", isStudent)
 		c.Set("ORGANIZER-ROLE", isOrganizer)
+		c.Set("ADMIN-ROLE", isAdmin)
 
 		pkg.SetAuthCookie(c, authToken)
 	}
