@@ -9,17 +9,17 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.GET("/", FetchAllEvents)
 	r.GET("/:eventId", FetchEventById)
 
-	r.GET("/auth/", mw.Auth, FetchAllEventsWithAuth)
-	r.GET("/auth/:eventId", mw.Auth, FetchEventByEventIdWithAuth)
+	r.GET("/auth/", mw.Auth, mw.CheckUser, FetchAllEventsWithAuth)
+	r.GET("/auth/:eventId", mw.Auth, mw.CheckUser, FetchEventByEventIdWithAuth)
 
 	r.POST("/register/:eventId")
 	r.GET("/register/:eventId")
-
-	r.PUT("/favourite/:eventId", mw.Auth, StarEvent)
-	r.DELETE("/favourite/:eventId", mw.Auth, UnstarEvent)
 
 	r.POST("/", mw.Auth, CreateEvent)
 	r.PUT("/:eventId", mw.Auth, EditEvent)
 	r.DELETE("/:eventId", mw.Auth, DeleteEvent)
 	r.PUT("/:eventId/toggle-status", mw.Auth, ToggleEventStatus)
+
+	r.PUT("/favourite/:eventId", mw.Auth, mw.CheckUser, StarEvent)
+	r.DELETE("/favourite/:eventId", mw.Auth, mw.CheckUser, UnstarEvent)
 }

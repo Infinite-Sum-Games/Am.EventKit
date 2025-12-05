@@ -7,7 +7,31 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const fetchAdminSessionQuery = `-- name: FetchAdminSessionQuery :one
+SELECT
+  name,
+  email
+FROM
+  admin
+WHERE
+  email = $1
+`
+
+type FetchAdminSessionQueryRow struct {
+	Name  pgtype.Text `json:"name"`
+	Email string      `json:"email"`
+}
+
+func (q *Queries) FetchAdminSessionQuery(ctx context.Context, db DBTX, email string) (FetchAdminSessionQueryRow, error) {
+	row := db.QueryRow(ctx, fetchAdminSessionQuery, email)
+	var i FetchAdminSessionQueryRow
+	err := row.Scan(&i.Name, &i.Email)
+	return i, err
+}
 
 const fetchUserSessionQuery = `-- name: FetchUserSessionQuery :one
 SELECT 
