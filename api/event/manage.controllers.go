@@ -25,19 +25,9 @@ func CreateEvent(c *gin.Context) {
 		return
 	}
 
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
-
 	q := db.New()
 
-	tx, err := conn.Begin(ctx)
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -198,16 +188,8 @@ func EditEvent(c *gin.Context) {
 		return
 	}
 
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
-
 	q := db.New()
-	tx, err := conn.Begin(ctx)
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
 		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
@@ -384,18 +366,8 @@ func DeleteEvent(c *gin.Context) {
 		return
 	}
 
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection", err)
-		return
-	}
-	defer conn.Release()
-
 	q := db.New()
-	tx, err := conn.Begin(ctx)
+	tx, err := cmd.DBPool.Begin(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
