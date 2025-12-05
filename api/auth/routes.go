@@ -18,17 +18,22 @@ func StudentAuthRoutes(r *gin.RouterGroup) {
 	// Actual requests
 	r.POST("/user/login", mw.VerifyCsrf, LoginUser)
 	r.POST("/user/register", mw.VerifyCsrf, RegisterUserAccount)
-	r.POST("/user/register/otp/verify", mw.VerifyCsrf, mw.TempAuth, VerifyUserOtp)
+	r.POST("/user/register/otp/verify", mw.TempAuth, mw.VerifyCsrf, VerifyUserOtp)
 	r.GET("/user/register/otp/resend", mw.TempAuth, ResendUserOtp)
 
 	r.POST("/user/forgot-password", mw.VerifyCsrf, ForgotUserPassword)
-	r.POST("/user/forgot-password/otp/verify", mw.VerifyCsrf, mw.TempAuth, ConfirmPasswordChange)
-	r.GET("/user/session", mw.Auth, FetchUserSession)
-	r.GET("/user/logout", mw.Auth, Logout)
+	r.POST("/user/forgot-password/otp/verify", mw.TempAuth, mw.VerifyCsrf, ConfirmPasswordChange)
+	r.GET("/user/session", mw.Auth, mw.CheckUser, FetchUserSession)
+	r.GET("/user/logout", mw.Auth, mw.CheckUser, Logout)
 }
 
 func OrganizerAuthRoutes(r *gin.RouterGroup) {
 	r.GET("/organizer/login", LoginOrganizerCsrf)
 	r.POST("/organizer/login", LoginOrganizer)
-	r.GET("/organizer/logout", mw.Auth, Logout)
+	r.GET("/organizer/logout", mw.Auth, mw.CheckOrganizer, Logout)
+}
+
+func AdminAuthRoutes(r *gin.RouterGroup) {
+	r.POST("/admin/login", LoginAdmin)
+	r.GET("/admin/session", mw.Auth, mw.CheckAdmin, FetchAdminSession)
 }

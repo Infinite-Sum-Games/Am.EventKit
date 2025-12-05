@@ -216,7 +216,6 @@ func VerifyUserOtpCsrf(c *gin.Context) {
 }
 
 func VerifyUserOtp(c *gin.Context) {
-
 	email := c.GetString("email")
 	if email == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{

@@ -265,6 +265,16 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type Admin struct {
+	ID           uuid.UUID        `json:"id"`
+	Name         pgtype.Text      `json:"name"`
+	Email        string           `json:"email"`
+	Password     string           `json:"password"`
+	RefreshToken pgtype.Text      `json:"refresh_token"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+}
+
 type Booking struct {
 	ID              uuid.UUID        `json:"id"`
 	TxnID           string           `json:"txn_id"`
@@ -359,6 +369,7 @@ type PeopleToEventMapping struct {
 	ID       int32     `json:"id"`
 	EventID  uuid.UUID `json:"event_id"`
 	PersonID uuid.UUID `json:"person_id"`
+	EventDay []int32   `json:"event_day"`
 }
 
 type Person struct {

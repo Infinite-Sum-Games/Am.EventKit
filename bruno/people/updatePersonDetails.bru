@@ -1,0 +1,80 @@
+meta {
+  name: updatePersonDetails
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/people/:peopleId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  peopleId: 
+}
+
+body:json {
+  {
+    "profession": "Coordinator"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Update person details
+  
+  - Input JSON:
+  ```json
+  {
+    "name": "Jane Doe",
+    "phone_number": "1111111111",
+    "profession": "Judge",
+    "email": "jane@example.com"
+  }
+  ```
+  
+  - Path params:
+    - `id` (UUID of the person to update)
+  - Query params: none
+  - Headers: Content-Type: application/json
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Person details updated successfully",
+    "id": "4bbbf679-1e96-46d6-b9fd-aa9c9a947c71",
+    "name": "Jane Doe",
+    "phone_number": "1111111111",
+    "profession": "Judge",
+    "email": "jane@example.com"
+  }
+  ```
+  
+  ## 400 Bad Request (validation / invalid UUID)
+  ```json
+  { "message": "Request is malformed" }
+  ```
+  
+  ## 401 Unauthorized
+  Admin not logged in, or cookies have not set.
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 404 Not Found
+  ```json
+  { "message": "Person not found" }
+  ```
+  
+  ## 500 Internal Server Error (DB / server failure)
+  ```json
+  { "message": "Oops! Something happened. Please try again later" }
+  ```
+}

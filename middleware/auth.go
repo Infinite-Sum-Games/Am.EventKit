@@ -48,9 +48,14 @@ func Auth(c *gin.Context) {
 		email, _ := refreshTokenClaims["jti"].(string)
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
 		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
+		isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
 
 		// Creating and setting auth token, so it can be used for future requests
-		authToken, err := pkg.CreateAuthToken(userId, email, isStudent, isOrganizer)
+		authToken, err := pkg.CreateAuthToken(userId, email, pkg.Roles{
+			IsUser:      isStudent,
+			IsOrganizer: isOrganizer,
+			IsAdmin:     isAdmin,
+		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",

@@ -32,6 +32,12 @@ var (
 	SignKey   paseto.V4AsymmetricSecretKey
 )
 
+type Roles struct {
+	IsUser      bool
+	IsOrganizer bool
+	IsAdmin     bool
+}
+
 func InitPaseto() error {
 	privateKeyBinary, err := os.ReadFile(privateKeyPath)
 	if err != nil {
@@ -58,7 +64,7 @@ func InitPaseto() error {
 	return nil
 }
 
-func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, error) {
+func CreateAuthToken(userId, email string, roles Roles) (string, error) {
 	token := paseto.NewToken()
 
 	token.SetJti(email)
@@ -69,12 +75,16 @@ func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, er
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
 
-	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
+	}
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
 
@@ -82,7 +92,7 @@ func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, er
 	return signed, nil
 }
 
-func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string, error) {
+func CreateRefreshToken(userId, email string, roles Roles) (string, error) {
 
 	token := paseto.NewToken()
 	token.SetJti(email)
@@ -93,13 +103,18 @@ func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string,
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
 
-	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
 
-	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
+	}
+
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
 

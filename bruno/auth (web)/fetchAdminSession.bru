@@ -1,0 +1,54 @@
+meta {
+  name: fetchAdminSession
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/auth/admin/session
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Fetch Admin Session
+  
+  ## 200 OK
+  ```json
+  {
+    "message": "Admin session obtained successfully",
+    "name": "Ritesh Koushik",
+    "email": "cb.en.u4cse22038@cb.students.amrita.edu"
+  }
+  ````
+  
+  ## 401 Unauthorized
+  If the admin is not logged in, then this error is throw as a lack of auth cookies.
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ## 404 Not Found
+  This can happen if the admin account is deleted or does not exist.
+  ```json
+  {
+    "message": "No session found for user",
+  }
+  ```
+  
+  ## 500 Internal Server Error
+  Inform the backend team if you see this. It can happen due to DB failures, auth failures 
+  and other bad things.
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later."
+  }
+  ```
+}

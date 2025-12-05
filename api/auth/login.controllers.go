@@ -87,7 +87,11 @@ func LoginUser(c *gin.Context) {
 	// If there is no refreshToken then create one, add it to the database and
 	// proceed to mint auth token, set the cookies and send back the response
 	if result.RefreshToken.String == "" {
-		refreshToken, err := pkg.CreateRefreshToken(result.ID.String(), result.Email, true, false)
+		refreshToken, err := pkg.CreateRefreshToken(result.ID.String(), result.Email, pkg.Roles{
+			IsUser:      true,
+			IsOrganizer: false,
+			IsAdmin:     false,
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",
@@ -123,7 +127,11 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	authToken, err := pkg.CreateAuthToken(result.ID.String(), result.Email, true, false)
+	authToken, err := pkg.CreateAuthToken(result.ID.String(), result.Email, pkg.Roles{
+		IsUser:      true,
+		IsOrganizer: false,
+		IsAdmin:     false,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
@@ -215,7 +223,11 @@ func LoginOrganizer(c *gin.Context) {
 	// auth token, set the cookies and return. Otherwise, mint both and return.
 	if result.RefreshToken.String == "" {
 
-		refreshToken, err := pkg.CreateRefreshToken(result.ID.String(), req.Email, false, true)
+		refreshToken, err := pkg.CreateRefreshToken(result.ID.String(), req.Email, pkg.Roles{
+			IsUser:      false,
+			IsOrganizer: true,
+			IsAdmin:     false,
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",
@@ -253,7 +265,11 @@ func LoginOrganizer(c *gin.Context) {
 		return
 	}
 
-	authToken, err := pkg.CreateAuthToken(result.ID.String(), req.Email, false, true)
+	authToken, err := pkg.CreateAuthToken(result.ID.String(), req.Email, pkg.Roles{
+		IsUser:      false,
+		IsOrganizer: true,
+		IsAdmin:     false,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
