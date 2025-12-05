@@ -57,13 +57,22 @@ test:
 	@gotest $(TEST_PACKAGES)
 
 up:
-	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+
+upone:
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up-by-one
 
 seed: build
 	@go run seed/seed.go seed/truncate.go seed/main.go -s
 
 down:
-	@goose -dir $(GOOSE_MIGRATION_DIR) -no-versioning $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) reset
+
+downto:
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down-to $(v)
+
+status:
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) status
 
 clean:
 	@go run seed/seed.go seed/truncate.go seed/main.go -c

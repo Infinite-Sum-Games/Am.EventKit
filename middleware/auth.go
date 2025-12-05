@@ -44,7 +44,7 @@ func Auth(c *gin.Context) {
 		}
 
 		refreshTokenClaims := validToken.Claims()
-		userId, _ := refreshTokenClaims["audience"].(string)
+		userId, _ := refreshTokenClaims["aud"].(string)
 		email, _ := refreshTokenClaims["jti"].(string)
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
 		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
@@ -67,8 +67,9 @@ func Auth(c *gin.Context) {
 		// Setup the context for further requests
 		c.Set("userId", userId)
 		c.Set("email", email)
-		c.Set("USER-ROLE", isStudent)
+		c.Set("STUDENT-ROLE", isStudent)
 		c.Set("ORGANIZER-ROLE", isOrganizer)
+		c.Set("ADMIN-ROLE", isAdmin)
 
 		pkg.SetAuthCookie(c, authToken)
 	}

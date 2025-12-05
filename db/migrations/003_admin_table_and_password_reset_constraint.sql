@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS admin (
 -- +goose StatementBegin
 ALTER TABLE password_reset
 ADD CONSTRAINT unique_password_reset_email UNIQUE (email);
--- +goose StatementBegin
+-- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
