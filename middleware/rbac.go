@@ -7,7 +7,7 @@ import (
 )
 
 func CheckUser(c *gin.Context) {
-	if c.GetBool("USER-ROLE") {
+	if c.GetBool("STUDENT-ROLE") {
 		c.Next()
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -16,7 +16,7 @@ func CheckUser(c *gin.Context) {
 }
 
 func CheckAdmin(c *gin.Context) {
-	if c.GetBool("USER-ROLE") {
+	if c.GetBool("ADMIN-ROLE") {
 		c.Next()
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -25,7 +25,7 @@ func CheckAdmin(c *gin.Context) {
 }
 
 func CheckOrganizer(c *gin.Context) {
-	if c.GetBool("USER-ROLE") {
+	if c.GetBool("ORGANIZER-ROLE") {
 		c.Next()
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{

@@ -129,6 +129,9 @@ func ForgotUserPassword(c *gin.Context) {
 		return
 	}
 
+	tempToken := pkg.CreateTempToken(req.Email)
+	pkg.SetTempCookie(c, tempToken)
+
 	emailReq := mail.EmailRequest{
 		To:      []string{result.Email},
 		Subject: "Password Reset OTP - Anokha 2025",
