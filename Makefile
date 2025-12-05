@@ -71,6 +71,9 @@ down:
 downto:
 	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down-to $(v)
 
+status:
+	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) status
+
 clean:
 	@go run seed/seed.go seed/truncate.go seed/main.go -c
 
