@@ -7,6 +7,7 @@ SELECT
     e.blurb AS event_description,
     MIN(es.event_date) AS event_date,
     e.is_group,
+    e.event_type,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
@@ -103,6 +104,7 @@ SELECT
     e.blurb AS event_description,
     MIN(es.event_date) AS event_date,
     e.is_group,
+    e.event_type,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
