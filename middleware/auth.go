@@ -44,7 +44,7 @@ func Auth(c *gin.Context) {
 		}
 
 		refreshTokenClaims := validToken.Claims()
-		userId, _ := refreshTokenClaims["audience"].(string)
+		userId, _ := refreshTokenClaims["aud"].(string)
 		email, _ := refreshTokenClaims["jti"].(string)
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
 		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
