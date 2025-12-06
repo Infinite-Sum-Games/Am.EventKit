@@ -61,7 +61,7 @@ func VerifyTransaction(c *gin.Context) {
 	}
 
 	// If booking was already verified earlier, return current status
-	if booking.TxnStatus != "pending" {
+	if booking.TxnStatus != models.StatusPending {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Already verified",
 			"status":  booking.TxnStatus,
@@ -87,9 +87,9 @@ func VerifyTransaction(c *gin.Context) {
 	// "not_found"
 
 	// TODO: asuming this to check failure logic
-	gatewayStatus := "failure"
+	gatewayStatus := models.StatusFailed
 
-	if gatewayStatus == "failure" || gatewayStatus == "not_found" {
+	if gatewayStatus == models.StatusFailed || gatewayStatus == models.StautsNotFound {
 		// Restoring the seats
 		err = q.UpdateEventSeats(ctx, tx, db.UpdateEventSeatsParams{
 			SeatsFilled: -booking.SeatsReleased,
@@ -143,7 +143,7 @@ func VerifyTransaction(c *gin.Context) {
 
 		// Update booking status → failed
 		err = q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: "FAILED",
+			TxnStatus: models.StatusFailed,
 			ID:        booking.ID,
 		})
 		if err != nil {
@@ -163,14 +163,14 @@ func VerifyTransaction(c *gin.Context) {
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment failed",
-			"status":  "FAILED",
+			"status":  models.StatusFailed,
 		})
 		return
 	}
-	if gatewayStatus == "success" {
+	if gatewayStatus == models.StatusSuccess {
 
 		err := q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: "SUCCESS",
+			TxnStatus: models.StatusSuccess,
 			ID:        booking.ID,
 		})
 		if err != nil {
@@ -191,7 +191,7 @@ func VerifyTransaction(c *gin.Context) {
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment verified successfully",
-			"status":  "SUCCESS",
+			"status":  models.StatusSuccess,
 		})
 		return
 	}
@@ -202,6 +202,6 @@ func VerifyTransaction(c *gin.Context) {
 	pkg.Log.WarnCtx(c, "[VERIFY-WARN]: Verification successful, but status still pending for "+req.TxnID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Payment still pending",
-		"status":  "PENDING",
+		"status":  models.StatusPending,
 	})
 }

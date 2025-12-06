@@ -225,7 +225,7 @@ func BookEvent(c *gin.Context) {
 		StudentID:       leaderId,
 		TxnID:           pkg.GenerateTxnID(leaderId, eventId),
 		RegistrationFee: registrationFee,
-		TxnStatus:       "PENDING",
+		TxnStatus:       models.StatusPending,
 		ProductInfo:     "Booking for " + eventId.String(), //TODO: I forgot what to put here?
 		SeatsReleased:   int32(len(allMembers)),
 	})
