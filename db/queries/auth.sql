@@ -190,13 +190,19 @@ FROM
 WHERE 
   s.email = $1
   AND s.account_status = 'VERIFIED'
+ON CONFLICT (email) 
+DO UPDATE
+SET
+  password = EXCLUDED.password,
+  otp = EXCLUDED.otp,
+  expiry_at = EXCLUDED.expiry_at
 RETURNING 
   email, name;
 
 -- name: ConfirmPasswordChangeOtpQuery :one
-UPDATE student AS s
+UPDATE student s
 SET
-  s.password = pr.password
+  password = pr.password
 FROM
   password_reset pr
 WHERE

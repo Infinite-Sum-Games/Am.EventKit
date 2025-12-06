@@ -129,7 +129,7 @@ func ForgotUserPassword(c *gin.Context) {
 		return
 	}
 
-	tempToken := pkg.CreateTempToken(req.Email)
+	tempToken := pkg.CreateTempToken(result.Email)
 	pkg.SetTempCookie(c, tempToken)
 
 	emailReq := mail.EmailRequest{
@@ -199,7 +199,7 @@ func ConfirmPasswordChange(c *gin.Context) {
 		})
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Given OTP is not valid anymore",
+			"message": "Given OTP is invalid or expired",
 		})
 		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Time expired for password change")
 		return
