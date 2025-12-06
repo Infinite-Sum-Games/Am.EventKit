@@ -200,7 +200,7 @@ RETURNING
   email, name;
 
 -- name: ConfirmPasswordChangeOtpQuery :one
-UPDATE student AS s
+UPDATE student s
 SET
   s.password = pr.password
 FROM
