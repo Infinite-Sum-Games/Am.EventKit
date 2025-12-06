@@ -310,6 +310,7 @@ type Event struct {
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
 	CreatedAt      pgtype.Timestamp   `json:"created_at"`
 	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
 type EventSchedule struct {
