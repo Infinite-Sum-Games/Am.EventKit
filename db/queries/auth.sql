@@ -202,7 +202,7 @@ RETURNING
 -- name: ConfirmPasswordChangeOtpQuery :one
 UPDATE student s
 SET
-  s.password = pr.password
+  password = pr.password
 FROM
   password_reset pr
 WHERE

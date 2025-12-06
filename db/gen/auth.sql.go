@@ -26,9 +26,9 @@ func (q *Queries) CheckRefreshTokenQuery(ctx context.Context, db DBTX, email str
 }
 
 const confirmPasswordChangeOtpQuery = `-- name: ConfirmPasswordChangeOtpQuery :one
-UPDATE student AS s
+UPDATE student s
 SET
-  s.password = pr.password
+  password = pr.password
 FROM
   password_reset pr
 WHERE
