@@ -23,7 +23,7 @@ func SeedStudents(conn *pgx.Conn) error {
 		return nil
 	}
 
-	hashedPassword, err := pkg.Hash("Password@123")
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
 	if err != nil {
 		pkg.Log.Error("Error inserting manual students: %v\n", err)
 		return err
