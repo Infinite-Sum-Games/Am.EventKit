@@ -169,6 +169,7 @@ FROM tags;
 
 -- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
+  student,
   organizer, 
   people, 
   tags, 
