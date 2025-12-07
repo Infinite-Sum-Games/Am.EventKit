@@ -18,17 +18,12 @@ func FetchAllPeople(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "PEOPLE") {
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
-
 	people, err := q.FetchAllPeopleQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -55,14 +50,9 @@ func AddNewPerson(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to begin DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "PEOPLE") {
 		return
 	}
-
 	defer func() {
 		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
 			pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to rollback DB transaction", err)
@@ -131,17 +121,12 @@ func UpdatePersonDetails(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to begin DB transaction", err)
+	if pkg.HandleDbAcquireErr(c, err, "PEOPLE") {
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
-
 	updatedPerson, err := q.UpdatePersonDetailsQuery(ctx, conn,
 		db.UpdatePersonDetailsQueryParams{
 			ID:          personId,
@@ -154,7 +139,7 @@ func UpdatePersonDetails(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Person not found",
 		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for update", nil)
+		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Person not found for update", err)
 		return
 	}
 	if err != nil {
@@ -187,11 +172,7 @@ func DeletePerson(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to acquire connection from DB", err)
+	if pkg.HandleDbAcquireErr(c, err, "PEOPLE") {
 		return
 	}
 	defer conn.Release()
