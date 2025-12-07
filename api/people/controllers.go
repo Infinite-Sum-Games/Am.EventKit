@@ -53,11 +53,7 @@ func AddNewPerson(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "PEOPLE") {
 		return
 	}
-	defer func() {
-		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to rollback DB transaction", err)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "PEOPLE")
 
 	q := db.New()
 
