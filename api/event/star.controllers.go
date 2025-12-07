@@ -14,12 +14,8 @@ import (
 )
 
 func StarEvent(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "EVENT")
+	if !ok {
 		return
 	}
 
@@ -69,12 +65,8 @@ func StarEvent(c *gin.Context) {
 }
 
 func UnstarEvent(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "EVENT")
+	if !ok {
 		return
 	}
 
