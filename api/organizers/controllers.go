@@ -10,7 +10,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func GetAllOrganizers(c *gin.Context) {
@@ -103,12 +102,8 @@ func EditOrganizer(c *gin.Context) {
 	defer cancel()
 
 	orgIDStr := c.Param("organizerId")
-	orgID, err := uuid.Parse(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Invalid organizer ID format", err)
+	orgID, ok := pkg.GrabUuid(c, orgIDStr, "ORGANIZER", "organizer")
+	if !ok {
 		return
 	}
 
@@ -165,12 +160,8 @@ func DeleteOrganizer(c *gin.Context) {
 	defer cancel()
 
 	orgIDStr := c.Param("organizerId")
-	orgID, err := uuid.Parse(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Invalid organizer ID format", err)
+	orgID, ok := pkg.GrabUuid(c, orgIDStr, "ORGANIZER", "organizer")
+	if !ok {
 		return
 	}
 
