@@ -53,10 +53,10 @@ func HandleDbTxnErr(c *gin.Context, err error, path string) bool {
 }
 
 // Use when transaction commits might fail
-func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
-	if err == nil {
-		return false
-	}
-
-	return true
-}
+// func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
+// 	if err == nil {
+// 		return false
+// 	}
+//
+// 	return true
+// }
