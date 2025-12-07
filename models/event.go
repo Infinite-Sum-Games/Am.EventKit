@@ -3,15 +3,9 @@ package models
 import (
 	"time"
 
-	"github.com/google/uuid"
-
 	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
-
-type Event struct {
-	ID   uuid.UUID `json:"event_id"`
-	Name string    `json:"event_name"`
-}
 
 type EventScheduleInput struct {
 	EventDate string `json:"event_date"` // YYYY-MM-DD
@@ -54,21 +48,22 @@ type CreateEventRequest struct {
 	Blurb          string               `json:"blurb"`
 	Description    string               `json:"description"`
 	CoverImageURL  string               `json:"cover_image_url"`
-	Price          float64              `json:"price"`
+	Price          int32                `json:"price"`
 	IsPerHead      bool                 `json:"is_per_head"`
 	Rules          string               `json:"rules"`
 	EventType      string               `json:"event_type"` // EVENT | WORKSHOP
 	IsGroup        bool                 `json:"is_group"`
-	MaxTeamSize    int                  `json:"max_teamsize"`
-	MinTeamSize    int                  `json:"min_teamsize"`
+	MaxTeamSize    int32                `json:"max_teamsize"`
+	MinTeamSize    int32                `json:"min_teamsize"`
 	TotalSeats     int32                `json:"total_seats"`
 	SeatsFilled    int32                `json:"seats_filled"`
 	EventStatus    string               `json:"event_status"`    // CLOSED | ACTIVE | COMPLETED
 	EventMode      string               `json:"event_mode"`      // ONLINE | OFFLINE
 	AttendanceMode string               `json:"attendance_mode"` // SOLO | DUO
-	OrganizerIDs   []string             `json:"organizer_ids"`   // UUIDs
-	TagIDs         []string             `json:"tag_ids"`         // UUIDs
-	PeopleIDs      []string             `json:"people_ids"`      // UUIDs
+	IsTechnical    bool                 `json:"is_technical"`
+	OrganizerIDs   []string             `json:"organizer_ids"` // UUIDs
+	TagIDs         []string             `json:"tag_ids"`       // UUIDs
+	PeopleIDs      []string             `json:"people_ids"`    // UUIDs
 	Schedules      []EventScheduleInput `json:"schedules"`
 }
 
@@ -77,15 +72,23 @@ func (r CreateEventRequest) Validate() error {
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
 		v.Field(&r.Blurb, v.Required, v.RuneLength(3, 500)),
 		v.Field(&r.Description, v.Required, v.RuneLength(3, 4000)),
+		v.Field(&r.CoverImageURL, is.URL),
 		v.Field(&r.Price, v.Required),
+		v.Field(&r.IsPerHead, v.In(true, false)),
 		v.Field(&r.Rules, v.Required, v.RuneLength(1, 4000)),
 		v.Field(&r.EventType, v.Required, v.In("EVENT", "WORKSHOP")),
+		v.Field(&r.IsGroup, v.Required, v.In(true, false)),
+		v.Field(&r.MaxTeamSize, v.Min(0)),
+		v.Field(&r.MinTeamSize, v.Min(0)),
 		v.Field(&r.TotalSeats, v.Required, v.Min(1)),
+		v.Field(&r.SeatsFilled, v.Min(0)),
 		v.Field(&r.EventStatus, v.Required, v.In("CLOSED", "ACTIVE", "COMPLETED")),
 		v.Field(&r.EventMode, v.Required, v.In("ONLINE", "OFFLINE")),
 		v.Field(&r.AttendanceMode, v.Required, v.In("SOLO", "DUO")),
+		v.Field(&r.IsTechnical, v.Required, v.In(true, false)),
 		v.Field(&r.OrganizerIDs, v.Required),
-		v.Field(&r.TagIDs, v.Required),
+		v.Field(&r.TagIDs),
+		v.Field(&r.PeopleIDs),
 		v.Field(&r.Schedules, v.Required),
 	)
 }
@@ -95,18 +98,19 @@ type UpdateEventRequest struct {
 	Blurb          string               `json:"blurb"`
 	Description    string               `json:"description"`
 	CoverImageURL  string               `json:"cover_image_url"`
-	Price          float64              `json:"price"`
+	Price          int32                `json:"price"`
 	IsPerHead      bool                 `json:"is_per_head"`
 	Rules          string               `json:"rules"`
 	EventType      string               `json:"event_type"`
 	IsGroup        bool                 `json:"is_group"`
-	MaxTeamSize    int                  `json:"max_teamsize"`
-	MinTeamSize    int                  `json:"min_teamsize"`
-	TotalSeats     int32                `json:"total_seats"`
+	MaxTeamSize    int32                `json:"max_teamsize"`
+	MinTeamSize    int32                `json:"min_teamsize"`
+	TotalSeats     int32                `json:"total_seats"` // Numeric requires
 	SeatsFilled    int32                `json:"seats_filled"`
 	EventStatus    string               `json:"event_status"`
 	EventMode      string               `json:"event_mode"`
 	AttendanceMode string               `json:"attendance_mode"`
+	IsTechnical    bool                 `json:"is_technical"`
 	OrganizerIDs   []string             `json:"organizer_ids"`
 	TagIDs         []string             `json:"tag_ids"`
 	PeopleIDs      []string             `json:"people_ids"`

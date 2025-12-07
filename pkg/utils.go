@@ -21,7 +21,7 @@ func ToPgText(value string) pgtype.Text {
 	return pgtype.Text{String: value, Valid: true}
 }
 
-func ToPgInt4(value int) pgtype.Int4 {
+func ToPgInt4(value int32) pgtype.Int4 {
 	if value == 0 {
 		return pgtype.Int4{Valid: false}
 	}
