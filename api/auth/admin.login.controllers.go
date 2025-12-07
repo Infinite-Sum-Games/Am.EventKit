@@ -24,21 +24,12 @@ func LoginAdmin(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
-
 	result, err := q.LoginAdminQuery(ctx, tx, req.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -97,11 +88,8 @@ func LoginAdmin(c *gin.Context) {
 		pkg.SetRefreshCookie(c, result.RefreshToken.String)
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 

@@ -9,7 +9,6 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -21,12 +20,8 @@ func FetchAllEventsWithAuth(c *gin.Context) {
 		return
 	}
 
-	studentID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to parse userId", err)
+	studentID, ok := pkg.GrabUuid(c, userIDStr, "EVENT-AUTH", "student")
+	if !ok {
 		return
 	}
 
@@ -34,11 +29,7 @@ func FetchAllEventsWithAuth(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-AUTH-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT-AUTH") {
 		return
 	}
 	defer conn.Release()
@@ -71,30 +62,13 @@ func FetchEventByEventIdWithAuth(c *gin.Context) {
 		return
 	}
 
-	studentID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to parse userId", err)
+	studentID, ok := pkg.GrabUuid(c, userIDStr, "EVENT-AUTH", "student")
+	if !ok {
 		return
 	}
 
-	eventIDStr := c.Param("eventId")
-	if eventIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Event ID is required.",
-		})
-		pkg.Log.WarnCtx(c, "[EVENT-AUTH-WARN]: Event ID missing in path")
-		return
-	}
-
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid event ID.",
-		})
-		pkg.Log.WarnCtx(c, "[EVENT-AUTH-WARN]: Invalid event ID")
+	eventID, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT-AUTH", "event")
+	if !ok {
 		return
 	}
 
@@ -102,11 +76,7 @@ func FetchEventByEventIdWithAuth(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT-AUTH") {
 		return
 	}
 	defer conn.Release()

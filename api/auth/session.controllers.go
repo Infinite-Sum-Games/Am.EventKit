@@ -22,11 +22,7 @@ func FetchUserSession(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[SESSION-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "SESSION") {
 		return
 	}
 	defer conn.Release()
@@ -67,11 +63,7 @@ func FetchAdminSession(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[SESSION-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "SESSION") {
 		return
 	}
 	defer conn.Release()

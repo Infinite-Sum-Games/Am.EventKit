@@ -26,12 +26,8 @@ func BookEvent(c *gin.Context) {
 	}
 
 	eventIdStr := c.Param("eventId")
-	eventId, err := uuid.Parse(eventIdStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request not processed due to invalid parameters",
-		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid event ID", err)
+	eventId, ok := pkg.GrabUuid(c, eventIdStr, "BOOKING", "event")
+	if !ok {
 		return
 	}
 
@@ -40,18 +36,10 @@ func BookEvent(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbTxnErr(c, err, "BOOKING") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[BOOKING-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "BOOKING")
 
 	q := db.New()
 
@@ -328,11 +316,8 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[BOOKING-FATAL]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "BOOKING") {
 		return
 	}
 

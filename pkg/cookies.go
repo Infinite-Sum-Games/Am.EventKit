@@ -95,8 +95,7 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Revoke Refresh Token in DB", err)
+	if HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
 	defer conn.Release()
