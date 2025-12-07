@@ -60,6 +60,9 @@ func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
 	}
 
 	if err == context.DeadlineExceeded {
+		c.JSON(http.StatusRequestTimeout, gin.H{
+			"message": "Server took too long to respond",
+		})
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
