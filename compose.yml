@@ -1,9 +1,7 @@
 services:
   # Primary database
   postgres:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    image: naruto2005/postgres-cron:v1
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
@@ -15,7 +13,7 @@ services:
     networks:
       - app_network
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/18
       - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
