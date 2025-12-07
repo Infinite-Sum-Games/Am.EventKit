@@ -26,12 +26,8 @@ func BookEvent(c *gin.Context) {
 	}
 
 	eventIdStr := c.Param("eventId")
-	eventId, err := uuid.Parse(eventIdStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request not processed due to invalid parameters",
-		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid event ID", err)
+	eventId, ok := pkg.GrabUuid(c, eventIdStr, "BOOKING", "event")
+	if !ok {
 		return
 	}
 
