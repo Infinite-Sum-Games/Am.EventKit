@@ -92,11 +92,8 @@ func LoginAdmin(c *gin.Context) {
 		pkg.SetRefreshCookie(c, result.RefreshToken.String)
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 
