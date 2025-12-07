@@ -80,11 +80,7 @@ func RegisterUserAccount(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
 	ok, err = q.FindEmailQuery(ctx, tx, req.Email)
@@ -221,11 +217,7 @@ func VerifyUserOtp(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
 
