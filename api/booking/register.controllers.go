@@ -39,11 +39,7 @@ func BookEvent(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "BOOKING") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[BOOKING-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "BOOKING")
 
 	q := db.New()
 
