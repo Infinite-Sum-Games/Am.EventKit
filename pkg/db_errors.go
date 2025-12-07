@@ -2,10 +2,12 @@ package pkg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 // Use when acquiring connection might fail
@@ -71,4 +73,12 @@ func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
 	Log.FatalCtx(c, msg, err)
 
 	return true
+}
+
+func RollbackTx(c *gin.Context, tx pgx.Tx, ctx context.Context, path string) {
+	err := tx.Rollback(ctx)
+	if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+		msg := fmt.Sprintf("[%s-FATAL]: Failed to rollback DB txn", path)
+		Log.FatalCtx(c, msg, err)
+	}
 }
