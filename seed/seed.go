@@ -31,6 +31,34 @@ func SeedStudents(conn *pgx.Conn) error {
 
 	manualStudents := []db.SeedAmritaStudentQueryParams{
 		{
+			Name:        "Naganathan M",
+			Email:       "naganathan@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22240",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Revanth Singothu",
+			Email:       "revanth@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22149",
+				Valid:  true,
+			},
+		},
+		{
 			Name:        "Thanus Kumaar A",
 			Email:       "thanus@amrita.edu",
 			Password:    hashedPassword,
@@ -40,7 +68,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.EN.U4CSE22447",
 				Valid:  true,
 			},
 		},
@@ -54,7 +82,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.EN.U4CSE22253",
 				Valid:  true,
 			},
 		},
@@ -68,7 +96,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23506",
 				Valid:  true,
 			},
 		},
@@ -82,7 +110,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23634",
 				Valid:  true,
 			},
 		},
@@ -96,7 +124,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23249",
 				Valid:  true,
 			},
 		},
@@ -110,7 +138,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23104",
 				Valid:  true,
 			},
 		},
@@ -124,7 +152,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23745",
 				Valid:  true,
 			},
 		},
@@ -138,13 +166,13 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23037",
 				Valid:  true,
 			},
 		},
 		{
-			Name:        "",
-			Email:       "ritesh@amrita.edu",
+			Name:        "Amrith B",
+			Email:       "amrith@amrita.edu",
 			Password:    hashedPassword,
 			PhoneNumber: "9999911111",
 			IsAmritaStudent: pgtype.Bool{
@@ -152,7 +180,35 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.SC.U4CSE23105",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Kiran Rajeev KV",
+			Email:       "kiran@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.SC.U4CSE23624",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Shivanesh",
+			Email:       "shivanesh@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.SC.U4CSE23743",
 				Valid:  true,
 			},
 		},
@@ -666,10 +722,16 @@ func seed() {
 		}
 	}()
 
+	if err := SeedStudents(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
 	if err := SeedOrganizers(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
+
 	if err := SeedPeople(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
