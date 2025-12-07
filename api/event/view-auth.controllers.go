@@ -29,11 +29,7 @@ func FetchAllEventsWithAuth(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-AUTH-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT-AUTH") {
 		return
 	}
 	defer conn.Release()
@@ -71,8 +67,7 @@ func FetchEventByEventIdWithAuth(c *gin.Context) {
 		return
 	}
 
-	eventIDStr := c.Param("eventId")
-	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT-AUTH", "event")
+	eventID, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT-AUTH", "event")
 	if !ok {
 		return
 	}
@@ -81,11 +76,7 @@ func FetchEventByEventIdWithAuth(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT-AUTH") {
 		return
 	}
 	defer conn.Release()
