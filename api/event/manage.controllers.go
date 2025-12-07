@@ -11,7 +11,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -28,11 +27,7 @@ func CreateEvent(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "EVENT")
 
 	q := db.New()
 	eventID, err := q.CreateEventQuery(ctx, tx, db.CreateEventQueryParams{
@@ -169,11 +164,7 @@ func EditEvent(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "EVENT")
 
 	q := db.New()
 	// 1) update base event
@@ -328,11 +319,7 @@ func DeleteEvent(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "EVENT")
 
 	q := db.New()
 	// delete all mappings first
