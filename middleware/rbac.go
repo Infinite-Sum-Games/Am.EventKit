@@ -9,6 +9,7 @@ import (
 func CheckUser(c *gin.Context) {
 	if c.GetBool("STUDENT-ROLE") {
 		c.Next()
+		return
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Access denied.",
@@ -18,6 +19,7 @@ func CheckUser(c *gin.Context) {
 func CheckAdmin(c *gin.Context) {
 	if c.GetBool("ADMIN-ROLE") {
 		c.Next()
+		return
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Access denied.",
@@ -27,6 +29,7 @@ func CheckAdmin(c *gin.Context) {
 func CheckOrganizer(c *gin.Context) {
 	if c.GetBool("ORGANIZER-ROLE") {
 		c.Next()
+		return
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Access denied.",
