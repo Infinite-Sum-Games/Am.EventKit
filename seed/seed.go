@@ -356,16 +356,16 @@ func SeedTags(conn *pgx.Conn) error {
 func SeedEvents(conn *pgx.Conn) error {
 
 	images := []string{
-		"https://unsplash.com/photos/teal-led-panel-EUsVwEOsblE",
-		"https://unsplash.com/photos/blue-and-white-light-illustration-9HGPvHThNME",
-		"https://unsplash.com/photos/abstract-blue-and-purple-hexagonal-shape-with-glowing-center-6ehOC34g3Ow",
-		"https://unsplash.com/photos/a-close-up-of-a-computer-circuit-board-iGheu30xAi8",
-		"https://unsplash.com/photos/green-circuit-board-close-up-photography-ING1Uf1Fc30",
-		"https://unsplash.com/photos/a-close-up-of-a-human-brain-on-a-white-surface-9A9TcXEsy6c",
-		"https://unsplash.com/photos/woman-using-black-vr-headset-beside-computer-xGtHjC_QNJM",
-		"https://unsplash.com/photos/a-street-at-night-Pc7z08HUR5o",
-		"https://unsplash.com/photos/transparent-device-with-wifi-signal-on-screen-QEmVIPD0IvQ",
-		"https://unsplash.com/photos/a-golden-padlock-sitting-on-top-of-a-keyboard-FnA5pAzqhMM",
+		"https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1170&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1639153696879-e86e3a292685?q=80&w=1170&auto=format&fit=crop",
 	}
 
 	q := db.New()
