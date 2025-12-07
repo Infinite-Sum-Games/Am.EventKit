@@ -10,7 +10,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -118,12 +117,8 @@ func AddNewPerson(c *gin.Context) {
 
 func UpdatePersonDetails(c *gin.Context) {
 	id := c.Param("id")
-	personId, err := uuid.Parse(id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Request not processed due to invalid parameters",
-		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid person ID parameter", err)
+	personId, ok := pkg.GrabUuid(c, id, "PEOPLE", "person")
+	if !ok {
 		return
 	}
 
@@ -183,12 +178,8 @@ func UpdatePersonDetails(c *gin.Context) {
 
 func DeletePerson(c *gin.Context) {
 	id := c.Param("id")
-	personId, err := uuid.Parse(id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Invalid person ID parameter", err)
+	personId, ok := pkg.GrabUuid(c, id, "PEOPLE", "person")
+	if !ok {
 		return
 	}
 
