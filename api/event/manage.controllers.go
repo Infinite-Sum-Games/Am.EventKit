@@ -24,14 +24,8 @@ func CreateEvent(c *gin.Context) {
 		return
 	}
 
-	q := db.New()
-
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
 	defer func() {
@@ -40,6 +34,7 @@ func CreateEvent(c *gin.Context) {
 		}
 	}()
 
+	q := db.New()
 	eventID, err := q.CreateEventQuery(ctx, tx, db.CreateEventQueryParams{
 		Name:           req.Name,
 		Blurb:          req.Blurb,
@@ -163,8 +158,7 @@ func EditEvent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	eventIDStr := c.Param("eventId")
-	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	eventID, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
@@ -174,11 +168,8 @@ func EditEvent(c *gin.Context) {
 		return
 	}
 
-	q := db.New()
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! Something happened. Please try again later"})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
 	defer func() {
@@ -187,6 +178,7 @@ func EditEvent(c *gin.Context) {
 		}
 	}()
 
+	q := db.New()
 	// 1) update base event
 	rows, err := q.UpdateEventQuery(ctx, tx, db.UpdateEventQueryParams{
 		ID:             eventID,
@@ -333,19 +325,13 @@ func DeleteEvent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	eventIDStr := c.Param("eventId")
-	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	eventID, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
 
-	q := db.New()
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to begin transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "EVENT") {
 		return
 	}
 	defer func() {
@@ -354,6 +340,7 @@ func DeleteEvent(c *gin.Context) {
 		}
 	}()
 
+	q := db.New()
 	// delete all mappings first
 	clearFuncs := []func(context.Context) error{
 		func(ctx context.Context) error { return q.DeleteEventSchedulesByEventIDQuery(ctx, tx, eventID) },
@@ -405,18 +392,13 @@ func ToggleEventStatus(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	eventIDStr := c.Param("eventId")
-	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	eventID, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: Failed to acquire DB connection for toggle", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()
