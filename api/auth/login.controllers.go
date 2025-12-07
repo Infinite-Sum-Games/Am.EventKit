@@ -43,11 +43,7 @@ func LoginUser(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
 	defer func() {
@@ -178,12 +174,7 @@ func LoginOrganizer(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to initiate DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
 	defer func() {
