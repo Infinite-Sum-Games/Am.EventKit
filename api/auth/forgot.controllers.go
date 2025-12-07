@@ -65,11 +65,7 @@ func ForgotUserPassword(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to begin DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
 	defer func() {
@@ -171,8 +167,7 @@ func ConfirmPasswordChange(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		pkg.Log.FatalCtx(c, "[AUTH-FATAL]: Failed to acquire DB transaction", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
 	defer func() {
@@ -227,11 +222,7 @@ func ResendPasswordChangeOtp(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
 	defer conn.Release()
