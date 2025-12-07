@@ -8,6 +8,7 @@ SELECT
     MIN(es.event_date) AS event_date,
     e.is_group,
     e.event_type,
+    e.is_technical,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
@@ -44,6 +45,7 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
+    e.is_technical,
 
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -105,6 +107,7 @@ SELECT
     MIN(es.event_date) AS event_date,
     e.is_group,
     e.event_type,
+    e.is_technical,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
@@ -149,6 +152,7 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
+    e.is_technical,
 
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -224,9 +228,10 @@ INSERT INTO event (
   seats_filled,
   event_status,
   event_mode,
-  attendance_mode
+  attendance_mode,
+  is_technical
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
 )
 RETURNING id;
 
@@ -282,7 +287,8 @@ UPDATE event SET
   seats_filled = $14,
   event_status = $15,
   event_mode = $16,
-  attendance_mode = $17
+  attendance_mode = $17,
+  is_technical = $18
 WHERE id = $1;
 
 -- name: DeleteEventSchedulesByEventIDQuery :exec

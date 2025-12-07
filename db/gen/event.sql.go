@@ -29,9 +29,10 @@ INSERT INTO event (
   seats_filled,
   event_status,
   event_mode,
-  attendance_mode
+  attendance_mode,
+  is_technical
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
 )
 RETURNING id
 `
@@ -53,6 +54,7 @@ type CreateEventQueryParams struct {
 	EventStatus    EventStatusEnum    `json:"event_status"`
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
 func (q *Queries) CreateEventQuery(ctx context.Context, db DBTX, arg CreateEventQueryParams) (uuid.UUID, error) {
@@ -73,6 +75,7 @@ func (q *Queries) CreateEventQuery(ctx context.Context, db DBTX, arg CreateEvent
 		arg.EventStatus,
 		arg.EventMode,
 		arg.AttendanceMode,
+		arg.IsTechnical,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -145,6 +148,7 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
+    e.is_technical,
 
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -214,6 +218,7 @@ type GetEventByIdQueryRow struct {
 	SeatsFilled      int32           `json:"seats_filled"`
 	EventStatus      EventStatusEnum `json:"event_status"`
 	EventMode        EventModeEnum   `json:"event_mode"`
+	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Organizers       interface{}     `json:"organizers"`
 	Schedules        interface{}     `json:"schedules"`
 	Tags             interface{}     `json:"tags"`
@@ -240,6 +245,7 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 		&i.SeatsFilled,
 		&i.EventStatus,
 		&i.EventMode,
+		&i.IsTechnical,
 		&i.Organizers,
 		&i.Schedules,
 		&i.Tags,
@@ -266,6 +272,7 @@ SELECT
     e.seats_filled,
     e.event_status,
     e.event_mode,
+    e.is_technical,
 
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -348,6 +355,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	SeatsFilled      int32           `json:"seats_filled"`
 	EventStatus      EventStatusEnum `json:"event_status"`
 	EventMode        EventModeEnum   `json:"event_mode"`
+	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Organizers       interface{}     `json:"organizers"`
 	Schedules        interface{}     `json:"schedules"`
 	Tags             interface{}     `json:"tags"`
@@ -376,6 +384,7 @@ func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg Ge
 		&i.SeatsFilled,
 		&i.EventStatus,
 		&i.EventMode,
+		&i.IsTechnical,
 		&i.Organizers,
 		&i.Schedules,
 		&i.Tags,
@@ -396,6 +405,7 @@ SELECT
     MIN(es.event_date) AS event_date,
     e.is_group,
     e.event_type,
+    e.is_technical,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
@@ -424,6 +434,7 @@ type GetEventsQueryRow struct {
 	EventDate        interface{}     `json:"event_date"`
 	IsGroup          bool            `json:"is_group"`
 	EventType        EventTypeEnum   `json:"event_type"`
+	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
 	EventPrice       pgtype.Numeric  `json:"event_price"`
 	MaxSeats         int32           `json:"max_seats"`
@@ -448,6 +459,7 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 			&i.EventDate,
 			&i.IsGroup,
 			&i.EventType,
+			&i.IsTechnical,
 			&i.Tags,
 			&i.EventPrice,
 			&i.MaxSeats,
@@ -473,6 +485,7 @@ SELECT
     MIN(es.event_date) AS event_date,
     e.is_group,
     e.event_type,
+    e.is_technical,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
@@ -514,6 +527,7 @@ type GetEventsWithAuthQueryRow struct {
 	EventDate        interface{}     `json:"event_date"`
 	IsGroup          bool            `json:"is_group"`
 	EventType        EventTypeEnum   `json:"event_type"`
+	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
 	EventPrice       pgtype.Numeric  `json:"event_price"`
 	MaxSeats         int32           `json:"max_seats"`
@@ -540,6 +554,7 @@ func (q *Queries) GetEventsWithAuthQuery(ctx context.Context, db DBTX, arg GetEv
 			&i.EventDate,
 			&i.IsGroup,
 			&i.EventType,
+			&i.IsTechnical,
 			&i.Tags,
 			&i.EventPrice,
 			&i.MaxSeats,
@@ -681,7 +696,8 @@ UPDATE event SET
   seats_filled = $14,
   event_status = $15,
   event_mode = $16,
-  attendance_mode = $17
+  attendance_mode = $17,
+  is_technical = $18
 WHERE id = $1
 `
 
@@ -703,6 +719,7 @@ type UpdateEventQueryParams struct {
 	EventStatus    EventStatusEnum    `json:"event_status"`
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
 func (q *Queries) UpdateEventQuery(ctx context.Context, db DBTX, arg UpdateEventQueryParams) (int64, error) {
@@ -724,6 +741,7 @@ func (q *Queries) UpdateEventQuery(ctx context.Context, db DBTX, arg UpdateEvent
 		arg.EventStatus,
 		arg.EventMode,
 		arg.AttendanceMode,
+		arg.IsTechnical,
 	)
 	if err != nil {
 		return 0, err

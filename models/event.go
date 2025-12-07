@@ -66,9 +66,10 @@ type CreateEventRequest struct {
 	EventStatus    string               `json:"event_status"`    // CLOSED | ACTIVE | COMPLETED
 	EventMode      string               `json:"event_mode"`      // ONLINE | OFFLINE
 	AttendanceMode string               `json:"attendance_mode"` // SOLO | DUO
-	OrganizerIDs   []string             `json:"organizer_ids"`   // UUIDs
-	TagIDs         []string             `json:"tag_ids"`         // UUIDs
-	PeopleIDs      []string             `json:"people_ids"`      // UUIDs
+	IsTechnical    bool                 `json:"is_technical"`
+	OrganizerIDs   []string             `json:"organizer_ids"` // UUIDs
+	TagIDs         []string             `json:"tag_ids"`       // UUIDs
+	PeopleIDs      []string             `json:"people_ids"`    // UUIDs
 	Schedules      []EventScheduleInput `json:"schedules"`
 }
 
@@ -84,6 +85,7 @@ func (r CreateEventRequest) Validate() error {
 		v.Field(&r.EventStatus, v.Required, v.In("CLOSED", "ACTIVE", "COMPLETED")),
 		v.Field(&r.EventMode, v.Required, v.In("ONLINE", "OFFLINE")),
 		v.Field(&r.AttendanceMode, v.Required, v.In("SOLO", "DUO")),
+		v.Field(&r.IsTechnical, v.In(true, false)),
 		v.Field(&r.OrganizerIDs, v.Required),
 		v.Field(&r.TagIDs, v.Required),
 		v.Field(&r.Schedules, v.Required),
@@ -107,6 +109,7 @@ type UpdateEventRequest struct {
 	EventStatus    string               `json:"event_status"`
 	EventMode      string               `json:"event_mode"`
 	AttendanceMode string               `json:"attendance_mode"`
+	IsTechnical    bool                 `json:"is_technical"`
 	OrganizerIDs   []string             `json:"organizer_ids"`
 	TagIDs         []string             `json:"tag_ids"`
 	PeopleIDs      []string             `json:"people_ids"`
