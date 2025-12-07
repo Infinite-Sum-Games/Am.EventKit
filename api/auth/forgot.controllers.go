@@ -117,11 +117,8 @@ func ForgotUserPassword(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[AUTH-FATAL]: Failed to commit DB transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 
@@ -198,11 +195,8 @@ func ConfirmPasswordChange(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 
