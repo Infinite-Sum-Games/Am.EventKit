@@ -68,11 +68,7 @@ func ForgotUserPassword(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	otpStr, otpSlice, err := pkg.GenerateOTP()
 	if err != nil {
@@ -167,11 +163,7 @@ func ConfirmPasswordChange(c *gin.Context) {
 	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", err)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
 
