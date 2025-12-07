@@ -89,11 +89,8 @@ func AddNewPerson(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[PEOPLE-FATAL]: Failed to commit DB transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "PEOPLE") {
 		return
 	}
 
@@ -162,8 +159,7 @@ func UpdatePersonDetails(c *gin.Context) {
 }
 
 func DeletePerson(c *gin.Context) {
-	id := c.Param("id")
-	personId, ok := pkg.GrabUuid(c, id, "PEOPLE", "person")
+	personId, ok := pkg.GrabUuid(c, c.Param("id"), "PEOPLE", "person")
 	if !ok {
 		return
 	}
