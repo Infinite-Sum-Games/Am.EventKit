@@ -18,8 +18,7 @@ func StarEvent(c *gin.Context) {
 		return
 	}
 
-	eventIdParam := c.Query("eventId")
-	eventId, ok := pkg.GrabUuid(c, eventIdParam, "EVENT", "event")
+	eventId, ok := pkg.GrabUuid(c, c.Query("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
@@ -28,11 +27,7 @@ func StarEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -64,8 +59,7 @@ func UnstarEvent(c *gin.Context) {
 		return
 	}
 
-	eventIdParam := c.Query("eventId")
-	eventId, ok := pkg.GrabUuid(c, eventIdParam, "EVENT", "event")
+	eventId, ok := pkg.GrabUuid(c, c.Query("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
@@ -74,11 +68,7 @@ func UnstarEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()
