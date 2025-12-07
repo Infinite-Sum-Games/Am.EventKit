@@ -11,7 +11,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -90,14 +89,11 @@ func CreateEvent(c *gin.Context) {
 
 	// 3) tag mappings
 	for _, tagIDStr := range req.TagIDs {
-		tagID, err := uuid.Parse(tagIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid tag ID", err)
+		tagID, ok := pkg.GrabUuid(c, tagIDStr, "EVENT", "tag")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertEventTagMappingQuery(ctx, tx, db.InsertEventTagMappingQueryParams{
 			TagID:   tagID,
 			EventID: eventID,
@@ -112,14 +108,11 @@ func CreateEvent(c *gin.Context) {
 
 	// 4) organizer mappings
 	for _, orgIDStr := range req.OrganizerIDs {
-		orgID, err := uuid.Parse(orgIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid organizer ID", err)
+		orgID, ok := pkg.GrabUuid(c, orgIDStr, "EVENT", "organizer")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertEventOrganizerMappingQuery(ctx, tx, db.InsertEventOrganizerMappingQueryParams{
 			EventID:     eventID,
 			OrganizerID: orgID,
@@ -134,14 +127,11 @@ func CreateEvent(c *gin.Context) {
 
 	// 5) people mappings
 	for _, personIDStr := range req.PeopleIDs {
-		personID, err := uuid.Parse(personIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid person ID", err)
+		personID, ok := pkg.GrabUuid(c, personIDStr, "EVENT", "person")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertPeopleToEventMappingQuery(ctx, tx, db.InsertPeopleToEventMappingQueryParams{
 			EventID:  eventID,
 			PersonID: personID,
@@ -174,12 +164,8 @@ func EditEvent(c *gin.Context) {
 	defer cancel()
 
 	eventIDStr := c.Param("eventId")
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID format", err)
+	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -274,14 +260,11 @@ func EditEvent(c *gin.Context) {
 
 	// 4) re-insert tag mappings
 	for _, tagIDStr := range req.TagIDs {
-		tagID, err := uuid.Parse(tagIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid tag ID", err)
+		tagID, ok := pkg.GrabUuid(c, tagIDStr, "EVENT", "tag")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertEventTagMappingQuery(ctx, tx, db.InsertEventTagMappingQueryParams{
 			TagID:   tagID,
 			EventID: eventID,
@@ -296,14 +279,11 @@ func EditEvent(c *gin.Context) {
 
 	// 5) re-insert organizer mappings
 	for _, orgIDStr := range req.OrganizerIDs {
-		orgID, err := uuid.Parse(orgIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid organizer ID", err)
+		orgID, ok := pkg.GrabUuid(c, orgIDStr, "EVENT", "organizer")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertEventOrganizerMappingQuery(ctx, tx, db.InsertEventOrganizerMappingQueryParams{
 			EventID:     eventID,
 			OrganizerID: orgID,
@@ -318,14 +298,11 @@ func EditEvent(c *gin.Context) {
 
 	// 6) re-insert people mappings
 	for _, personIDStr := range req.PeopleIDs {
-		personID, err := uuid.Parse(personIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid person ID", err)
+		personID, ok := pkg.GrabUuid(c, personIDStr, "EVENT", "person")
+		if !ok {
 			return
 		}
+
 		if err := q.InsertPeopleToEventMappingQuery(ctx, tx, db.InsertPeopleToEventMappingQueryParams{
 			EventID:  eventID,
 			PersonID: personID,
@@ -357,12 +334,8 @@ func DeleteEvent(c *gin.Context) {
 	defer cancel()
 
 	eventIDStr := c.Param("eventId")
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID format", err)
+	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -433,12 +406,8 @@ func ToggleEventStatus(c *gin.Context) {
 	defer cancel()
 
 	eventIDStr := c.Param("eventId")
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID format for toggle", err)
+	eventID, ok := pkg.GrabUuid(c, eventIDStr, "EVENT", "event")
+	if !ok {
 		return
 	}
 
