@@ -23,7 +23,7 @@ func SeedStudents(conn *pgx.Conn) error {
 		return nil
 	}
 
-	hashedPassword, err := pkg.Hash("Password@123")
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
 	if err != nil {
 		pkg.Log.Error("Error inserting manual students: %v\n", err)
 		return err
@@ -354,6 +354,20 @@ func SeedTags(conn *pgx.Conn) error {
 }
 
 func SeedEvents(conn *pgx.Conn) error {
+
+	images := []string{
+		"https://unsplash.com/photos/teal-led-panel-EUsVwEOsblE",
+		"https://unsplash.com/photos/blue-and-white-light-illustration-9HGPvHThNME",
+		"https://unsplash.com/photos/abstract-blue-and-purple-hexagonal-shape-with-glowing-center-6ehOC34g3Ow",
+		"https://unsplash.com/photos/a-close-up-of-a-computer-circuit-board-iGheu30xAi8",
+		"https://unsplash.com/photos/green-circuit-board-close-up-photography-ING1Uf1Fc30",
+		"https://unsplash.com/photos/a-close-up-of-a-human-brain-on-a-white-surface-9A9TcXEsy6c",
+		"https://unsplash.com/photos/woman-using-black-vr-headset-beside-computer-xGtHjC_QNJM",
+		"https://unsplash.com/photos/a-street-at-night-Pc7z08HUR5o",
+		"https://unsplash.com/photos/transparent-device-with-wifi-signal-on-screen-QEmVIPD0IvQ",
+		"https://unsplash.com/photos/a-golden-padlock-sitting-on-top-of-a-keyboard-FnA5pAzqhMM",
+	}
+
 	q := db.New()
 
 	events, _ := q.ViewEventSeedQuery(context.Background(), conn)
@@ -378,6 +392,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum("ACTIVE"),
 			EventMode:      db.EventModeEnum("ONLINE"),
 			AttendanceMode: db.AttendanceModeEnum("SOLO"),
+			CoverImageUrl:  pgtype.Text{String: images[0], Valid: true},
 		},
 		{
 			Name:           "Art Exhibition",
@@ -393,6 +408,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum("ACTIVE"),
 			EventMode:      db.EventModeEnum("OFFLINE"),
 			AttendanceMode: db.AttendanceModeEnum("DUO"),
+			CoverImageUrl:  pgtype.Text{String: images[1], Valid: true},
 		},
 	}
 	for _, event := range manualEvents {
@@ -419,6 +435,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum(gofakeit.RandomString([]string{"CLOSED", "ACTIVE", "COMPLETED"})),
 			EventMode:      db.EventModeEnum(gofakeit.RandomString([]string{"ONLINE", "OFFLINE"})),
 			AttendanceMode: db.AttendanceModeEnum(gofakeit.RandomString([]string{"SOLO", "DUO"})),
+			CoverImageUrl:  pgtype.Text{String: images[i], Valid: true},
 		}
 		err := q.SeedEventQuery(context.Background(), conn, event)
 		if err != nil {
