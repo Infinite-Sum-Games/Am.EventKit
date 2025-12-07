@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 )
 
@@ -69,7 +68,7 @@ func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
 		})
 	}
 	msg := fmt.Sprintf("[%s-FATAL]: Failed to commit DB transaction", path)
-	pkg.Log.FatalCtx(c, msg, err)
+	Log.FatalCtx(c, msg, err)
 
 	return true
 }
