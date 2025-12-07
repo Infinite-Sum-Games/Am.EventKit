@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type Event struct {
@@ -78,16 +79,23 @@ func (r CreateEventRequest) Validate() error {
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
 		v.Field(&r.Blurb, v.Required, v.RuneLength(3, 500)),
 		v.Field(&r.Description, v.Required, v.RuneLength(3, 4000)),
+		v.Field(&r.CoverImageURL, is.URL),
 		v.Field(&r.Price, v.Required),
+		v.Field(&r.IsPerHead, v.In(true, false)),
 		v.Field(&r.Rules, v.Required, v.RuneLength(1, 4000)),
 		v.Field(&r.EventType, v.Required, v.In("EVENT", "WORKSHOP")),
+		v.Field(&r.IsGroup, v.Required, v.In(true, false)),
+		v.Field(&r.MaxTeamSize, v.Min(0)),
+		v.Field(&r.MinTeamSize, v.Min(0)),
 		v.Field(&r.TotalSeats, v.Required, v.Min(1)),
+		v.Field(&r.SeatsFilled, v.Min(0)),
 		v.Field(&r.EventStatus, v.Required, v.In("CLOSED", "ACTIVE", "COMPLETED")),
 		v.Field(&r.EventMode, v.Required, v.In("ONLINE", "OFFLINE")),
 		v.Field(&r.AttendanceMode, v.Required, v.In("SOLO", "DUO")),
 		v.Field(&r.IsTechnical, v.In(true, false)),
 		v.Field(&r.OrganizerIDs, v.Required),
 		v.Field(&r.TagIDs, v.Required),
+		v.Field(&r.PeopleIDs, v.Required),
 		v.Field(&r.Schedules, v.Required),
 	)
 }
