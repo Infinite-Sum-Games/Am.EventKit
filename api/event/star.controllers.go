@@ -9,7 +9,6 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -20,13 +19,8 @@ func StarEvent(c *gin.Context) {
 	}
 
 	eventIdParam := c.Query("eventId")
-
-	eventId, err := uuid.Parse(eventIdParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid UUID in request", err)
+	eventId, ok := pkg.GrabUuid(c, eventIdParam, "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -71,13 +65,8 @@ func UnstarEvent(c *gin.Context) {
 	}
 
 	eventIdParam := c.Query("eventId")
-
-	eventId, err := uuid.Parse(eventIdParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid UUID in request", err)
+	eventId, ok := pkg.GrabUuid(c, eventIdParam, "EVENT", "event")
+	if !ok {
 		return
 	}
 
