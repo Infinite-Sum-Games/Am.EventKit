@@ -20,6 +20,25 @@ func Auth(c *gin.Context) {
 		return
 	}
 
+	// Check if refresh token is valid. If yes, only then check for access token
+	// validity. If access token is valid then setup gin.Context map otherwise
+	// mint new token and then setup gin.Context map
+	validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"message": "Acess denied.",
+		})
+		pkg.Log.ErrorCtx(c, "[COOKIE-ERROR]: Failed to verify refresh token", err)
+		return
+	}
+
+	refreshTokenClaims := validToken.Claims()
+	userId, _ := refreshTokenClaims["aud"].(string)
+	email, _ := refreshTokenClaims["jti"].(string)
+	isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
+	isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
+	isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
+
 	// FLOW: Extract AuthToken
 	// 1. If AuthToken available then verify it
 	// 2. If not available then check against DB and see if a refresh token
@@ -33,23 +52,6 @@ func Auth(c *gin.Context) {
 	}
 
 	if accessErr == http.ErrNoCookie {
-		// Check if refresh token is valid. If yes, mint a new access token
-		// otherwise go back to old token
-		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "Acess denied.",
-			})
-			return
-		}
-
-		refreshTokenClaims := validToken.Claims()
-		userId, _ := refreshTokenClaims["aud"].(string)
-		email, _ := refreshTokenClaims["jti"].(string)
-		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
-		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
-		isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
-
 		// Creating and setting auth token, so it can be used for future requests
 		authToken, err := pkg.CreateAuthToken(userId, email, pkg.Roles{
 			IsUser:      isStudent,
@@ -63,16 +65,15 @@ func Auth(c *gin.Context) {
 			pkg.Log.FatalCtx(c, "[COOKIE-ERROR]: Failed to mint new auth token", err)
 			return
 		}
-
-		// Setup the context for further requests
-		c.Set("userId", userId)
-		c.Set("email", email)
-		c.Set("STUDENT-ROLE", isStudent)
-		c.Set("ORGANIZER-ROLE", isOrganizer)
-		c.Set("ADMIN-ROLE", isAdmin)
-
 		pkg.SetAuthCookie(c, authToken)
 	}
+
+	// Setup the context for further requests
+	c.Set("userId", userId)
+	c.Set("email", email)
+	c.Set("STUDENT-ROLE", isStudent)
+	c.Set("ORGANIZER-ROLE", isOrganizer)
+	c.Set("ADMIN-ROLE", isAdmin)
 
 	c.Next()
 }
