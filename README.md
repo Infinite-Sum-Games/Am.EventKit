@@ -1,6 +1,6 @@
 # 🛠️ Anokha Backend
 
-Backend server for Anokha, built with Go, PostgreSQL, Redis, and modern tooling.
+Backend server for Anokha, built with Go, PostgreSQL, and modern tooling.
 
 ---
 
@@ -64,17 +64,11 @@ lefthook install
 
 ### 🐳 Option B: Use Docker (Recommended)
 
-You can run Postgres and Redis with Docker:
+You can run Postgres with Docker on `localhost:5432`:
 
 ```bash
 docker compose up -d
 ```
-
-This will start:
-
-- PostgreSQL on `localhost:5432`
-- Valkey on `localhost:6379`
-- RedisInsight on `localhost:5540`
 
 ---
 
@@ -134,14 +128,6 @@ make test     # Run all tests
 make status   # Check status of migrations
 make down     # Roll back migrations
 make downto v=version_number # Roll back to version
-```
-
----
-
-## 🧪 Testing
-
-```bash
-make test
 ```
 
 ---

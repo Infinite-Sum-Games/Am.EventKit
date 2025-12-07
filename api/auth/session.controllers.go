@@ -13,12 +13,8 @@ import (
 )
 
 func FetchUserSession(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[SESSION-FATAL]: Email missing despite auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "SESSION")
+	if !ok {
 		return
 	}
 
@@ -62,12 +58,8 @@ func FetchUserSession(c *gin.Context) {
 }
 
 func FetchAdminSession(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[SESSION-FATAL]: Email missing despite auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "SESSION")
+	if !ok {
 		return
 	}
 

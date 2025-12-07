@@ -20,12 +20,8 @@ import (
 func BookEvent(c *gin.Context) {
 	// if it is group event, the email is considered as leader's email,
 	// we can keep the same naming convention for solo event too
-	leaderEmail := c.GetString("email")
-	if leaderEmail == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Email is not found after auth middleware", nil)
+	leaderEmail, ok := pkg.GrabEmail(c, "BOOKING")
+	if !ok {
 		return
 	}
 

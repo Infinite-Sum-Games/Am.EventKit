@@ -15,12 +15,8 @@ import (
 )
 
 func FetchUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -67,12 +63,8 @@ func FetchUserProfile(c *gin.Context) {
 }
 
 func EditUserProfileCsrf(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -96,12 +88,8 @@ func EditUserProfileCsrf(c *gin.Context) {
 }
 
 func EditUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 

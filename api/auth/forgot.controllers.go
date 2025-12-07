@@ -157,17 +157,8 @@ func ForgotUserPassword(c *gin.Context) {
 }
 
 func ConfirmPasswordChange(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.FatalCtx(
-			c,
-			"[AUTH-ERROR]: Could not find email in ctx",
-			fmt.Errorf("BUG: Middleware did not add email in ctx"),
-		)
+	email, ok := pkg.GrabEmail(c, "AUTH")
+	if !ok {
 		return
 	}
 
@@ -227,17 +218,8 @@ func ConfirmPasswordChange(c *gin.Context) {
 }
 
 func ResendPasswordChangeOtp(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.FatalCtx(
-			c,
-			"[AUTH-ERROR]: Could not find email in ctx",
-			fmt.Errorf("BUG: Middleware did not add email in ctx"),
-		)
+	email, ok := pkg.GrabEmail(c, "AUTH")
+	if !ok {
 		return
 	}
 

@@ -15,13 +15,9 @@ import (
 
 // All events should be fetched along with their "favourite" status and registration status
 func FetchAllEventsWithAuth(c *gin.Context) {
-	email := c.GetString("email")
-	userIDStr := c.GetString("userId")
-	if email == "" || userIDStr == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-AUTH-ERROR]: Missing email or userId in context", nil)
+	email, ok1 := pkg.GrabEmail(c, "EVENT-AUTH")
+	userIDStr, ok2 := pkg.GrabUserId(c, "EVENT-AUTH")
+	if !ok1 || !ok2 {
 		return
 	}
 
@@ -69,13 +65,9 @@ func FetchAllEventsWithAuth(c *gin.Context) {
 
 // An event should be fetched with it's registration status
 func FetchEventByEventIdWithAuth(c *gin.Context) {
-	email := c.GetString("email")
-	userIDStr := c.GetString("userId")
-	if email == "" || userIDStr == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-AUTH-ERROR]: Missing email or userId in context", nil)
+	email, ok1 := pkg.GrabEmail(c, "EVENT-AUTH")
+	userIDStr, ok2 := pkg.GrabUserId(c, "EVENT-AUTH")
+	if !ok1 || !ok2 {
 		return
 	}
 
