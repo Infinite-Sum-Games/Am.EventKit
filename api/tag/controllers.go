@@ -10,7 +10,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func GetAllEventTags(c *gin.Context) {
@@ -89,12 +88,8 @@ func EditEventTag(c *gin.Context) {
 	defer cancel()
 
 	tagIDStr := c.Param("tagId")
-	tagID, err := uuid.Parse(tagIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
+	tagID, ok := pkg.GrabUuid(c, tagIDStr, "TAG", "tag")
+	if !ok {
 		return
 	}
 
@@ -145,12 +140,8 @@ func DeleteEventTag(c *gin.Context) {
 	defer cancel()
 
 	tagIDStr := c.Param("tagId")
-	tagID, err := uuid.Parse(tagIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
+	tagID, ok := pkg.GrabUuid(c, tagIDStr, "TAG", "tag")
+	if !ok {
 		return
 	}
 
