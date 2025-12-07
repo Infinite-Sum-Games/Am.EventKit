@@ -18,7 +18,7 @@ func SeedStudents(conn *pgx.Conn) error {
 	q := db.New()
 
 	students, _ := q.ViewStudentSeedQuery(context.Background(), conn)
-	if len(students) > 0 {
+	if students[0] > 0 {
 		pkg.Log.Info("Students already seeded, skipping...")
 		return nil
 	}
