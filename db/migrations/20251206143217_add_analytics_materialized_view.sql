@@ -23,6 +23,14 @@ INNER JOIN organizer AS o ON etom.organizer_id = o.id;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+SELECT cron.schedule(
+    'refresh_revenue_every_30m',
+    '*/30 * * * *',
+    'REFRESH MATERIALIZED VIEW CONCURRENTLY revenue_analytics'
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
 CREATE MATERIALIZED VIEW IF NOT EXISTS participant_analytics AS
 SELECT s.id AS student_id,
 s.name AS student_name,
@@ -41,35 +49,92 @@ INNER JOIN organizer AS o ON etom.organizer_id = o.id;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+SELECT cron.schedule(
+    'refresh_participant_every_30m',
+    '*/30 * * * *',
+    'REFRESH MATERIALIZED VIEW CONCURRENTLY participant_analytics'
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS registrations_analytics AS
-SELECT UNIQUE b.student_id AS student_id,
-s.name AS student_name,
-s.email AS student_email,
-s.is_amrita_student AS is_amrita_student,
-e.id AS event_id,
-e.name AS event_name,
-e.event_type AS event_type,
-o.id AS organizer_id,
-o.name AS organizer_name,
-COUNT(UNIQUE b.student_id) OVER () AS total_registrations
-COUNT(UNIQUE b.student_id) OVER (PARTITION BY s.is_amrita_student) 
-AS registrations_by_student_type,
-FROM bookings AS b
-INNER JOIN student AS s ON b.student_id = s.id
-INNER JOIN event AS e ON b.event_id = e.id
-INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
-INNER JOIN organizer AS o ON etom.organizer_id = o.id;
+WITH unique_student AS (
+    SELECT DISTINCT b.student_id
+    FROM bookings b
+),
+
+total_unique AS (
+    SELECT COUNT(*) AS total_registrations
+    FROM unique_student
+),
+
+unique_by_type AS (
+    SELECT
+        s.is_amrita_student,
+        COUNT(*) AS registrations_by_student_type
+    FROM unique_student us
+    JOIN student s ON s.id = us.student_id
+    GROUP BY s.is_amrita_student
+)
+
+SELECT
+    s.id AS student_id,
+    s.name AS student_name,
+    s.email AS student_email,
+    s.is_amrita_student AS is_amrita_student,
+
+    e.id AS event_id,
+    e.name AS event_name,
+    e.event_type AS event_type,
+    o.id AS organizer_id,
+    o.name AS organizer_name,
+
+    tu.total_registrations,
+    ubt.registrations_by_student_type
+
+FROM bookings b
+JOIN student s ON s.id = b.student_id
+JOIN event e ON e.id = b.event_id
+JOIN event_to_organizer_mapping etom ON e.id = etom.event_id
+JOIN organizer o ON etom.organizer_id = o.id
+CROSS JOIN total_unique tu
+LEFT JOIN unique_by_type ubt
+    ON ubt.is_amrita_student = s.is_amrita_student;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+SELECT cron.schedule(
+    'refresh_registrations_every_30m',
+    '*/30 * * * *',
+    'REFRESH MATERIALIZED VIEW CONCURRENTLY registrations_analytics'
+);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE MATERIALIZED VIEW IF NOT EXISTS people_analytics AS
 SELECT p.id AS person_id,
 p.name AS person_name,
-COUNT(p.id) OVER () AS total_people,
-FROM person AS p;
+COUNT(p.id) OVER () AS total_people
+FROM people AS p;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+SELECT cron.schedule(
+    'refresh_people_every_30m',
+    '*/30 * * * *',
+    'REFRESH MATERIALIZED VIEW CONCURRENTLY people_analytics'
+);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP MATERIALIZED VIEW IF EXISTS revenue_analytics;
+drop MATERIALIZED VIEW IF EXISTS participant_analytics;
+DROP MATERIALIZED VIEW IF EXISTS registrations_analytics;
+DROP MATERIALIZED VIEW IF EXISTS people_analytics;
+SELECT cron.unschedule('refresh_revenue_every_30m');
+SELECT cron.unschedule('refresh_participant_every_30m');
+SELECT cron.unschedule('refresh_registrations_every_30m');
+SELECT cron.unschedule('refresh_people_every_30m');
 -- +goose StatementEnd
