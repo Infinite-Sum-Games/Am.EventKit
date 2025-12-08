@@ -345,6 +345,18 @@ type Organizer struct {
 	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
 }
 
+type ParticipantAnalytic struct {
+	StudentID            uuid.UUID     `json:"student_id"`
+	StudentName          string        `json:"student_name"`
+	StudentEmail         string        `json:"student_email"`
+	EventID              uuid.UUID     `json:"event_id"`
+	EventName            string        `json:"event_name"`
+	EventType            EventTypeEnum `json:"event_type"`
+	GlobalTotalBookings  int64         `json:"global_total_bookings"`
+	ParticipantsPerEvent int64         `json:"participants_per_event"`
+	BookingsPerOrganizer int64         `json:"bookings_per_organizer"`
+}
+
 type PasswordReset struct {
 	ID        int32            `json:"id"`
 	Name      string           `json:"name"`
@@ -353,6 +365,12 @@ type PasswordReset struct {
 	Otp       string           `json:"otp"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	ExpiryAt  pgtype.Timestamp `json:"expiry_at"`
+}
+
+type PeopleAnalytic struct {
+	PersonID    uuid.UUID `json:"person_id"`
+	PersonName  string    `json:"person_name"`
+	TotalPeople int64     `json:"total_people"`
 }
 
 type PeopleToEventMapping struct {
@@ -368,6 +386,37 @@ type Person struct {
 	PhoneNumber string      `json:"phone_number"`
 	Profession  pgtype.Text `json:"profession"`
 	Email       pgtype.Text `json:"email"`
+}
+
+type RegistrationsAnalytic struct {
+	StudentID                  uuid.UUID     `json:"student_id"`
+	StudentName                string        `json:"student_name"`
+	StudentEmail               string        `json:"student_email"`
+	IsAmritaStudent            pgtype.Bool   `json:"is_amrita_student"`
+	EventID                    uuid.UUID     `json:"event_id"`
+	EventName                  string        `json:"event_name"`
+	EventType                  EventTypeEnum `json:"event_type"`
+	OrganizerID                uuid.UUID     `json:"organizer_id"`
+	OrganizerName              string        `json:"organizer_name"`
+	TotalRegistrations         int64         `json:"total_registrations"`
+	RegistrationsByStudentType pgtype.Int8   `json:"registrations_by_student_type"`
+}
+
+type RevenueAnalytic struct {
+	BookingFee          pgtype.Numeric   `json:"booking_fee"`
+	EventID             uuid.UUID        `json:"event_id"`
+	EventName           string           `json:"event_name"`
+	EventType           EventTypeEnum    `json:"event_type"`
+	EventDate           pgtype.Date      `json:"event_date"`
+	StartTime           pgtype.Timestamp `json:"start_time"`
+	EndTime             pgtype.Timestamp `json:"end_time"`
+	OrganizerID         uuid.UUID        `json:"organizer_id"`
+	OrganizerName       string           `json:"organizer_name"`
+	TotalRevenue        int64            `json:"total_revenue"`
+	RevenuePerEvent     int64            `json:"revenue_per_event"`
+	RevenuePerDate      int64            `json:"revenue_per_date"`
+	RevenuePerEventType int64            `json:"revenue_per_event_type"`
+	RevenuePerOrganizer int64            `json:"revenue_per_organizer"`
 }
 
 type SoloEventParticipant struct {

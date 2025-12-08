@@ -3,17 +3,14 @@ SELECT *
 FROM revenue_analytics;
 
 
--- name: RefreshRevenueAnalytics :exec
+-- name: GetParticipantAnalytics :many
 SELECT *
-FROM cron.job
-WHERE jobname = 'refresh_revenue_every_30m'
-UNION ALL
-SELECT cron.schedule(
-    'refresh_revenue_every_30m',
-    '*/30 * * * *',
-    $$REFRESH MATERIALIZED VIEW CONCURRENTLY revenue_analytics;$$
-)
-WHERE NOT EXISTS (
-    SELECT 1 FROM cron.job WHERE jobname = 'refresh_revenue_every_30m'
-);
+FROM participant_analytics;
 
+-- name: GetRegistrationsAnalytics :many
+SELECT *
+FROM registrations_analytics;
+
+-- name: GetPeopleAnalytics :many
+SELECT *
+FROM people_analytics;
