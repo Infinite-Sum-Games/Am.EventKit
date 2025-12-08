@@ -27,7 +27,7 @@ func GetRevenueAnalytics(c *gin.Context) {
 
 	q := db.New()
 
-	revenueAnalytics, err := q.GetRevenueAnalyticsQuery(ctx, conn)
+	revenue, err := q.GetRevenueQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -36,9 +36,19 @@ func GetRevenueAnalytics(c *gin.Context) {
 		return
 	}
 
+	revenueSummary, err := q.GetRevenueSummaryQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get revenue summary", err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":           "Successfully fetched revenue analytics",
-		"revenue-analytics": revenueAnalytics,
+		"message":         "Successfully fetched revenue analytics",
+		"revenue":         revenue,
+		"revenue-summary": revenueSummary,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -59,7 +69,7 @@ func GetParticipantAnalytics(c *gin.Context) {
 
 	q := db.New()
 
-	participantsAnalytics, err := q.GetParticipantAnalyticsQuery(ctx, conn)
+	participants, err := q.GetParticipantQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -68,9 +78,19 @@ func GetParticipantAnalytics(c *gin.Context) {
 		return
 	}
 
+	participantSummary, err := q.GetParticipantSummaryQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get participants summary", err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":                "Successfully fetched participants analytics",
-		"participants-analytics": participantsAnalytics,
+		"message":      "Successfully fetched participants analytics",
+		"participants": participants,
+		"summary":      participantSummary,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -91,7 +111,7 @@ func GetRegistrationAnalytics(c *gin.Context) {
 
 	q := db.New()
 
-	registrationAnalytics, err := q.GetRegistrationsAnalyticsQuery(ctx, conn)
+	registration, err := q.GetRegistrationsQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -100,9 +120,19 @@ func GetRegistrationAnalytics(c *gin.Context) {
 		return
 	}
 
+	registrationSummary, err := q.GetRegistrationSummaryQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get registrations summary", err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":                "Successfully fetched registration analytics",
-		"registration-analytics": registrationAnalytics,
+		"message":              "Successfully fetched registration analytics",
+		"registration":         registration,
+		"registration_summary": registrationSummary,
 	})
 	pkg.Log.SuccessCtx(c)
 
@@ -124,18 +154,28 @@ func GetPeopleAnalytics(c *gin.Context) {
 
 	q := db.New()
 
-	peopleAnalytics, err := q.GetPeopleAnalyticsQuery(ctx, conn)
+	people, err := q.ListPeopleQuery(ctx, conn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get people analytics", err)
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get people List", err)
+		return
+	}
+
+	peopleCount, err := q.GetPeopleCountQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get people Count", err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":          "Successfully fetched people analytics",
-		"people-analytics": peopleAnalytics,
+		"message":      "Successfully fetched people analytics",
+		"people":       people,
+		"people_count": peopleCount,
 	})
 	pkg.Log.SuccessCtx(c)
 

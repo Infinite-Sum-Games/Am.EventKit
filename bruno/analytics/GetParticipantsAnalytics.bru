@@ -1,0 +1,16 @@
+meta {
+  name: GetParticipantsAnalytics
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/analytics/participants
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

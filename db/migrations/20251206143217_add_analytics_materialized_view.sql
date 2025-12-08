@@ -1,7 +1,8 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE MATERIALIZED VIEW IF NOT EXISTS revenue_analytics AS
-SELECT b.registration_fee AS booking_fee, 
+SELECT b.id AS booking_id,
+b.registration_fee AS booking_fee, 
 e.id AS event_id,
 e.name AS event_name, 
 e.event_type AS event_type,
@@ -20,14 +21,10 @@ INNER JOIN event AS e on b.event_id = e.id
 INNER JOIN event_schedule AS es ON e.id = es.event_id
 INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
 INNER JOIN organizer AS o ON etom.organizer_id = o.id;
--- +goose StatementEnd
 
--- +goose StatementBegin
-SELECT cron.schedule(
-    'refresh_revenue_every_30m',
-    '*/30 * * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY revenue_analytics'
-);
+-- Create unique index for CONCURRENT refresh support
+CREATE UNIQUE INDEX revenue_analytics_event_id_id
+ON revenue_analytics (booking_id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
@@ -46,18 +43,13 @@ INNER JOIN student AS s ON b.student_id = s.id
 INNER JOIN event AS e ON b.event_id = e.id
 INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
 INNER JOIN organizer AS o ON etom.organizer_id = o.id;
+
+-- Create unique index for CONCURRENT refresh support
+CREATE UNIQUE INDEX participant_analytics_student_id_event_id_idx
+ON participant_analytics (student_id, event_id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-SELECT cron.schedule(
-    'refresh_participant_every_30m',
-    '*/30 * * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY participant_analytics'
-);
--- +goose StatementEnd
-
--- +goose StatementBegin
-
 CREATE MATERIALIZED VIEW IF NOT EXISTS registrations_analytics AS
 WITH unique_student AS (
     SELECT DISTINCT b.student_id
@@ -101,14 +93,10 @@ JOIN organizer o ON etom.organizer_id = o.id
 CROSS JOIN total_unique tu
 LEFT JOIN unique_by_type ubt
     ON ubt.is_amrita_student = s.is_amrita_student;
--- +goose StatementEnd
 
--- +goose StatementBegin
-SELECT cron.schedule(
-    'refresh_registrations_every_30m',
-    '*/30 * * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY registrations_analytics'
-);
+-- Create unique index for CONCURRENT refresh support
+CREATE UNIQUE INDEX registrations_analytics_student_id_event_id_idx
+ON registrations_analytics (student_id, event_id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
@@ -117,20 +105,17 @@ SELECT p.id AS person_id,
 p.name AS person_name,
 COUNT(p.id) OVER () AS total_people
 FROM people AS p;
--- +goose StatementEnd
 
--- +goose StatementBegin
-SELECT cron.schedule(
-    'refresh_people_every_30m',
-    '*/30 * * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY people_analytics'
-);
+-- Create unique index for CONCURRENT refresh support
+CREATE UNIQUE INDEX people_analytics_person_id_idx 
+ON people_analytics (person_id);
+
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
 DROP MATERIALIZED VIEW IF EXISTS revenue_analytics;
-drop MATERIALIZED VIEW IF EXISTS participant_analytics;
+DROP MATERIALIZED VIEW IF EXISTS participant_analytics;
 DROP MATERIALIZED VIEW IF EXISTS registrations_analytics;
 DROP MATERIALIZED VIEW IF EXISTS people_analytics;
 SELECT cron.unschedule('refresh_revenue_every_30m');

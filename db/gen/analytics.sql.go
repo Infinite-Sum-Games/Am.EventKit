@@ -7,22 +7,39 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getParticipantAnalyticsQuery = `-- name: GetParticipantAnalyticsQuery :many
-SELECT student_id, student_name, student_email, event_id, event_name, event_type, global_total_bookings, participants_per_event, bookings_per_organizer
+const getParticipantQuery = `-- name: GetParticipantQuery :many
+SELECT student_id,
+student_name,
+student_email,
+event_id,
+event_name,
+event_type
 FROM participant_analytics
 `
 
-func (q *Queries) GetParticipantAnalyticsQuery(ctx context.Context, db DBTX) ([]ParticipantAnalytic, error) {
-	rows, err := db.Query(ctx, getParticipantAnalyticsQuery)
+type GetParticipantQueryRow struct {
+	StudentID    uuid.UUID     `json:"student_id"`
+	StudentName  string        `json:"student_name"`
+	StudentEmail string        `json:"student_email"`
+	EventID      uuid.UUID     `json:"event_id"`
+	EventName    string        `json:"event_name"`
+	EventType    EventTypeEnum `json:"event_type"`
+}
+
+func (q *Queries) GetParticipantQuery(ctx context.Context, db DBTX) ([]GetParticipantQueryRow, error) {
+	rows, err := db.Query(ctx, getParticipantQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ParticipantAnalytic
+	var items []GetParticipantQueryRow
 	for rows.Next() {
-		var i ParticipantAnalytic
+		var i GetParticipantQueryRow
 		if err := rows.Scan(
 			&i.StudentID,
 			&i.StudentName,
@@ -30,9 +47,6 @@ func (q *Queries) GetParticipantAnalyticsQuery(ctx context.Context, db DBTX) ([]
 			&i.EventID,
 			&i.EventName,
 			&i.EventType,
-			&i.GlobalTotalBookings,
-			&i.ParticipantsPerEvent,
-			&i.BookingsPerOrganizer,
 		); err != nil {
 			return nil, err
 		}
@@ -44,45 +58,91 @@ func (q *Queries) GetParticipantAnalyticsQuery(ctx context.Context, db DBTX) ([]
 	return items, nil
 }
 
-const getPeopleAnalyticsQuery = `-- name: GetPeopleAnalyticsQuery :many
-SELECT person_id, person_name, total_people
+const getParticipantSummaryQuery = `-- name: GetParticipantSummaryQuery :one
+SELECT global_total_bookings,
+participants_per_event,
+bookings_per_organizer
+FROM participant_analytics
+LIMIT 1
+`
+
+type GetParticipantSummaryQueryRow struct {
+	GlobalTotalBookings  int64 `json:"global_total_bookings"`
+	ParticipantsPerEvent int64 `json:"participants_per_event"`
+	BookingsPerOrganizer int64 `json:"bookings_per_organizer"`
+}
+
+func (q *Queries) GetParticipantSummaryQuery(ctx context.Context, db DBTX) (GetParticipantSummaryQueryRow, error) {
+	row := db.QueryRow(ctx, getParticipantSummaryQuery)
+	var i GetParticipantSummaryQueryRow
+	err := row.Scan(&i.GlobalTotalBookings, &i.ParticipantsPerEvent, &i.BookingsPerOrganizer)
+	return i, err
+}
+
+const getPeopleCountQuery = `-- name: GetPeopleCountQuery :one
+SELECT total_people
 FROM people_analytics
 `
 
-func (q *Queries) GetPeopleAnalyticsQuery(ctx context.Context, db DBTX) ([]PeopleAnalytic, error) {
-	rows, err := db.Query(ctx, getPeopleAnalyticsQuery)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []PeopleAnalytic
-	for rows.Next() {
-		var i PeopleAnalytic
-		if err := rows.Scan(&i.PersonID, &i.PersonName, &i.TotalPeople); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetPeopleCountQuery(ctx context.Context, db DBTX) (int64, error) {
+	row := db.QueryRow(ctx, getPeopleCountQuery)
+	var total_people int64
+	err := row.Scan(&total_people)
+	return total_people, err
 }
 
-const getRegistrationsAnalyticsQuery = `-- name: GetRegistrationsAnalyticsQuery :many
-SELECT student_id, student_name, student_email, is_amrita_student, event_id, event_name, event_type, organizer_id, organizer_name, total_registrations, registrations_by_student_type
+const getRegistrationSummaryQuery = `-- name: GetRegistrationSummaryQuery :one
+SELECT total_registrations,
+registrations_by_student_type
 FROM registrations_analytics
 `
 
-func (q *Queries) GetRegistrationsAnalyticsQuery(ctx context.Context, db DBTX) ([]RegistrationsAnalytic, error) {
-	rows, err := db.Query(ctx, getRegistrationsAnalyticsQuery)
+type GetRegistrationSummaryQueryRow struct {
+	TotalRegistrations         int64       `json:"total_registrations"`
+	RegistrationsByStudentType pgtype.Int8 `json:"registrations_by_student_type"`
+}
+
+func (q *Queries) GetRegistrationSummaryQuery(ctx context.Context, db DBTX) (GetRegistrationSummaryQueryRow, error) {
+	row := db.QueryRow(ctx, getRegistrationSummaryQuery)
+	var i GetRegistrationSummaryQueryRow
+	err := row.Scan(&i.TotalRegistrations, &i.RegistrationsByStudentType)
+	return i, err
+}
+
+const getRegistrationsQuery = `-- name: GetRegistrationsQuery :many
+SELECT student_id,
+student_name,
+student_email,
+is_amrita_student,
+event_id,
+event_name,
+event_type,
+organizer_id,
+organizer_name
+FROM registrations_analytics
+`
+
+type GetRegistrationsQueryRow struct {
+	StudentID       uuid.UUID     `json:"student_id"`
+	StudentName     string        `json:"student_name"`
+	StudentEmail    string        `json:"student_email"`
+	IsAmritaStudent pgtype.Bool   `json:"is_amrita_student"`
+	EventID         uuid.UUID     `json:"event_id"`
+	EventName       string        `json:"event_name"`
+	EventType       EventTypeEnum `json:"event_type"`
+	OrganizerID     uuid.UUID     `json:"organizer_id"`
+	OrganizerName   string        `json:"organizer_name"`
+}
+
+func (q *Queries) GetRegistrationsQuery(ctx context.Context, db DBTX) ([]GetRegistrationsQueryRow, error) {
+	rows, err := db.Query(ctx, getRegistrationsQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RegistrationsAnalytic
+	var items []GetRegistrationsQueryRow
 	for rows.Next() {
-		var i RegistrationsAnalytic
+		var i GetRegistrationsQueryRow
 		if err := rows.Scan(
 			&i.StudentID,
 			&i.StudentName,
@@ -93,8 +153,6 @@ func (q *Queries) GetRegistrationsAnalyticsQuery(ctx context.Context, db DBTX) (
 			&i.EventType,
 			&i.OrganizerID,
 			&i.OrganizerName,
-			&i.TotalRegistrations,
-			&i.RegistrationsByStudentType,
 		); err != nil {
 			return nil, err
 		}
@@ -106,20 +164,40 @@ func (q *Queries) GetRegistrationsAnalyticsQuery(ctx context.Context, db DBTX) (
 	return items, nil
 }
 
-const getRevenueAnalyticsQuery = `-- name: GetRevenueAnalyticsQuery :many
-SELECT booking_fee, event_id, event_name, event_type, event_date, start_time, end_time, organizer_id, organizer_name, total_revenue, revenue_per_event, revenue_per_date, revenue_per_event_type, revenue_per_organizer
+const getRevenueQuery = `-- name: GetRevenueQuery :many
+SELECT booking_fee,
+event_id,
+event_name,
+event_type,
+event_date,
+start_time,
+end_time,
+organizer_id,
+organizer_name
 FROM revenue_analytics
 `
 
-func (q *Queries) GetRevenueAnalyticsQuery(ctx context.Context, db DBTX) ([]RevenueAnalytic, error) {
-	rows, err := db.Query(ctx, getRevenueAnalyticsQuery)
+type GetRevenueQueryRow struct {
+	BookingFee    pgtype.Numeric   `json:"booking_fee"`
+	EventID       uuid.UUID        `json:"event_id"`
+	EventName     string           `json:"event_name"`
+	EventType     EventTypeEnum    `json:"event_type"`
+	EventDate     pgtype.Date      `json:"event_date"`
+	StartTime     pgtype.Timestamp `json:"start_time"`
+	EndTime       pgtype.Timestamp `json:"end_time"`
+	OrganizerID   uuid.UUID        `json:"organizer_id"`
+	OrganizerName string           `json:"organizer_name"`
+}
+
+func (q *Queries) GetRevenueQuery(ctx context.Context, db DBTX) ([]GetRevenueQueryRow, error) {
+	rows, err := db.Query(ctx, getRevenueQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RevenueAnalytic
+	var items []GetRevenueQueryRow
 	for rows.Next() {
-		var i RevenueAnalytic
+		var i GetRevenueQueryRow
 		if err := rows.Scan(
 			&i.BookingFee,
 			&i.EventID,
@@ -130,12 +208,69 @@ func (q *Queries) GetRevenueAnalyticsQuery(ctx context.Context, db DBTX) ([]Reve
 			&i.EndTime,
 			&i.OrganizerID,
 			&i.OrganizerName,
-			&i.TotalRevenue,
-			&i.RevenuePerEvent,
-			&i.RevenuePerDate,
-			&i.RevenuePerEventType,
-			&i.RevenuePerOrganizer,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRevenueSummaryQuery = `-- name: GetRevenueSummaryQuery :one
+SELECT total_revenue,
+revenue_per_event,
+revenue_per_date,
+revenue_per_event_type,
+revenue_per_organizer
+FROM revenue_analytics
+LIMIT 1
+`
+
+type GetRevenueSummaryQueryRow struct {
+	TotalRevenue        int64 `json:"total_revenue"`
+	RevenuePerEvent     int64 `json:"revenue_per_event"`
+	RevenuePerDate      int64 `json:"revenue_per_date"`
+	RevenuePerEventType int64 `json:"revenue_per_event_type"`
+	RevenuePerOrganizer int64 `json:"revenue_per_organizer"`
+}
+
+func (q *Queries) GetRevenueSummaryQuery(ctx context.Context, db DBTX) (GetRevenueSummaryQueryRow, error) {
+	row := db.QueryRow(ctx, getRevenueSummaryQuery)
+	var i GetRevenueSummaryQueryRow
+	err := row.Scan(
+		&i.TotalRevenue,
+		&i.RevenuePerEvent,
+		&i.RevenuePerDate,
+		&i.RevenuePerEventType,
+		&i.RevenuePerOrganizer,
+	)
+	return i, err
+}
+
+const listPeopleQuery = `-- name: ListPeopleQuery :many
+SELECT person_id,
+person_name
+FROM people_analytics
+`
+
+type ListPeopleQueryRow struct {
+	PersonID   uuid.UUID `json:"person_id"`
+	PersonName string    `json:"person_name"`
+}
+
+func (q *Queries) ListPeopleQuery(ctx context.Context, db DBTX) ([]ListPeopleQueryRow, error) {
+	rows, err := db.Query(ctx, listPeopleQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPeopleQueryRow
+	for rows.Next() {
+		var i ListPeopleQueryRow
+		if err := rows.Scan(&i.PersonID, &i.PersonName); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
