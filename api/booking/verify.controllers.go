@@ -3,7 +3,9 @@ package api
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
@@ -84,9 +86,43 @@ func VerifyTransaction(c *gin.Context) {
 	// "failure"
 	// "pending"
 	// "not_found"
+	formBody := pkg.BuildVerifyForm(req.TxnID)
+	httpReq, err := http.NewRequest(
+		"POST",
+		cmd.Env.PayUVerifyURL,
+		strings.NewReader(formBody),
+	)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to build PayU request", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// TODO: asuming this to check failure logic
-	gatewayStatus := models.StatusFailed
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to contact PayU", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Payment Gateway Failed. Try again later", // Different msg
+		})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parsing the response
+	var payURes models.PayUVerifyResponse
+	if err := json.NewDecoder(resp.Body).Decode(&payURes); err != nil {
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to decode PayU verify response", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Payment Gateway Failed. Try again later",
+		})
+		return
+	}
+
+	gatewayStatus := models.MapPayUStatus(payURes, req.TxnID)
 
 	if gatewayStatus == models.StatusFailed || gatewayStatus == models.PaymentNotFound {
 		// Restoring the seats
