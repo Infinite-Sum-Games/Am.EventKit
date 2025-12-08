@@ -1,16 +1,16 @@
--- name: GetRevenueAnalytics :many
+-- name: GetRevenueAnalyticsQuery :many
 SELECT *
 FROM revenue_analytics;
 
 
--- name: GetParticipantAnalytics :many
+-- name: GetParticipantAnalyticsQuery :many
 SELECT *
 FROM participant_analytics;
 
--- name: GetRegistrationsAnalytics :many
+-- name: GetRegistrationsAnalyticsQuery :many
 SELECT *
 FROM registrations_analytics;
 
--- name: GetPeopleAnalytics :many
+-- name: GetPeopleAnalyticsQuery :many
 SELECT *
 FROM people_analytics;

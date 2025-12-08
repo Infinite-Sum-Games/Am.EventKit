@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const getParticipantAnalytics = `-- name: GetParticipantAnalytics :many
+const getParticipantAnalyticsQuery = `-- name: GetParticipantAnalyticsQuery :many
 SELECT student_id, student_name, student_email, event_id, event_name, event_type, global_total_bookings, participants_per_event, bookings_per_organizer
 FROM participant_analytics
 `
 
-func (q *Queries) GetParticipantAnalytics(ctx context.Context, db DBTX) ([]ParticipantAnalytic, error) {
-	rows, err := db.Query(ctx, getParticipantAnalytics)
+func (q *Queries) GetParticipantAnalyticsQuery(ctx context.Context, db DBTX) ([]ParticipantAnalytic, error) {
+	rows, err := db.Query(ctx, getParticipantAnalyticsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +44,13 @@ func (q *Queries) GetParticipantAnalytics(ctx context.Context, db DBTX) ([]Parti
 	return items, nil
 }
 
-const getPeopleAnalytics = `-- name: GetPeopleAnalytics :many
+const getPeopleAnalyticsQuery = `-- name: GetPeopleAnalyticsQuery :many
 SELECT person_id, person_name, total_people
 FROM people_analytics
 `
 
-func (q *Queries) GetPeopleAnalytics(ctx context.Context, db DBTX) ([]PeopleAnalytic, error) {
-	rows, err := db.Query(ctx, getPeopleAnalytics)
+func (q *Queries) GetPeopleAnalyticsQuery(ctx context.Context, db DBTX) ([]PeopleAnalytic, error) {
+	rows, err := db.Query(ctx, getPeopleAnalyticsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +69,13 @@ func (q *Queries) GetPeopleAnalytics(ctx context.Context, db DBTX) ([]PeopleAnal
 	return items, nil
 }
 
-const getRegistrationsAnalytics = `-- name: GetRegistrationsAnalytics :many
+const getRegistrationsAnalyticsQuery = `-- name: GetRegistrationsAnalyticsQuery :many
 SELECT student_id, student_name, student_email, is_amrita_student, event_id, event_name, event_type, organizer_id, organizer_name, total_registrations, registrations_by_student_type
 FROM registrations_analytics
 `
 
-func (q *Queries) GetRegistrationsAnalytics(ctx context.Context, db DBTX) ([]RegistrationsAnalytic, error) {
-	rows, err := db.Query(ctx, getRegistrationsAnalytics)
+func (q *Queries) GetRegistrationsAnalyticsQuery(ctx context.Context, db DBTX) ([]RegistrationsAnalytic, error) {
+	rows, err := db.Query(ctx, getRegistrationsAnalyticsQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +106,13 @@ func (q *Queries) GetRegistrationsAnalytics(ctx context.Context, db DBTX) ([]Reg
 	return items, nil
 }
 
-const getRevenueAnalytics = `-- name: GetRevenueAnalytics :many
+const getRevenueAnalyticsQuery = `-- name: GetRevenueAnalyticsQuery :many
 SELECT booking_fee, event_id, event_name, event_type, event_date, start_time, end_time, organizer_id, organizer_name, total_revenue, revenue_per_event, revenue_per_date, revenue_per_event_type, revenue_per_organizer
 FROM revenue_analytics
 `
 
-func (q *Queries) GetRevenueAnalytics(ctx context.Context, db DBTX) ([]RevenueAnalytic, error) {
-	rows, err := db.Query(ctx, getRevenueAnalytics)
+func (q *Queries) GetRevenueAnalyticsQuery(ctx context.Context, db DBTX) ([]RevenueAnalytic, error) {
+	rows, err := db.Query(ctx, getRevenueAnalyticsQuery)
 	if err != nil {
 		return nil, err
 	}
