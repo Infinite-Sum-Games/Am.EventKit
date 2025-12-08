@@ -5,9 +5,9 @@ type VerifyTransactionRequest struct {
 }
 
 const (
-	StatusFailed    = "FAILED"
-	StatusSuccess   = "SUCCESS"
-	StatusPending   = "PENDING"
+	PaymentFailed   = "FAILED"
+	PaymentSuccess  = "SUCCESS"
+	PaymentPending  = "PENDING"
 	PaymentNotFound = "NOT_FOUND"
 )
 
@@ -35,11 +35,11 @@ func MapPayUStatus(res PayUVerifyResponse, txnID string) string {
 
 	switch detail.Status {
 	case "success":
-		return StatusSuccess
+		return PaymentSuccess
 	case "failure":
-		return StatusFailed
+		return PaymentFailed
 	case "pending":
-		return StatusPending
+		return PaymentPending
 	default:
 		return PaymentNotFound
 	}

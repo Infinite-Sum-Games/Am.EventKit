@@ -62,7 +62,7 @@ func VerifyTransaction(c *gin.Context) {
 	}
 
 	// If booking was already verified earlier, return current status
-	if booking.TxnStatus != models.StatusPending {
+	if booking.TxnStatus != models.PaymentPending {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Already verified",
 			"status":  booking.TxnStatus,
@@ -132,7 +132,7 @@ func VerifyTransaction(c *gin.Context) {
 
 	gatewayStatus := models.MapPayUStatus(payURes, req.TxnID)
 
-	if gatewayStatus == models.StatusFailed || gatewayStatus == models.PaymentNotFound {
+	if gatewayStatus == models.PaymentFailed || gatewayStatus == models.PaymentNotFound {
 		// Restoring the seats
 		err = q.UpdateEventSeats(ctx, tx, db.UpdateEventSeatsParams{
 			SeatsFilled: -booking.SeatsReleased,
@@ -186,7 +186,7 @@ func VerifyTransaction(c *gin.Context) {
 
 		// Update booking status → failed
 		err = q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: models.StatusFailed,
+			TxnStatus: models.PaymentFailed,
 			ID:        booking.ID,
 		})
 		if err != nil {
@@ -206,14 +206,14 @@ func VerifyTransaction(c *gin.Context) {
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment failed",
-			"status":  models.StatusFailed,
+			"status":  models.PaymentFailed,
 		})
 		return
 	}
-	if gatewayStatus == models.StatusSuccess {
+	if gatewayStatus == models.PaymentSuccess {
 
 		err := q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: models.StatusSuccess,
+			TxnStatus: models.PaymentSuccess,
 			ID:        booking.ID,
 		})
 		if err != nil {
@@ -234,7 +234,7 @@ func VerifyTransaction(c *gin.Context) {
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment verified successfully",
-			"status":  models.StatusSuccess,
+			"status":  models.PaymentSuccess,
 		})
 		return
 	}
@@ -245,6 +245,6 @@ func VerifyTransaction(c *gin.Context) {
 	pkg.Log.WarnCtx(c, "[VERIFY-WARN]: Verification successful, but status still pending for "+req.TxnID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Payment still pending",
-		"status":  models.StatusPending,
+		"status":  models.PaymentPending,
 	})
 }
