@@ -110,7 +110,15 @@ func VerifyTransaction(c *gin.Context) {
 		})
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to close body", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			return
+		}
+	}()
 
 	// Parsing the response
 	var payURes models.PayUVerifyResponse
