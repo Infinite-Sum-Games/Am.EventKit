@@ -61,6 +61,14 @@ INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
 INNER JOIN organizer AS o ON etom.organizer_id = o.id;
 -- +goose StatementEnd
 
+-- +goose StatementBegin
+CREATE MATERIALIZED VIEW IF NOT EXISTS people_analytics AS
+SELECT p.id AS person_id,
+p.name AS person_name,
+COUNT(p.id) OVER () AS total_people,
+FROM person AS p;
+-- +goose StatementEnd
+
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
