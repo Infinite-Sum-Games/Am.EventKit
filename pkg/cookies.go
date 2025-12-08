@@ -71,28 +71,11 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 * Nullify cookies during LogOut and ForbiddenAccess situations
  */
 func NullifyCookies(c *gin.Context) {
+	c.SetSameSite(http.SameSiteNoneMode)
 
-	c.SetCookie("access_token", "", -1, "/", "", false, true)
-	c.SetCookie("refesh_token", "", -1, "/", "", false, true)
-	c.SetCookie("csrf_token", "", -1, "/", "", false, true)
-
-	// If there is an error saying that there is no cookie then we are good
-	// Otherwise we are in problem because nullification failed
-	_, err := c.Cookie("access_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Access-Cookies", err)
-		return
-	}
-	_, err = c.Cookie("refresh_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Refresh-Cookies", err)
-		return
-	}
-	_, err = c.Cookie("csrf_token")
-	if err != http.ErrNoCookie {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Nullify Csrf-Cookies", err)
-		return
-	}
+	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
+	c.SetCookie("refresh_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
+	c.SetCookie("csrf_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
 
 	email, exists := c.Get("email")
 	if !exists {
@@ -110,26 +93,17 @@ func NullifyCookies(c *gin.Context) {
 func RevokeRefreshToken(c *gin.Context, email string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to Revoke Refresh Token in DB", err)
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			Log.ErrorCtx(c, "[AUTH-ERROR]: Error in checking database for refresh tokens", err)
-		}
-	}()
+	defer conn.Release()
 
 	q := db.New()
-	result, err := q.RevokeRefreshTokenQuery(ctx, tx, email)
-	if err != nil || result.String != "" {
+	_, err = q.RevokeRefreshTokenQuery(ctx, conn, email)
+	if err != nil {
 		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
-		return
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		Log.FatalCtx(c, "[AUTH-FATAL]: Failed to commit txn while revoking refresh-token", err)
 		return
 	}
 

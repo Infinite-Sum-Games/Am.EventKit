@@ -13,12 +13,8 @@ import (
 )
 
 func FetchUserSession(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[]", nil)
+	email, ok := pkg.GrabEmail(c, "SESSION")
+	if !ok {
 		return
 	}
 
@@ -26,11 +22,7 @@ func FetchUserSession(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[SESSION-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "SESSION") {
 		return
 	}
 	defer conn.Release()
@@ -42,7 +34,7 @@ func FetchUserSession(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "No session found for user",
 		})
-		pkg.Log.WarnCtx(c, "[SESSION-WARN]: User is potentially deleted but cookies exist")
+		pkg.Log.WarnCtx(c, "[SESSION-WARN]: User might deleted but cookies exist")
 		return
 	}
 	if err != nil {
@@ -55,6 +47,47 @@ func FetchUserSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User session obtained successfully",
+		"name":    result.Name,
+		"email":   result.Email,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func FetchAdminSession(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "SESSION")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "SESSION") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	result, err := q.FetchAdminSessionQuery(ctx, conn, email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No session found for admin",
+		})
+		pkg.Log.WarnCtx(c, "[SESSION-WARN]: Admin with given email seems to not exist")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[SESSION-ERROR]: Failed to find admin session", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Admin session has been obtained successfully",
 		"name":    result.Name,
 		"email":   result.Email,
 	})

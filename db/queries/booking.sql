@@ -45,34 +45,32 @@ FROM
 WHERE 
   id = $1;
 
--- name: GetBookingByUserAndEvent :one
-SELECT 
-  id, 
-  txn_status 
-FROM 
-  bookings 
-WHERE 
-  student_id = $1 
-  AND event_id = $2
-  AND txn_status != 'failed';
-
--- name: GetTeamBookingByUserAndEvent :one
-SELECT 
-  b.id, 
-  b.txn_status
-FROM 
-  bookings b
-JOIN 
-  teams t 
-  ON b.id = t.booking_id
-JOIN 
-  team_members tm 
-  ON t.id = tm.team_id
-WHERE 
-  tm.student_id = $1 
+-- name: GetAnyBookingByUsersAndEvent :many
+(
+SELECT b.student_id
+FROM bookings b
+WHERE b.student_id = ANY($1::uuid[])
   AND b.event_id = $2
-  AND b.txn_status != 'failed';
+  AND b.txn_status != 'FAILED'
+)
+UNION
+(
+SELECT tm.student_id
+FROM bookings b
+JOIN teams t 
+  ON t.booking_id = b.id
+JOIN team_members tm 
+  ON tm.team_id = t.id
+WHERE tm.student_id = ANY($1::uuid[])
+  AND b.event_id = $2
+  AND b.txn_status != 'FAILED'
+);
 
+-- name: GetAnyPendingBookingByUser :many
+SELECT id
+FROM bookings
+WHERE student_id = $1
+AND txn_status = 'PENDING';
 
 -- Hopefully, we can use this for removing decrement too (should try)
 -- name: UpdateEventSeats :exec

@@ -1,0 +1,67 @@
+meta {
+  name: loginAdmin
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/admin/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email":"admin@gmail.com",
+    "password":"password"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Admin Login
+  
+    - Path: `/auth/admin/login`
+    - Method: `POST`
+  
+    Input JSON:
+    ```json
+    {
+      "email":"admin@gmail.com",
+      "password":"password"
+    }
+    ```
+  
+    Responses
+    ## 200 OK
+    ```json
+    {
+    "email": "admin@gmail.com",
+    "message": "Admin logged in successful",
+    "name": "admin"
+  }
+    ```
+  
+    ## 400 Bad Request (missing fields / validation error)
+    ```json
+    {
+    "message": "The request is malformed"
+    }
+    ```
+  
+    ## 404 Unauthorized (invalid credentials)
+    ```json
+    { "message": "Invalid credentials" }
+    ```
+  
+    ## 500 Internal Server Error (DB / server failure)
+    ```json
+    { "message": "Oops! Something happened. Please try again later." }
+    ```
+  }
+  
+}

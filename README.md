@@ -9,12 +9,12 @@ Backend server for Anokha, built with Go, PostgreSQL, Redis, and modern tooling.
 - **Gin** – Fast HTTP web framework  
 - **sqlc** – Type-safe Postgres query generation  
 - **PostgreSQL** – Relational DB  
-- **Redis** – Caching & session management  
 - **zerolog** – High-performance structured logging  
 - **Viper** – Configuration via YAML/env  
 - **ozzo-validator** – Declarative validation  
 - **Lefthook** – Git hooks for code quality  
 - **Docker** – Local development & deployment
+- **Redis** - For rate limiting
 
 ---
 
@@ -124,6 +124,7 @@ make run     # Start the Go server
 
 make doc     # (optional) Start services with Docker
 make up      # Run DB migrations
+make upone   # Migrate to next version
 ```
 
 Other useful commands:
@@ -131,7 +132,9 @@ Other useful commands:
 ```bash
 make seed     # Seed the database
 make test     # Run all tests
+make status   # Check status of migrations
 make down     # Roll back migrations
+make downto v=version_number # Roll back to version
 ```
 
 ---

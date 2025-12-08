@@ -15,12 +15,8 @@ import (
 )
 
 func FetchUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -28,12 +24,7 @@ func FetchUserProfile(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to acquire DB connection.", err)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
 		return
 	}
 	defer conn.Release()
@@ -67,12 +58,8 @@ func FetchUserProfile(c *gin.Context) {
 }
 
 func EditUserProfileCsrf(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -96,12 +83,8 @@ func EditUserProfileCsrf(c *gin.Context) {
 }
 
 func EditUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -113,25 +96,13 @@ func EditUserProfile(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to begin DB transaction", err)
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
 		return
 	}
 
-	defer func() {
-		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to rollback DB transaction", err)
-			return
-		}
-	}()
-
 	q := db.New()
-
-	rowAffected, err := q.EditUserProfileQuery(ctx, tx, db.EditUserProfileQueryParams{
+	rowAffected, err := q.EditUserProfileQuery(ctx, conn, db.EditUserProfileQueryParams{
 		Email:       email,
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
@@ -150,14 +121,6 @@ func EditUserProfile(c *gin.Context) {
 			"message": "User profile does not exist",
 		})
 		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: User profile does not exist despite auth", nil)
-		return
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to commit DB transaction", err)
 		return
 	}
 

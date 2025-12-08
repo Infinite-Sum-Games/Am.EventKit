@@ -30,8 +30,9 @@ INSERT INTO event(
   seats_filled, 
   event_status, 
   event_mode, 
-  attendance_mode
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+  attendance_mode,
+  cover_image_url
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
 
 -- name: SeedOrganizerQuery :exec
 INSERT INTO organizer(
@@ -168,6 +169,7 @@ FROM tags;
 
 -- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
+  student,
   organizer, 
   people, 
   tags, 

@@ -10,7 +10,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func GetAllOrganizers(c *gin.Context) {
@@ -18,11 +17,7 @@ func GetAllOrganizers(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ORGANIZER") {
 		return
 	}
 	defer conn.Release()
@@ -54,11 +49,7 @@ func CreateOrganizer(c *gin.Context) {
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ORGANIZER") {
 		return
 	}
 	defer conn.Release()
@@ -102,13 +93,8 @@ func EditOrganizer(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	orgIDStr := c.Param("organizerId")
-	orgID, err := uuid.Parse(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Invalid organizer ID format", err)
+	orgID, ok := pkg.GrabUuid(c, c.Param("organizerId"), "ORGANIZER", "organizer")
+	if !ok {
 		return
 	}
 
@@ -118,17 +104,12 @@ func EditOrganizer(c *gin.Context) {
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ORGANIZER") {
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
-
 	rows, err := q.UpdateOrganizerByIDQuery(ctx, conn, db.UpdateOrganizerByIDQueryParams{
 		ID:            orgID,
 		Name:          req.Name,
@@ -164,28 +145,18 @@ func DeleteOrganizer(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	orgIDStr := c.Param("organizerId")
-	orgID, err := uuid.Parse(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Invalid organizer ID format", err)
+	orgID, ok := pkg.GrabUuid(c, c.Param("organizerId"), "ORGANIZER", "organizer")
+	if !ok {
 		return
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ORGANIZER") {
 		return
 	}
 	defer conn.Release()
 
 	q := db.New()
-
 	rows, err := q.DeleteOrganizerByIDQuery(ctx, conn, orgID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

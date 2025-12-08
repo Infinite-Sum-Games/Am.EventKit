@@ -32,6 +32,12 @@ var (
 	SignKey   paseto.V4AsymmetricSecretKey
 )
 
+type Roles struct {
+	IsUser      bool
+	IsOrganizer bool
+	IsAdmin     bool
+}
+
 func InitPaseto() error {
 	privateKeyBinary, err := os.ReadFile(privateKeyPath)
 	if err != nil {
@@ -58,7 +64,7 @@ func InitPaseto() error {
 	return nil
 }
 
-func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, error) {
+func CreateAuthToken(userId, email string, roles Roles) (string, error) {
 	token := paseto.NewToken()
 
 	token.SetJti(email)
@@ -69,12 +75,16 @@ func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, er
 	token.SetExpiration(time.Now().Add(AuthTokenValidTime))
 	token.SetSubject("access_token")
 
-	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
+	}
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
 
@@ -82,7 +92,7 @@ func CreateAuthToken(userId, email string, isUser, isOrganizer bool) (string, er
 	return signed, nil
 }
 
-func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string, error) {
+func CreateRefreshToken(userId, email string, roles Roles) (string, error) {
 
 	token := paseto.NewToken()
 	token.SetJti(email)
@@ -93,13 +103,18 @@ func CreateRefreshToken(userId, email string, isUser, isOrganizer bool) (string,
 	token.SetExpiration(time.Now().Add(RefreshTokenValidTime))
 	token.SetSubject("refresh_token")
 
-	if err := token.Set("STUDENT-ROLE", isUser); err != nil {
+	if err := token.Set("STUDENT-ROLE", roles.IsUser); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
 
-	if err := token.Set("ORGANIZER-ROLE", isOrganizer); err != nil {
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
+	}
+
+	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
 
@@ -150,20 +165,22 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	refData := parsedRefToken.Claims()
 
 	// Verification conditions
-	c1 := authData["audience"] != refData["audience"]
+	c1 := authData["aud"] != refData["aud"]
 	c2 := authData["jti"] != refData["jti"]
-	c3 := authData["USER-ROLE"] != refData["USER-ROLE"]
+	c3 := authData["STUDENT-ROLE"] != refData["STUDENT-ROLE"]
 	c4 := authData["ORGANIZER-ROLE"] != refData["ORGANIZER-ROLE"]
+	c5 := authData["ADMIN-ROLE"] != refData["ADMIN-ROLE"]
 
-	if c1 || c2 || c3 || c4 {
+	if c1 || c2 || c3 || c4 || c5 {
 		return false
 	}
 
 	// Setting up variables in *gin.Context for passing around in handlers
-	c.Set("userId", refData["audience"])
+	c.Set("userId", refData["aud"])
 	c.Set("email", refData["jti"])
-	c.Set("USER-ROLE", refData["USER-ROLE"])
+	c.Set("STUDENT-ROLE", refData["STUDENT-ROLE"])
 	c.Set("ORGANIZER-ROLE", refData["ORGANIZER-ROLE"])
+	c.Set("ADMIN-ROLE", refData["ADMIN-ROLE"])
 
 	return true
 }

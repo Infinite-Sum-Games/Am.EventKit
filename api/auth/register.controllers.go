@@ -27,11 +27,7 @@ func CheckEmailExist(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
 	defer conn.Release()
@@ -81,18 +77,10 @@ func RegisterUserAccount(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
 	ok, err = q.FindEmailQuery(ctx, tx, req.Email)
@@ -156,12 +144,8 @@ func RegisterUserAccount(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 
@@ -216,18 +200,8 @@ func VerifyUserOtpCsrf(c *gin.Context) {
 }
 
 func VerifyUserOtp(c *gin.Context) {
-
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.FatalCtx(
-			c,
-			"[AUTH-ERROR]: Could not find email in ctx",
-			fmt.Errorf("BUG: Middleware did not add email in ctx"),
-		)
+	email, ok := pkg.GrabEmail(c, "AUTH")
+	if !ok {
 		return
 	}
 
@@ -236,23 +210,14 @@ func VerifyUserOtp(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to begin transaction.", err)
+	if pkg.HandleDbTxnErr(c, err, "AUTH") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "AUTH")
 
 	q := db.New()
 
@@ -299,12 +264,8 @@ func VerifyUserOtp(c *gin.Context) {
 		return
 	}
 
-	// Commit transaction
-	if err := tx.Commit(ctx); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to commit transaction", err)
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "AUTH") {
 		return
 	}
 
@@ -315,13 +276,8 @@ func VerifyUserOtp(c *gin.Context) {
 }
 
 func ResendUserOtp(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Email not in ctx after middleware", nil)
+	email, ok := pkg.GrabEmail(c, "AUTH")
+	if !ok {
 		return
 	}
 
@@ -329,12 +285,7 @@ func ResendUserOtp(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-
-		pkg.Log.FatalCtx(c, "[AUTH-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
 	defer conn.Release()

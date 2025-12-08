@@ -32,7 +32,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	config := cors.Config{
 		AllowOrigins:              []string{cmd.Env.ClientDomain},
 		AllowWildcard:             true,
-		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
 		AllowCredentials:          true,
 		OptionsResponseStatusCode: 204,
@@ -65,6 +65,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
+	apiAuth.AdminAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
 	apiTag.TagRoutes(tagRouter)
