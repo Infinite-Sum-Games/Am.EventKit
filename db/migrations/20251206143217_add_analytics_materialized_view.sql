@@ -40,6 +40,27 @@ INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
 INNER JOIN organizer AS o ON etom.organizer_id = o.id;
 -- +goose StatementEnd
 
+-- +goose StatementBegin
+CREATE MATERIALIZED VIEW IF NOT EXISTS registrations_analytics AS
+SELECT UNIQUE b.student_id AS student_id,
+s.name AS student_name,
+s.email AS student_email,
+s.is_amrita_student AS is_amrita_student,
+e.id AS event_id,
+e.name AS event_name,
+e.event_type AS event_type,
+o.id AS organizer_id,
+o.name AS organizer_name,
+COUNT(UNIQUE b.student_id) OVER () AS total_registrations
+COUNT(UNIQUE b.student_id) OVER (PARTITION BY s.is_amrita_student) 
+AS registrations_by_student_type,
+FROM bookings AS b
+INNER JOIN student AS s ON b.student_id = s.id
+INNER JOIN event AS e ON b.event_id = e.id
+INNER JOIN event_to_organizer_mapping AS etom ON e.id = etom.event_id
+INNER JOIN organizer AS o ON etom.organizer_id = o.id;
+-- +goose StatementEnd
+
 -- +goose Down
 -- +goose StatementBegin
 SELECT 'down SQL query';
