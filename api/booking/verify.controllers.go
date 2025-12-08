@@ -86,7 +86,7 @@ func VerifyTransaction(c *gin.Context) {
 	// "failure"
 	// "pending"
 	// "not_found"
-	formBody := pkg.BuildVerifyForm(req.TxnID)
+	formBody := pkg.BuildVerifyPayUForm(req.TxnID)
 	httpReq, err := http.NewRequest(
 		"POST",
 		cmd.Env.PayUVerifyURL,

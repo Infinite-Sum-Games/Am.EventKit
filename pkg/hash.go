@@ -56,7 +56,7 @@ func GenerateSHA512Hash(
 	return hex.EncodeToString(hash[:])
 }
 
-func GenerateVerifyHash(txnID string) string {
+func GenerateVerifyPayUHash(txnID string) string {
 	data := fmt.Sprintf(
 		"%s|verify_payment|%s|%s",
 		cmd.Env.PayUKey,
@@ -68,11 +68,11 @@ func GenerateVerifyHash(txnID string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func BuildVerifyForm(txnID string) string {
+func BuildVerifyPayUForm(txnID string) string {
 	values := url.Values{}
 	values.Set("key", cmd.Env.PayUKey)
 	values.Set("command", "verify_payment")
-	values.Set("hash", GenerateVerifyHash(txnID))
+	values.Set("hash", GenerateVerifyPayUHash(txnID))
 	values.Set("var1", txnID)
 
 	return values.Encode()
