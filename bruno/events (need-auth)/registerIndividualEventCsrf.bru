@@ -1,17 +1,17 @@
 meta {
   name: registerIndividualEventCsrf
   type: http
-  seq: 3
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/event/solo/register/:eventId
+  url: {{baseUrl}}/events/:eventId/book
   body: none
   auth: inherit
 }
 
 params:path {
-  eventId: 
+  eventId: 1063f213-5096-49b2-8292-bc7f37d08cc2
 }
 
 settings {

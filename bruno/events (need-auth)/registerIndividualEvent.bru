@@ -1,17 +1,17 @@
 meta {
   name: registerIndividualEvent
   type: http
-  seq: 3
+  seq: 1
 }
 
 post {
-  url: {{baseUrl}}/events/solo/register/:eventId
+  url: {{baseUrl}}/events/:eventId/book
   body: none
   auth: inherit
 }
 
 params:path {
-  eventId: event-uuid
+  eventId: 1063f213-5096-49b2-8292-bc7f37d08cc2
 }
 
 settings {

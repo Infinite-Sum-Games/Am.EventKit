@@ -1,4 +1,4 @@
-package booking
+package api
 
 import (
 	"context"
@@ -16,6 +16,25 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
+
+func BookEventCsrf(c *gin.Context) {
+	csrfToken, err := pkg.CreateCsrfToken("event.book@amrita.edu", c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot create csrf token", err)
+		return
+	}
+
+	pkg.SetCsrfCookie(c, csrfToken)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Event booking action initiated successfully",
+		"key":     csrfToken,
+	})
+	pkg.Log.SuccessCtx(c)
+}
 
 func BookEvent(c *gin.Context) {
 	// if it is group event, the email is considered as leader's email,
@@ -263,7 +282,7 @@ func BookEvent(c *gin.Context) {
 		StudentID:       leaderId,
 		TxnID:           txnId,
 		RegistrationFee: registrationFee,
-		TxnStatus:       "PENDING",
+		TxnStatus:       models.StatusPending,
 		ProductInfo:     prodInfo,
 		SeatsReleased:   int32(len(allMembers)),
 	})
