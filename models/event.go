@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
@@ -68,7 +69,7 @@ type CreateEventRequest struct {
 }
 
 func (r CreateEventRequest) Validate() error {
-	return v.ValidateStruct(&r,
+	if err := v.ValidateStruct(&r,
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
 		v.Field(&r.Blurb, v.Required, v.RuneLength(3, 500)),
 		v.Field(&r.Description, v.Required, v.RuneLength(3, 4000)),
@@ -90,7 +91,18 @@ func (r CreateEventRequest) Validate() error {
 		v.Field(&r.TagIDs),
 		v.Field(&r.PeopleIDs),
 		v.Field(&r.Schedules, v.Required),
-	)
+	); err != nil {
+		return err
+	}
+
+	// validating each schedule using its own validation logic
+	for i, s := range r.Schedules {
+		if err := s.Validate(); err != nil {
+			return fmt.Errorf("invalid schedule at index %d: %w", i, err)
+		}
+	}
+
+	return nil
 }
 
 type UpdateEventRequest struct {
