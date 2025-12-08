@@ -1,15 +1,16 @@
 meta {
   name: getEventByUser
   type: http
-  seq: 9
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/events/auth/user
+  url: {{baseUrl}}/user/profile/events
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
