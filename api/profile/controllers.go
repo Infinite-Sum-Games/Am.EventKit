@@ -130,6 +130,40 @@ func EditUserProfile(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
+func GetAllUserTransactions(c *gin.Context) {
+	studentIdStr, ok := pkg.GrabUserId(c, "PROFILE")
+	if !ok {
+		return
+	}
+	studentId, ok := pkg.GrabUuid(c, studentIdStr, "PROFILE", "studentId")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
+		return
+	}
+
+	q := db.New()
+	transactions, err := q.GetAllTransactionsOfUserQuery(ctx, conn, studentId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to get transactions", err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Fetched transactions successfully!",
+		"transactions": transactions,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 // Fetch all events registered by the user
 func GetAllEventsByUser(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

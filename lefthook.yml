@@ -10,3 +10,7 @@ pre-commit:
     go-fmt:
       glob: "*.go"
       run: ./scripts/go-fmt.sh {staged_files}
+
+    # 3. Run tests if *_test.go exists
+    go-test:
+      run: ./scripts/go-test.sh

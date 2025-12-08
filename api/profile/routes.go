@@ -11,8 +11,7 @@ func ProfileRoutes(r *gin.RouterGroup) {
 	r.GET("/profile/edit", mw.Auth, mw.CheckUser, EditUserProfileCsrf)
 	r.POST("/profile/edit", mw.Auth, mw.VerifyCsrf, mw.CheckUser, EditUserProfile)
 
-	r.GET("/profile/tickets", mw.Auth, mw.CheckUser)
-	r.GET("/profile/transactions", mw.Auth, mw.CheckUser)
-
+	// r.GET("/profile/tickets", mw.Auth, mw.CheckUser)
+	r.GET("/profile/transactions", mw.Auth, mw.CheckUser, GetAllUserTransactions)
 	r.GET("/profile/events", mw.Auth, mw.CheckUser, GetAllEventsByUser)
 }
