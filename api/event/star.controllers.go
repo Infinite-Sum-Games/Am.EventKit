@@ -18,7 +18,7 @@ func StarEvent(c *gin.Context) {
 		return
 	}
 
-	eventId, ok := pkg.GrabUuid(c, c.Query("eventId"), "EVENT", "event")
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
@@ -59,7 +59,7 @@ func UnstarEvent(c *gin.Context) {
 		return
 	}
 
-	eventId, ok := pkg.GrabUuid(c, c.Query("eventId"), "EVENT", "event")
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
 	if !ok {
 		return
 	}
