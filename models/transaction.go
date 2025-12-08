@@ -8,5 +8,5 @@ const (
 	StatusFailed   = "FAILED"
 	StatusSuccess  = "SUCCESS"
 	StatusPending  = "PENDING"
-	StautsNotFound = "NOT_FOUND"
+	StatusNotFound = "NOT_FOUND"
 )
