@@ -130,6 +130,102 @@ func (q *Queries) DeletePeopleToEventMappingsByEventIDQuery(ctx context.Context,
 	return err
 }
 
+const getAllEventsByUserQuery = `-- name: GetAllEventsByUserQuery :many
+SELECT
+    e.id AS event_id,
+    e.cover_image_url AS event_image_url,
+    e.name AS event_name,
+    e.event_status,
+    e.blurb AS event_description,
+    MIN(es.event_date) AS event_date,
+    e.is_group,
+    e.event_type,
+    e.is_technical,
+
+    COALESCE(
+        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
+        '[]'::jsonb
+    ) AS tags,
+
+    e.price AS event_price,
+    e.total_seats AS max_seats,
+    e.seats_filled,
+
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
+    (COUNT(DISTINCT f.id) > 0) AS is_starred
+FROM event e
+LEFT JOIN event_schedule es ON e.id = es.event_id
+LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
+LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
+LEFT JOIN teams te ON te.event_id = e.id
+LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1 
+LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
+WHERE
+  b.id IS NOT NULL
+  OR tm.id IS NOT NULL
+GROUP BY e.id
+`
+
+type GetAllEventsByUserQueryParams struct {
+	StudentID uuid.UUID `json:"student_id"`
+	Email     string    `json:"email"`
+}
+
+type GetAllEventsByUserQueryRow struct {
+	EventID          uuid.UUID       `json:"event_id"`
+	EventImageUrl    pgtype.Text     `json:"event_image_url"`
+	EventName        string          `json:"event_name"`
+	EventStatus      EventStatusEnum `json:"event_status"`
+	EventDescription string          `json:"event_description"`
+	EventDate        interface{}     `json:"event_date"`
+	IsGroup          bool            `json:"is_group"`
+	EventType        EventTypeEnum   `json:"event_type"`
+	IsTechnical      pgtype.Bool     `json:"is_technical"`
+	Tags             interface{}     `json:"tags"`
+	EventPrice       pgtype.Numeric  `json:"event_price"`
+	MaxSeats         int32           `json:"max_seats"`
+	SeatsFilled      int32           `json:"seats_filled"`
+	IsRegistered     pgtype.Bool     `json:"is_registered"`
+	IsStarred        bool            `json:"is_starred"`
+}
+
+func (q *Queries) GetAllEventsByUserQuery(ctx context.Context, db DBTX, arg GetAllEventsByUserQueryParams) ([]GetAllEventsByUserQueryRow, error) {
+	rows, err := db.Query(ctx, getAllEventsByUserQuery, arg.StudentID, arg.Email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllEventsByUserQueryRow
+	for rows.Next() {
+		var i GetAllEventsByUserQueryRow
+		if err := rows.Scan(
+			&i.EventID,
+			&i.EventImageUrl,
+			&i.EventName,
+			&i.EventStatus,
+			&i.EventDescription,
+			&i.EventDate,
+			&i.IsGroup,
+			&i.EventType,
+			&i.IsTechnical,
+			&i.Tags,
+			&i.EventPrice,
+			&i.MaxSeats,
+			&i.SeatsFilled,
+			&i.IsRegistered,
+			&i.IsStarred,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEventByIdQuery = `-- name: GetEventByIdQuery :one
 SELECT
     e.id,
@@ -311,8 +407,35 @@ SELECT
       '[]'::jsonb
     ) AS people,
 
-    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
-    (COUNT(DISTINCT f.id) > 0) AS is_starred
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm_user.id) > 0) AS is_registered,
+    (COUNT(DISTINCT f.id) > 0) AS is_starred,
+
+    COALESCE(
+      JSONB_AGG(
+        DISTINCT JSONB_BUILD_OBJECT(
+          'team_id', te.id,
+          'team_name', te.team_name,
+          'members',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(
+                         DISTINCT JSONB_BUILD_OBJECT(
+                           'member_id', tm2.id,
+                           'student_id', tm2.student_id,
+                           'student_name', tm2.student_name,
+                           'student_email', tm2.student_email,
+                           'student_role', tm2.student_role
+                         )
+                       )
+                FROM team_members tm2
+                WHERE tm2.team_id = te.id
+              ),
+              '[]'::jsonb
+            )
+        )
+      ) FILTER (WHERE te.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS teams
 
 FROM event e
 
@@ -323,11 +446,10 @@ LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $2
+LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
-
 WHERE e.id = $1
 GROUP BY e.id
 `
@@ -362,6 +484,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	People           interface{}     `json:"people"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
+	Teams            interface{}     `json:"teams"`
 }
 
 func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg GetEventByIdWithAuthQueryParams) (GetEventByIdWithAuthQueryRow, error) {
@@ -391,6 +514,7 @@ func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg Ge
 		&i.People,
 		&i.IsRegistered,
 		&i.IsStarred,
+		&i.Teams,
 	)
 	return i, err
 }
@@ -505,7 +629,7 @@ FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
