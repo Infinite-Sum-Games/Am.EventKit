@@ -1,3 +1,10 @@
+-- name: SeedAdminQuery :exec
+INSERT INTO admin(
+  name, 
+  email,
+  password
+) VALUES ($1, $2, $3);
+
 -- name: SeedAmritaStudentQuery :exec
 INSERT INTO student(
   name, 
@@ -84,6 +91,9 @@ INSERT INTO event_tag_mapping(
   tag_id, 
   event_id
 ) VALUES ($1, $2);
+
+-- name: ViewAdminSeedQuery :many
+SELECT * FROM admin;
 
 -- name: ViewStudentSeedQuery :many
 SELECT

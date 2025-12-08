@@ -1,0 +1,39 @@
+meta {
+  name: BookEvent
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/events/:eventId/book
+  body: json
+  auth: inherit
+}
+
+params:path {
+  eventId: 
+}
+
+body:json {
+  // Use this only if you are registering for team events
+  // Else no body
+  {
+    "team_name": "Byte Benders",
+    "team_members": [
+      {
+        "student_email": "john.team1@example.com",
+        "student_role": "Developer"
+      },
+      {
+        "student_email": "mary.team1@example.com",
+        "student_role": "Designer"
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
