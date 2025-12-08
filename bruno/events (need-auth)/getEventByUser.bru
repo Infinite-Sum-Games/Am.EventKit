@@ -1,0 +1,15 @@
+meta {
+  name: getEventByUser
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/events/auth/user
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

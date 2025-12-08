@@ -147,6 +147,7 @@ func GetAllEventsByUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Events fetched successfully",
 		"events":  events,
+		"count":   len(events),
 	})
 	pkg.Log.SuccessCtx(c)
 }

@@ -151,18 +151,19 @@ SELECT
     e.total_seats AS max_seats,
     e.seats_filled,
 
-    /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred
-
 FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
+LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1 
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
+WHERE
+  b.id IS NOT NULL
+  OR tm.id IS NOT NULL
 GROUP BY e.id
 `
 
@@ -406,8 +407,35 @@ SELECT
       '[]'::jsonb
     ) AS people,
 
-    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
-    (COUNT(DISTINCT f.id) > 0) AS is_starred
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm_user.id) > 0) AS is_registered,
+    (COUNT(DISTINCT f.id) > 0) AS is_starred,
+
+    COALESCE(
+      JSONB_AGG(
+        DISTINCT JSONB_BUILD_OBJECT(
+          'team_id', te.id,
+          'team_name', te.team_name,
+          'members',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(
+                         DISTINCT JSONB_BUILD_OBJECT(
+                           'member_id', tm2.id,
+                           'student_id', tm2.student_id,
+                           'student_name', tm2.student_name,
+                           'student_email', tm2.student_email,
+                           'student_role', tm2.student_role
+                         )
+                       )
+                FROM team_members tm2
+                WHERE tm2.team_id = te.id
+              ),
+              '[]'::jsonb
+            )
+        )
+      ) FILTER (WHERE te.id IS NOT NULL),
+      '[]'::jsonb
+    ) AS teams
 
 FROM event e
 
@@ -418,11 +446,10 @@ LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $2
+LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
-
 WHERE e.id = $1
 GROUP BY e.id
 `
@@ -457,6 +484,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	People           interface{}     `json:"people"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
+	Teams            interface{}     `json:"teams"`
 }
 
 func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg GetEventByIdWithAuthQueryParams) (GetEventByIdWithAuthQueryRow, error) {
@@ -486,6 +514,7 @@ func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg Ge
 		&i.People,
 		&i.IsRegistered,
 		&i.IsStarred,
+		&i.Teams,
 	)
 	return i, err
 }
@@ -600,7 +629,7 @@ FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2

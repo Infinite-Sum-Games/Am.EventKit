@@ -10,6 +10,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.GET("/:eventId", FetchEventById)
 
 	r.GET("/auth/", mw.Auth, mw.CheckUser, FetchAllEventsWithAuth)
+	r.GET("/auth/user", mw.Auth, mw.CheckUser, GetAllEventsByUser)
 	r.GET("/auth/:eventId", mw.Auth, mw.CheckUser, FetchEventByEventIdWithAuth)
 
 	r.POST("/register/:eventId")
