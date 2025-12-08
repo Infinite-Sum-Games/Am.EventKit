@@ -279,6 +279,7 @@ func (q *Queries) SeedTagsQuery(ctx context.Context, db DBTX, arg SeedTagsQueryP
 
 const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
+  student,
   organizer, 
   people, 
   tags, 
