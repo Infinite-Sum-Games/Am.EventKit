@@ -12,6 +12,7 @@ import (
 
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
+	apiBooking "github.com/Thanus-Kumaar/anokha-2025-backend/api/booking"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiOrganizers "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
@@ -72,6 +73,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiAttend.AttendanceRoutes(attendanceRouter)
 	apiPeople.PeopleRoutes(peopleRouter)
 	apiOrganizers.OrganizerRoutes(organizerRouter)
+	apiBooking.BookingRoutes(eventRouter)
 
 	return r
 }

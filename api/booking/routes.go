@@ -10,5 +10,5 @@ func BookingRoutes(r *gin.RouterGroup) {
 	r.GET("/:eventId/book", mw.Auth)
 
 	// Booking endpoints
-	r.POST("/:eventId/book", mw.VerifyCsrf, mw.Auth)
+	r.POST("/:eventId/book", mw.VerifyCsrf, mw.Auth, BookEvent)
 }

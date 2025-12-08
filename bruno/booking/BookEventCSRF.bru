@@ -1,0 +1,20 @@
+meta {
+  name: BookEventCSRF
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/events/:eventId/book
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
