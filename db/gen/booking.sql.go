@@ -133,31 +133,6 @@ func (q *Queries) DeleteTeamDetailsOfTeam(ctx context.Context, db DBTX, teamID u
 	return err
 }
 
-const getBookingByTxnID = `-- name: GetBookingByTxnID :one
-SELECT id, txn_id, student_id, event_id, registration_fee, product_info, seats_released, txn_status, team_details, metadata, created_at, updated_at FROM bookings WHERE txn_id = $1
-`
-
-func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) (Booking, error) {
-	row := db.QueryRow(ctx, getBookingByTxnID, txnID)
-	var i Booking
-	err := row.Scan(
-		&i.ID,
-		&i.TxnID,
-		&i.StudentID,
-		&i.EventID,
-		&i.RegistrationFee,
-		&i.ProductInfo,
-		&i.SeatsReleased,
-		&i.TxnStatus,
-		&i.TeamDetails,
-		&i.Metadata,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-
 const getAnyBookingByUsersAndEvent = `-- name: GetAnyBookingByUsersAndEvent :many
 (
 SELECT b.student_id
@@ -232,6 +207,30 @@ func (q *Queries) GetAnyPendingBookingByUser(ctx context.Context, db DBTX, stude
 	return items, nil
 }
 
+const getBookingByTxnID = `-- name: GetBookingByTxnID :one
+SELECT id, txn_id, student_id, event_id, registration_fee, product_info, seats_released, txn_status, team_details, metadata, created_at, updated_at FROM bookings WHERE txn_id = $1
+`
+
+func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) (Booking, error) {
+	row := db.QueryRow(ctx, getBookingByTxnID, txnID)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.TxnID,
+		&i.StudentID,
+		&i.EventID,
+		&i.RegistrationFee,
+		&i.ProductInfo,
+		&i.SeatsReleased,
+		&i.TxnStatus,
+		&i.TeamDetails,
+		&i.Metadata,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getEventForBooking = `-- name: GetEventForBooking :one
 SELECT
   id,
@@ -275,41 +274,6 @@ func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID)
 		&i.SeatsFilled,
 		&i.EventStatus,
 	)
-	return i, err
-}
-
-const getTeamBookingByUserAndEvent = `-- name: GetTeamBookingByUserAndEvent :one
-SELECT 
-  b.id, 
-  b.txn_status
-FROM 
-  bookings b
-JOIN 
-  teams t 
-  ON b.id = t.booking_id
-JOIN 
-  team_members tm 
-  ON t.id = tm.team_id
-WHERE 
-  tm.student_id = $1 
-  AND b.event_id = $2
-  AND b.txn_status != 'failed'
-`
-
-type GetTeamBookingByUserAndEventParams struct {
-	StudentID uuid.UUID `json:"student_id"`
-	EventID   uuid.UUID `json:"event_id"`
-}
-
-type GetTeamBookingByUserAndEventRow struct {
-	ID        uuid.UUID `json:"id"`
-	TxnStatus string    `json:"txn_status"`
-}
-
-func (q *Queries) GetTeamBookingByUserAndEvent(ctx context.Context, db DBTX, arg GetTeamBookingByUserAndEventParams) (GetTeamBookingByUserAndEventRow, error) {
-	row := db.QueryRow(ctx, getTeamBookingByUserAndEvent, arg.StudentID, arg.EventID)
-	var i GetTeamBookingByUserAndEventRow
-	err := row.Scan(&i.ID, &i.TxnStatus)
 	return i, err
 }
 
