@@ -12,6 +12,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const seedAdminQuery = `-- name: SeedAdminQuery :exec
+INSERT INTO admin(
+  name, 
+  email,
+  password
+) VALUES ($1, $2, $3)
+`
+
+type SeedAdminQueryParams struct {
+	Name     pgtype.Text `json:"name"`
+	Email    string      `json:"email"`
+	Password string      `json:"password"`
+}
+
+func (q *Queries) SeedAdminQuery(ctx context.Context, db DBTX, arg SeedAdminQueryParams) error {
+	_, err := db.Exec(ctx, seedAdminQuery, arg.Name, arg.Email, arg.Password)
+	return err
+}
+
 const seedAmritaStudentQuery = `-- name: SeedAmritaStudentQuery :exec
 INSERT INTO student(
   name, 
@@ -294,6 +313,38 @@ CASCADE
 func (q *Queries) TruncateAllTablesQuery(ctx context.Context, db DBTX) error {
 	_, err := db.Exec(ctx, truncateAllTablesQuery)
 	return err
+}
+
+const viewAdminSeedQuery = `-- name: ViewAdminSeedQuery :many
+SELECT id, name, email, password, refresh_token, created_at, updated_at FROM admin
+`
+
+func (q *Queries) ViewAdminSeedQuery(ctx context.Context, db DBTX) ([]Admin, error) {
+	rows, err := db.Query(ctx, viewAdminSeedQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Admin
+	for rows.Next() {
+		var i Admin
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Password,
+			&i.RefreshToken,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const viewEventScheduleSeedQuery = `-- name: ViewEventScheduleSeedQuery :many

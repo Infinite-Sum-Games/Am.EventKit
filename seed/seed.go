@@ -14,6 +14,102 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+func SeedAdmin(conn *pgx.Conn) error {
+	q := db.New()
+
+	admins, _ := q.ViewAdminSeedQuery(context.Background(), conn)
+	if len(admins) > 0 {
+		pkg.Log.Info("Admins already seeded, skipping...")
+		return nil
+	}
+
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
+	if err != nil {
+		pkg.Log.Error("Error inserting admin: %v\n", err)
+		return err
+	}
+
+	manualAdmin := []db.SeedAdminQueryParams{
+
+		{
+			Name:     pkg.ToPgText("Naganathan M"),
+			Email:    "naganathan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Revanth Singothu"),
+			Email:    "revanth@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Thanus Kumaar A"),
+			Email:    "thanus@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Tharun Kumarr A"),
+			Email:    "tharun@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Adithya Menon R"),
+			Email:    "adukottan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Nandgopal R Nair"),
+			Email:    "nandu@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Vijay SB"),
+			Email:    "vijay@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Akshay KS"),
+			Email:    "akshay@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Saran Hiruthik"),
+			Email:    "saran@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Keerthivasan Venkitajalam"),
+			Email:    "keerthivasan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Amrith B"),
+			Email:    "amrith@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Kiran Rajeev KV"),
+			Email:    "kiran@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Shivanesh"),
+			Email:    "shivanesh@amrita.edu",
+			Password: hashedPassword,
+		},
+	}
+
+	for _, admin := range manualAdmin {
+		err := q.SeedAdminQuery(context.Background(), conn, admin)
+		if err != nil {
+			pkg.Log.Error("Error inserting admin: %v\n", err)
+			return err
+		}
+	}
+
+	pkg.Log.Info("Successfully seeded admin.")
+	return nil
+}
+
 func SeedStudents(conn *pgx.Conn) error {
 	q := db.New()
 
@@ -738,6 +834,11 @@ func seed() {
 			pkg.Log.Error("Error closing database connection: %v\n", err)
 		}
 	}()
+
+	if err := SeedAdmin(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
 
 	if err := SeedStudents(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)

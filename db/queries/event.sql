@@ -11,7 +11,7 @@ SELECT
     e.is_technical,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
+        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
         '[]'::jsonb
     ) AS tags,
 
@@ -110,7 +110,7 @@ SELECT
     e.is_technical,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL),
+        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
         '[]'::jsonb
     ) AS tags,
 

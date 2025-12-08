@@ -105,6 +105,12 @@ func BookEvent(c *gin.Context) {
 			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Team details are not proper", err)
 			return
 		}
+		if err := req.Validate(); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Request is malformed",
+			})
+			return
+		}
 		// Creating the group list
 		for _, m := range req.TeamMembers {
 			allMembers = append(allMembers, m.StudentEmail)
