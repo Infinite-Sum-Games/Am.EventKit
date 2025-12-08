@@ -5,8 +5,8 @@ type VerifyTransactionRequest struct {
 }
 
 const (
-	StatusFailed   = "FAILED"
-	StatusSuccess  = "SUCCESS"
-	StatusPending  = "PENDING"
-	StatusNotFound = "NOT_FOUND"
+	StatusFailed    = "FAILED"
+	StatusSuccess   = "SUCCESS"
+	StatusPending   = "PENDING"
+	PaymentNotFound = "NOT_FOUND"
 )

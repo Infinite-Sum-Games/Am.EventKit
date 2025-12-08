@@ -88,7 +88,7 @@ func VerifyTransaction(c *gin.Context) {
 	// TODO: asuming this to check failure logic
 	gatewayStatus := models.StatusFailed
 
-	if gatewayStatus == models.StatusFailed || gatewayStatus == models.StatusNotFound {
+	if gatewayStatus == models.StatusFailed || gatewayStatus == models.PaymentNotFound {
 		// Restoring the seats
 		err = q.UpdateEventSeats(ctx, tx, db.UpdateEventSeatsParams{
 			SeatsFilled: -booking.SeatsReleased,
