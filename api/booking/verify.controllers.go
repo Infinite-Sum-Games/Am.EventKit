@@ -25,8 +25,7 @@ func VerifyTransaction(c *gin.Context) {
 		return
 	}
 
-	// TODO: Is 20 seconds sufficient?
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
