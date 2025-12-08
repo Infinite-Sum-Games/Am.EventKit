@@ -315,3 +315,38 @@ SET event_status = (
     END
 )
 WHERE id = $1;
+
+-- name: GetAllEventsByUserQuery :many
+SELECT
+    e.id AS event_id,
+    e.cover_image_url AS event_image_url,
+    e.name AS event_name,
+    e.event_status,
+    e.blurb AS event_description,
+    MIN(es.event_date) AS event_date,
+    e.is_group,
+    e.event_type,
+    e.is_technical,
+
+    COALESCE(
+        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
+        '[]'::jsonb
+    ) AS tags,
+
+    e.price AS event_price,
+    e.total_seats AS max_seats,
+    e.seats_filled,
+
+    /* registration and favourite status for the given student */
+    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
+    (COUNT(DISTINCT f.id) > 0) AS is_starred
+
+FROM event e
+LEFT JOIN event_schedule es ON e.id = es.event_id
+LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
+LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1
+LEFT JOIN teams te ON te.event_id = e.id
+LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
+LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
+GROUP BY e.id;
