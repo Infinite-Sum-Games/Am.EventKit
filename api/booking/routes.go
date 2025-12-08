@@ -8,10 +8,9 @@ import (
 func BookingRoutes(r *gin.RouterGroup) {
 	// CSRF Endpoints
 	// TODO: Should write these endpoints
-	r.GET("/:eventId/book", mw.Auth)
-	r.GET("/verify", mw.Auth)
+	r.GET("/:eventId/book", mw.Auth, BookEventCsrf)
 
 	// Booking endpoints
 	r.POST("/:eventId/book", mw.VerifyCsrf, mw.Auth, BookEvent)
-	r.POST("/verify", mw.VerifyCsrf, mw.Auth, VerifyTransaction)
+	r.POST("/verify", mw.Auth, VerifyTransaction)
 }

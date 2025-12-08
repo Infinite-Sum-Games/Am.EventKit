@@ -23,7 +23,7 @@ func BookEventCsrf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		// TODO: Should i add logging here?
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Cannot create csrf token", err)
 		return
 	}
 
