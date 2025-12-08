@@ -282,7 +282,7 @@ func BookEvent(c *gin.Context) {
 		StudentID:       leaderId,
 		TxnID:           txnId,
 		RegistrationFee: registrationFee,
-		TxnStatus:       models.StatusPending,
+		TxnStatus:       models.PaymentPending,
 		ProductInfo:     prodInfo,
 		SeatsReleased:   int32(len(allMembers)),
 	})

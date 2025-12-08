@@ -3,6 +3,8 @@ package pkg
 import (
 	"crypto/sha512"
 	"encoding/hex"
+	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
@@ -52,4 +54,26 @@ func GenerateSHA512Hash(
 
 	hash := sha512.Sum512([]byte(data))
 	return hex.EncodeToString(hash[:])
+}
+
+func GenerateVerifyPayUHash(txnID string) string {
+	data := fmt.Sprintf(
+		"%s|verify_payment|%s|%s",
+		cmd.Env.PayUKey,
+		txnID,
+		cmd.Env.PayUSalt,
+	)
+
+	hash := sha512.Sum512([]byte(data))
+	return hex.EncodeToString(hash[:])
+}
+
+func BuildVerifyPayUForm(txnID string) string {
+	values := url.Values{}
+	values.Set("key", cmd.Env.PayUKey)
+	values.Set("command", "verify_payment")
+	values.Set("hash", GenerateVerifyPayUHash(txnID))
+	values.Set("var1", txnID)
+
+	return values.Encode()
 }
