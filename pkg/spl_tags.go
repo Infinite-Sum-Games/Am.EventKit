@@ -52,7 +52,8 @@ func BuildSpecialTags(tags []string, students []db.Student) ([]byte, error) {
 	for _, t := range normalized {
 		switch t {
 		case "!woc":
-			meta, err := buildWocMetadata(students)
+			queueName := strings.TrimPrefix(t, "!") // TODO: Assuming that tagName is queueName
+			meta, err := buildWocMetadata(students, queueName)
 			if err != nil {
 				return nil, fmt.Errorf("[BOOKING-ERROR]: woc metadata build failed: %w", err)
 			}
@@ -66,7 +67,7 @@ func BuildSpecialTags(tags []string, students []db.Student) ([]byte, error) {
 	return nil, nil
 }
 
-func buildWocMetadata(students []db.Student) ([]byte, error) {
+func buildWocMetadata(students []db.Student, queueName string) ([]byte, error) {
 	if len(students) == 0 {
 		return nil, fmt.Errorf("[BOOKING-ERROR]: cannot build woc metadata: empty student list")
 	}
@@ -90,7 +91,7 @@ func buildWocMetadata(students []db.Student) ([]byte, error) {
 	}
 
 	return json.Marshal(map[string]any{
-		"tag":      "!woc",
+		"queue":    queueName,
 		"students": res,
 	})
 }
