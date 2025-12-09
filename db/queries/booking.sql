@@ -6,8 +6,9 @@ INSERT INTO bookings (
   registration_fee,
   txn_status,
   product_info,
-  seats_released
-) VALUES ($1, $2, $3, $4, $5, $6, $7)
+  seats_released,
+  metadata
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id;
 
 -- name: CreateTeam :one

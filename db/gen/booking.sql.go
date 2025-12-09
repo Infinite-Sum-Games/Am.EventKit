@@ -20,8 +20,9 @@ INSERT INTO bookings (
   registration_fee,
   txn_status,
   product_info,
-  seats_released
-) VALUES ($1, $2, $3, $4, $5, $6, $7)
+  seats_released,
+  metadata
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
@@ -33,6 +34,7 @@ type CreateBookingParams struct {
 	TxnStatus       string         `json:"txn_status"`
 	ProductInfo     string         `json:"product_info"`
 	SeatsReleased   int32          `json:"seats_released"`
+	Metadata        []byte         `json:"metadata"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingParams) (uuid.UUID, error) {
@@ -44,6 +46,7 @@ func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingP
 		arg.TxnStatus,
 		arg.ProductInfo,
 		arg.SeatsReleased,
+		arg.Metadata,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
