@@ -14,6 +14,11 @@ type WocStudentMeta struct {
 	Email     string `json:"email"`
 }
 
+type WocPayload struct {
+	Queue    string           `json:"queue"`
+	Students []WocStudentMeta `json:"students"`
+}
+
 func splitName(full string) (first string, last string) {
 	parts := strings.Fields(full)
 	if len(parts) == 0 {

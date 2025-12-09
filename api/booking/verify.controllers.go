@@ -217,6 +217,26 @@ func VerifyTransaction(c *gin.Context) {
 		return
 	}
 	if gatewayStatus == models.PaymentSuccess {
+		// If there is metadata, read and publish
+		if len(booking.Metadata) > 0 {
+			var payload pkg.WocPayload
+			if err := json.Unmarshal(booking.Metadata, &payload); err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to decode metadata JSON", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+
+			if payload.Queue == "" {
+				pkg.Log.WarnCtx(c, "[VERIFY-WARN]: Metadata has no queue name")
+			} else {
+				// --------------------------------------------
+				// TODO: Publish metadata to RabbitMQ
+				// --------------------------------------------
+				pkg.Log.InfoCtx(c, "[VERIFY-INFO]: Metadata published to queue "+payload.Queue)
+			}
+		}
 
 		err := q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
 			TxnStatus: models.PaymentSuccess,
