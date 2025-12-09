@@ -206,6 +206,34 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
+	// Retriving the tag details of the event to check for specials
+	// Convert interface{} → []string
+	var specialTags []string
+	if event.SpecialTags != nil {
+		switch v := event.SpecialTags.(type) {
+		case []any:
+			for _, raw := range v {
+				if s, ok := raw.(string); ok {
+					specialTags = append(specialTags, s)
+				}
+			}
+		case []string:
+			specialTags = v
+		}
+	}
+
+	var metadataJson []byte
+	if len(specialTags) != 0 {
+		metadataJson, err = pkg.BuildSpecialTags(specialTags, students)
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "", err) // Empty message as the BuilSpecialTags sends proper errors
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			return
+		}
+	}
+
 	var ids []uuid.UUID
 	for _, s := range students {
 		ids = append(ids, s.ID)
@@ -285,6 +313,7 @@ func BookEvent(c *gin.Context) {
 		TxnStatus:       models.PaymentPending,
 		ProductInfo:     prodInfo,
 		SeatsReleased:   int32(len(allMembers)),
+		Metadata:        metadataJson, // TODO: I need to set it as default data of the jsonb if not present
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
