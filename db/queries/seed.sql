@@ -1,3 +1,14 @@
+-- name: SeedBookingsQuery :exec
+INSERT INTO bookings(
+  txn_id ,
+  student_id,
+  event_id,
+  registration_fee,
+  product_info,
+  seats_released,
+  txn_status
+) VALUES($1, $2, $3, $4, $5, $6, $7);
+
 -- name: SeedAmritaStudentQuery :exec
 INSERT INTO student(
   name, 
@@ -84,9 +95,26 @@ INSERT INTO event_tag_mapping(
   event_id
 ) VALUES ($1, $2);
 
+-- name: ViewBookingsSeedQuery :many
+SELECT 
+  id, 
+  txn_id, 
+  student_id, 
+  event_id, 
+  registration_fee, 
+  product_info, 
+  seats_released, 
+  txn_status
+FROM bookings;
+
 -- name: ViewStudentSeedQuery :many
 SELECT
-  COUNT(*)
+  id, 
+  name, 
+  email, 
+  phone_number, 
+  is_amrita_student, 
+  amrita_roll_number
 FROM student;
   
 

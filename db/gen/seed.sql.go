@@ -44,6 +44,41 @@ func (q *Queries) SeedAmritaStudentQuery(ctx context.Context, db DBTX, arg SeedA
 	return err
 }
 
+const seedBookingsQuery = `-- name: SeedBookingsQuery :exec
+INSERT INTO bookings(
+  txn_id ,
+  student_id,
+  event_id,
+  registration_fee,
+  product_info,
+  seats_released,
+  txn_status
+) VALUES($1, $2, $3, $4, $5, $6, $7)
+`
+
+type SeedBookingsQueryParams struct {
+	TxnID           string         `json:"txn_id"`
+	StudentID       uuid.UUID      `json:"student_id"`
+	EventID         uuid.UUID      `json:"event_id"`
+	RegistrationFee pgtype.Numeric `json:"registration_fee"`
+	ProductInfo     string         `json:"product_info"`
+	SeatsReleased   int32          `json:"seats_released"`
+	TxnStatus       string         `json:"txn_status"`
+}
+
+func (q *Queries) SeedBookingsQuery(ctx context.Context, db DBTX, arg SeedBookingsQueryParams) error {
+	_, err := db.Exec(ctx, seedBookingsQuery,
+		arg.TxnID,
+		arg.StudentID,
+		arg.EventID,
+		arg.RegistrationFee,
+		arg.ProductInfo,
+		arg.SeatsReleased,
+		arg.TxnStatus,
+	)
+	return err
+}
+
 const seedEventQuery = `-- name: SeedEventQuery :exec
 INSERT INTO event(
   name, 
@@ -290,6 +325,59 @@ CASCADE
 func (q *Queries) TruncateAllTablesQuery(ctx context.Context, db DBTX) error {
 	_, err := db.Exec(ctx, truncateAllTablesQuery)
 	return err
+}
+
+const viewBookingsSeedQuery = `-- name: ViewBookingsSeedQuery :many
+SELECT 
+  id, 
+  txn_id, 
+  student_id, 
+  event_id, 
+  registration_fee, 
+  product_info, 
+  seats_released, 
+  txn_status
+FROM bookings
+`
+
+type ViewBookingsSeedQueryRow struct {
+	ID              uuid.UUID      `json:"id"`
+	TxnID           string         `json:"txn_id"`
+	StudentID       uuid.UUID      `json:"student_id"`
+	EventID         uuid.UUID      `json:"event_id"`
+	RegistrationFee pgtype.Numeric `json:"registration_fee"`
+	ProductInfo     string         `json:"product_info"`
+	SeatsReleased   int32          `json:"seats_released"`
+	TxnStatus       string         `json:"txn_status"`
+}
+
+func (q *Queries) ViewBookingsSeedQuery(ctx context.Context, db DBTX) ([]ViewBookingsSeedQueryRow, error) {
+	rows, err := db.Query(ctx, viewBookingsSeedQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ViewBookingsSeedQueryRow
+	for rows.Next() {
+		var i ViewBookingsSeedQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TxnID,
+			&i.StudentID,
+			&i.EventID,
+			&i.RegistrationFee,
+			&i.ProductInfo,
+			&i.SeatsReleased,
+			&i.TxnStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const viewEventScheduleSeedQuery = `-- name: ViewEventScheduleSeedQuery :many
@@ -588,23 +676,44 @@ func (q *Queries) ViewPeopleToEventMappingSeedQuery(ctx context.Context, db DBTX
 
 const viewStudentSeedQuery = `-- name: ViewStudentSeedQuery :many
 SELECT
-  COUNT(*)
+  id, 
+  name, 
+  email, 
+  phone_number, 
+  is_amrita_student, 
+  amrita_roll_number
 FROM student
 `
 
-func (q *Queries) ViewStudentSeedQuery(ctx context.Context, db DBTX) ([]int64, error) {
+type ViewStudentSeedQueryRow struct {
+	ID               uuid.UUID   `json:"id"`
+	Name             string      `json:"name"`
+	Email            string      `json:"email"`
+	PhoneNumber      string      `json:"phone_number"`
+	IsAmritaStudent  pgtype.Bool `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
+}
+
+func (q *Queries) ViewStudentSeedQuery(ctx context.Context, db DBTX) ([]ViewStudentSeedQueryRow, error) {
 	rows, err := db.Query(ctx, viewStudentSeedQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int64
+	var items []ViewStudentSeedQueryRow
 	for rows.Next() {
-		var count int64
-		if err := rows.Scan(&count); err != nil {
+		var i ViewStudentSeedQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.IsAmritaStudent,
+			&i.AmritaRollNumber,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, count)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

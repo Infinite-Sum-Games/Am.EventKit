@@ -403,6 +403,7 @@ type RegistrationsAnalytic struct {
 }
 
 type RevenueAnalytic struct {
+	BookingID           uuid.UUID        `json:"booking_id"`
 	BookingFee          pgtype.Numeric   `json:"booking_fee"`
 	EventID             uuid.UUID        `json:"event_id"`
 	EventName           string           `json:"event_name"`
