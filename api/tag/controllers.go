@@ -10,7 +10,6 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func GetAllEventTags(c *gin.Context) {
@@ -18,11 +17,7 @@ func GetAllEventTags(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "TAG") {
 		return
 	}
 	defer conn.Release()
@@ -56,11 +51,7 @@ func CreateEventTag(c *gin.Context) {
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "TAG") {
 		return
 	}
 	defer conn.Release()
@@ -88,13 +79,8 @@ func EditEventTag(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tagIDStr := c.Param("tagId")
-	tagID, err := uuid.Parse(tagIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
+	tagID, ok := pkg.GrabUuid(c, c.Param("tagId"), "TAG", "tag")
+	if !ok {
 		return
 	}
 
@@ -104,11 +90,7 @@ func EditEventTag(c *gin.Context) {
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "TAG") {
 		return
 	}
 	defer conn.Release()
@@ -144,22 +126,13 @@ func DeleteEventTag(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tagIDStr := c.Param("tagId")
-	tagID, err := uuid.Parse(tagIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[TAG-ERROR]: Invalid tag ID format", err)
+	tagID, ok := pkg.GrabUuid(c, c.Param("tagId"), "TAG", "tag")
+	if !ok {
 		return
 	}
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[TAG-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "TAG") {
 		return
 	}
 	defer conn.Release()

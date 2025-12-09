@@ -14,22 +14,146 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+func SeedAdmin(conn *pgx.Conn) error {
+	q := db.New()
+
+	admins, _ := q.ViewAdminSeedQuery(context.Background(), conn)
+	if len(admins) > 0 {
+		pkg.Log.Info("Admins already seeded, skipping...")
+		return nil
+	}
+
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
+	if err != nil {
+		pkg.Log.Error("Error inserting admin: %v\n", err)
+		return err
+	}
+
+	manualAdmin := []db.SeedAdminQueryParams{
+
+		{
+			Name:     pkg.ToPgText("Naganathan M"),
+			Email:    "naganathan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Revanth Singothu"),
+			Email:    "revanth@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Thanus Kumaar A"),
+			Email:    "thanus@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Tharun Kumarr A"),
+			Email:    "tharun@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Adithya Menon R"),
+			Email:    "adukottan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Nandgopal R Nair"),
+			Email:    "nandu@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Vijay SB"),
+			Email:    "vijay@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Akshay KS"),
+			Email:    "akshay@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Saran Hiruthik"),
+			Email:    "saran@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Keerthivasan Venkitajalam"),
+			Email:    "keerthivasan@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Amrith B"),
+			Email:    "amrith@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Kiran Rajeev KV"),
+			Email:    "kiran@amrita.edu",
+			Password: hashedPassword,
+		},
+		{
+			Name:     pkg.ToPgText("Shivanesh"),
+			Email:    "shivanesh@amrita.edu",
+			Password: hashedPassword,
+		},
+	}
+
+	for _, admin := range manualAdmin {
+		err := q.SeedAdminQuery(context.Background(), conn, admin)
+		if err != nil {
+			pkg.Log.Error("Error inserting admin: %v\n", err)
+			return err
+		}
+	}
+
+	pkg.Log.Info("Successfully seeded admin.")
+	return nil
+}
+
 func SeedStudents(conn *pgx.Conn) error {
 	q := db.New()
 
 	students, _ := q.ViewStudentSeedQuery(context.Background(), conn)
-	if len(students) > 2 {
+	if students[0] > 0 {
 		pkg.Log.Info("Students already seeded, skipping...")
 		return nil
 	}
 
-	hashedPassword, err := pkg.Hash("Password@123")
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
 	if err != nil {
 		pkg.Log.Error("Error inserting manual students: %v\n", err)
 		return err
 	}
 
 	manualStudents := []db.SeedAmritaStudentQueryParams{
+		{
+			Name:        "Naganathan M",
+			Email:       "naganathan@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22240",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Revanth Singothu",
+			Email:       "revanth@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.EN.U4CSE22149",
+				Valid:  true,
+			},
+		},
 		{
 			Name:        "Thanus Kumaar A",
 			Email:       "thanus@amrita.edu",
@@ -40,7 +164,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22038",
+				String: "CB.EN.U4CSE22447",
 				Valid:  true,
 			},
 		},
@@ -54,7 +178,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22031",
+				String: "CB.EN.U4CSE22253",
 				Valid:  true,
 			},
 		},
@@ -68,7 +192,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22032",
+				String: "CB.SC.U4CSE23506",
 				Valid:  true,
 			},
 		},
@@ -82,7 +206,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22033",
+				String: "CB.SC.U4CSE23634",
 				Valid:  true,
 			},
 		},
@@ -96,7 +220,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22034",
+				String: "CB.SC.U4CSE23249",
 				Valid:  true,
 			},
 		},
@@ -110,7 +234,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22035",
+				String: "CB.SC.U4CSE23104",
 				Valid:  true,
 			},
 		},
@@ -124,7 +248,7 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22037",
+				String: "CB.SC.U4CSE23745",
 				Valid:  true,
 			},
 		},
@@ -138,13 +262,13 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22030",
+				String: "CB.SC.U4CSE23037",
 				Valid:  true,
 			},
 		},
 		{
-			Name:        "",
-			Email:       "ritesh@amrita.edu",
+			Name:        "Amrith B",
+			Email:       "amrith@amrita.edu",
 			Password:    hashedPassword,
 			PhoneNumber: "9999911111",
 			IsAmritaStudent: pgtype.Bool{
@@ -152,7 +276,35 @@ func SeedStudents(conn *pgx.Conn) error {
 				Valid: true,
 			},
 			AmritaRollNumber: pgtype.Text{
-				String: "CB.EN.U4CSE22020",
+				String: "CB.SC.U4CSE23105",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Kiran Rajeev KV",
+			Email:       "kiran@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.SC.U4CSE23624",
+				Valid:  true,
+			},
+		},
+		{
+			Name:        "Shivanesh",
+			Email:       "shivanesh@amrita.edu",
+			Password:    hashedPassword,
+			PhoneNumber: "9999911111",
+			IsAmritaStudent: pgtype.Bool{
+				Bool:  true,
+				Valid: true,
+			},
+			AmritaRollNumber: pgtype.Text{
+				String: "CB.SC.U4CSE23743",
 				Valid:  true,
 			},
 		},
@@ -298,6 +450,20 @@ func SeedTags(conn *pgx.Conn) error {
 }
 
 func SeedEvents(conn *pgx.Conn) error {
+
+	images := []string{
+		"https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1170&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop",
+		"https://images.unsplash.com/photo-1639153696879-e86e3a292685?q=80&w=1170&auto=format&fit=crop",
+	}
+
 	q := db.New()
 
 	events, _ := q.ViewEventSeedQuery(context.Background(), conn)
@@ -322,6 +488,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum("ACTIVE"),
 			EventMode:      db.EventModeEnum("ONLINE"),
 			AttendanceMode: db.AttendanceModeEnum("SOLO"),
+			CoverImageUrl:  pgtype.Text{String: images[0], Valid: true},
 		},
 		{
 			Name:           "Art Exhibition",
@@ -337,6 +504,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum("ACTIVE"),
 			EventMode:      db.EventModeEnum("OFFLINE"),
 			AttendanceMode: db.AttendanceModeEnum("DUO"),
+			CoverImageUrl:  pgtype.Text{String: images[1], Valid: true},
 		},
 	}
 	for _, event := range manualEvents {
@@ -363,6 +531,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			EventStatus:    db.EventStatusEnum(gofakeit.RandomString([]string{"CLOSED", "ACTIVE", "COMPLETED"})),
 			EventMode:      db.EventModeEnum(gofakeit.RandomString([]string{"ONLINE", "OFFLINE"})),
 			AttendanceMode: db.AttendanceModeEnum(gofakeit.RandomString([]string{"SOLO", "DUO"})),
+			CoverImageUrl:  pgtype.Text{String: images[i], Valid: true},
 		}
 		err := q.SeedEventQuery(context.Background(), conn, event)
 		if err != nil {
@@ -737,6 +906,11 @@ func seed() {
 		}
 	}()
 
+	if err := SeedAdmin(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
 	if err := SeedStudents(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
@@ -746,6 +920,7 @@ func seed() {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}
+
 	if err := SeedPeople(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)

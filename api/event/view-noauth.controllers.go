@@ -11,7 +11,6 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func FetchAllEvents(c *gin.Context) {
@@ -19,11 +18,7 @@ func FetchAllEvents(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -47,13 +42,8 @@ func FetchAllEvents(c *gin.Context) {
 }
 
 func FetchEventById(c *gin.Context) {
-	eventIdStr := c.Param("eventId")
-	eventId, err := uuid.Parse(eventIdStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Request not processed due to invalid parameters",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid event ID", err)
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -61,11 +51,7 @@ func FetchEventById(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()

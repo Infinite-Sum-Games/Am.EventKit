@@ -9,28 +9,17 @@ import (
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 func StarEvent(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "EVENT")
+	if !ok {
 		return
 	}
 
-	eventIdParam := c.Query("eventId")
-
-	eventId, err := uuid.Parse(eventIdParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid UUID in request", err)
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -38,11 +27,7 @@ func StarEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -69,23 +54,13 @@ func StarEvent(c *gin.Context) {
 }
 
 func UnstarEvent(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[EVENT-FATAL]: No email after crossing auth middleware", nil)
+	email, ok := pkg.GrabEmail(c, "EVENT")
+	if !ok {
 		return
 	}
 
-	eventIdParam := c.Query("eventId")
-
-	eventId, err := uuid.Parse(eventIdParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "The request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Invalid UUID in request", err)
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "EVENT", "event")
+	if !ok {
 		return
 	}
 
@@ -93,11 +68,7 @@ func UnstarEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
 	defer conn.Release()

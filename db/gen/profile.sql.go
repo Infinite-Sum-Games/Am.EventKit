@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -82,4 +83,55 @@ func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email stri
 		&i.CollegeCity,
 	)
 	return i, err
+}
+
+const getAllTransactionsOfUserQuery = `-- name: GetAllTransactionsOfUserQuery :many
+SELECT 
+  b.id,
+  b.txn_id,
+  e.name AS event_name,
+  b.registration_fee,
+  b.txn_status,
+  b.created_at
+FROM bookings b
+LEFT JOIN
+  event e
+ON b.event_id = e.id
+WHERE b.student_id = $1
+`
+
+type GetAllTransactionsOfUserQueryRow struct {
+	ID              uuid.UUID        `json:"id"`
+	TxnID           string           `json:"txn_id"`
+	EventName       pgtype.Text      `json:"event_name"`
+	RegistrationFee pgtype.Numeric   `json:"registration_fee"`
+	TxnStatus       string           `json:"txn_status"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+}
+
+func (q *Queries) GetAllTransactionsOfUserQuery(ctx context.Context, db DBTX, studentID uuid.UUID) ([]GetAllTransactionsOfUserQueryRow, error) {
+	rows, err := db.Query(ctx, getAllTransactionsOfUserQuery, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllTransactionsOfUserQueryRow
+	for rows.Next() {
+		var i GetAllTransactionsOfUserQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TxnID,
+			&i.EventName,
+			&i.RegistrationFee,
+			&i.TxnStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

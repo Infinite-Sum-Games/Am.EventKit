@@ -1,0 +1,63 @@
+meta {
+  name: deleteEvent
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/events/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: c03e2bf2-a0ec-4a54-ad4d-b0b50307c5e5
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Delete an existing event
+  
+    - Path params:
+      - `eventId` – UUID of the event to delete
+  
+    ## 200 OK
+    ```json
+    {
+      "message": "Event deleted successfully"
+    }
+    ```
+  
+    ## 400 Bad Request
+    ```json
+    {
+      "message": "Request is malformed"
+    }
+    ```
+  
+    ## 403 Forbidden
+    ```json
+    {
+      "message": "Permission denied"
+    }
+    ```
+  
+    ## 404 Not Found
+    ```json
+    {
+      "message": "Event does not exist"
+    }
+    ```
+  
+    ## 500 Internal Server Error
+    ```json
+    {
+      "message": "Oops! Something happened. Please try again later"
+    }
+    ```
+  
+}

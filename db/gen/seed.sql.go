@@ -12,6 +12,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const seedAdminQuery = `-- name: SeedAdminQuery :exec
+INSERT INTO admin(
+  name, 
+  email,
+  password
+) VALUES ($1, $2, $3)
+`
+
+type SeedAdminQueryParams struct {
+	Name     pgtype.Text `json:"name"`
+	Email    string      `json:"email"`
+	Password string      `json:"password"`
+}
+
+func (q *Queries) SeedAdminQuery(ctx context.Context, db DBTX, arg SeedAdminQueryParams) error {
+	_, err := db.Exec(ctx, seedAdminQuery, arg.Name, arg.Email, arg.Password)
+	return err
+}
+
 const seedAmritaStudentQuery = `-- name: SeedAmritaStudentQuery :exec
 INSERT INTO student(
   name, 
@@ -93,8 +112,9 @@ INSERT INTO event(
   seats_filled, 
   event_status, 
   event_mode, 
-  attendance_mode
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+  attendance_mode,
+  cover_image_url
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 `
 
 type SeedEventQueryParams struct {
@@ -111,6 +131,7 @@ type SeedEventQueryParams struct {
 	EventStatus    EventStatusEnum    `json:"event_status"`
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
 }
 
 func (q *Queries) SeedEventQuery(ctx context.Context, db DBTX, arg SeedEventQueryParams) error {
@@ -128,6 +149,7 @@ func (q *Queries) SeedEventQuery(ctx context.Context, db DBTX, arg SeedEventQuer
 		arg.EventStatus,
 		arg.EventMode,
 		arg.AttendanceMode,
+		arg.CoverImageUrl,
 	)
 	return err
 }
@@ -311,6 +333,7 @@ func (q *Queries) SeedTagsQuery(ctx context.Context, db DBTX, arg SeedTagsQueryP
 
 const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
+  student,
   organizer, 
   people, 
   tags, 

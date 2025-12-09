@@ -99,7 +99,6 @@ func MarkCheckOut(c *gin.Context) {
 		"message": "Check-out marked successfully",
 	})
 	pkg.Log.SuccessCtx(c)
-
 }
 
 /*

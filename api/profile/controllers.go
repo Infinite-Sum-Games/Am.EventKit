@@ -15,12 +15,8 @@ import (
 )
 
 func FetchUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -28,12 +24,7 @@ func FetchUserProfile(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to acquire DB connection.", err)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
 		return
 	}
 	defer conn.Release()
@@ -67,12 +58,8 @@ func FetchUserProfile(c *gin.Context) {
 }
 
 func EditUserProfileCsrf(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -96,12 +83,8 @@ func EditUserProfileCsrf(c *gin.Context) {
 }
 
 func EditUserProfile(c *gin.Context) {
-	email := c.GetString("email")
-	if email == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.FatalCtx(c, "[PROFILE-FATAL]: No email after crossing auth middleware.", nil)
+	email, ok := pkg.GrabEmail(c, "PROFILE")
+	if !ok {
 		return
 	}
 
@@ -113,25 +96,13 @@ func EditUserProfile(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to begin DB transaction", err)
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
 		return
 	}
 
-	defer func() {
-		if err = tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to rollback DB transaction", err)
-			return
-		}
-	}()
-
 	q := db.New()
-
-	rowAffected, err := q.EditUserProfileQuery(ctx, tx, db.EditUserProfileQueryParams{
+	rowAffected, err := q.EditUserProfileQuery(ctx, conn, db.EditUserProfileQueryParams{
 		Email:       email,
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
@@ -153,16 +124,85 @@ func EditUserProfile(c *gin.Context) {
 		return
 	}
 
-	if err := tx.Commit(ctx); err != nil {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User profile updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GetAllUserTransactions(c *gin.Context) {
+	studentIdStr, ok := pkg.GrabUserId(c, "PROFILE")
+	if !ok {
+		return
+	}
+	studentId, ok := pkg.GrabUuid(c, studentIdStr, "PROFILE", "studentId")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "PROFILE") {
+		return
+	}
+
+	q := db.New()
+	transactions, err := q.GetAllTransactionsOfUserQuery(ctx, conn, studentId)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to commit DB transaction", err)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to get transactions", err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Fetched transactions successfully!",
+		"transactions": transactions,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+// Fetch all events registered by the user
+func GetAllEventsByUser(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	email, ok1 := pkg.GrabEmail(c, "EVENT-AUTH")
+	userIDStr, ok2 := pkg.GrabUserId(c, "EVENT-AUTH")
+	if !ok1 || !ok2 {
+		return
+	}
+
+	studentID, ok := pkg.GrabUuid(c, userIDStr, "EVENT-AUTH", "student")
+	if !ok {
+		return
+	}
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT-AUTH") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	events, err := q.GetAllEventsByUserQuery(ctx, conn, db.GetAllEventsByUserQueryParams{
+		StudentID: studentID,
+		Email:     email,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to fetch events by user", err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User profile updated successfully",
+		"message": "Events fetched successfully",
+		"events":  events,
+		"count":   len(events),
 	})
 	pkg.Log.SuccessCtx(c)
 }

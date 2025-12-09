@@ -288,6 +288,45 @@ func (q *Queries) GetStudentByEmail(ctx context.Context, db DBTX, email string) 
 	return i, err
 }
 
+const getStudentsByEmails = `-- name: GetStudentsByEmails :many
+SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at FROM student
+WHERE email = ANY($1::text[])
+`
+
+func (q *Queries) GetStudentsByEmails(ctx context.Context, db DBTX, dollar_1 []string) ([]Student, error) {
+	rows, err := db.Query(ctx, getStudentsByEmails, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Student
+	for rows.Next() {
+		var i Student
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Password,
+			&i.PhoneNumber,
+			&i.IsAmritaStudent,
+			&i.AmritaRollNumber,
+			&i.CollegeName,
+			&i.CollegeCity,
+			&i.AccountStatus,
+			&i.RefreshToken,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertCheckIn = `-- name: InsertCheckIn :one
 INSERT INTO solo_event_participant (
     student_id,

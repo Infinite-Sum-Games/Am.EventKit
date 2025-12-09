@@ -13,6 +13,7 @@ import (
 	apiAnalytics "github.com/Thanus-Kumaar/anokha-2025-backend/api/analytics"
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
+	apiBooking "github.com/Thanus-Kumaar/anokha-2025-backend/api/booking"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiOrganizers "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
@@ -33,7 +34,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	config := cors.Config{
 		AllowOrigins:              []string{cmd.Env.ClientDomain},
 		AllowWildcard:             true,
-		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
 		AllowCredentials:          true,
 		OptionsResponseStatusCode: 204,
@@ -67,6 +68,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
+	apiAuth.AdminAuthRoutes(authRouter)
 	apiProfile.ProfileRoutes(userRouter)
 	apiEvent.EventRoutes(eventRouter)
 	apiTag.TagRoutes(tagRouter)
@@ -74,6 +76,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiPeople.PeopleRoutes(peopleRouter)
 	apiOrganizers.OrganizerRoutes(organizerRouter)
 	apiAnalytics.AnalyticsRoutes(analyticsRouter)
+	apiBooking.BookingRoutes(eventRouter)
 
 	return r
 }
