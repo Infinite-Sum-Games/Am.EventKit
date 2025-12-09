@@ -153,7 +153,9 @@ SELECT
 
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred
+
 FROM event e
+
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
