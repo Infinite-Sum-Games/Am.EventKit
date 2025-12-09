@@ -233,19 +233,26 @@ func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) 
 
 const getEventForBooking = `-- name: GetEventForBooking :one
 SELECT
-  id,
-  price,
-  is_group,
-  is_per_head,
-  max_teamsize,
-  min_teamsize,
-  total_seats,
-  seats_filled,
-  event_status
-FROM 
-  event
-WHERE 
-  id = $1
+  e.id,
+  e.price,
+  e.is_group,
+  e.is_per_head,
+  e.max_teamsize,
+  e.min_teamsize,
+  e.total_seats,
+  e.seats_filled,
+  e.event_status,
+  COALESCE(
+    ARRAY_AGG(t.name) FILTER (WHERE t.name LIKE '!%'),
+    '[]'::jsonb
+  ) AS special_tags
+FROM event e
+LEFT JOIN event_tag_mapping etm
+  ON e.id = etm.event_id
+LEFT JOIN tags t
+  ON t.id = etm.tag_id
+WHERE e.id = $1
+GROUP BY e.id
 `
 
 type GetEventForBookingRow struct {
@@ -258,6 +265,7 @@ type GetEventForBookingRow struct {
 	TotalSeats  int32           `json:"total_seats"`
 	SeatsFilled int32           `json:"seats_filled"`
 	EventStatus EventStatusEnum `json:"event_status"`
+	SpecialTags interface{}     `json:"special_tags"`
 }
 
 func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID) (GetEventForBookingRow, error) {
@@ -273,6 +281,7 @@ func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID)
 		&i.TotalSeats,
 		&i.SeatsFilled,
 		&i.EventStatus,
+		&i.SpecialTags,
 	)
 	return i, err
 }

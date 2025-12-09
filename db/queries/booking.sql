@@ -31,19 +31,27 @@ RETURNING id;
 
 -- name: GetEventForBooking :one
 SELECT
-  id,
-  price,
-  is_group,
-  is_per_head,
-  max_teamsize,
-  min_teamsize,
-  total_seats,
-  seats_filled,
-  event_status
-FROM 
-  event
-WHERE 
-  id = $1;
+  e.id,
+  e.price,
+  e.is_group,
+  e.is_per_head,
+  e.max_teamsize,
+  e.min_teamsize,
+  e.total_seats,
+  e.seats_filled,
+  e.event_status,
+  COALESCE(
+    ARRAY_AGG(t.name) FILTER (WHERE t.name LIKE '!%'),
+    '[]'::jsonb
+  ) AS special_tags
+FROM event e
+LEFT JOIN event_tag_mapping etm
+  ON e.id = etm.event_id
+LEFT JOIN tags t
+  ON t.id = etm.tag_id
+WHERE e.id = $1
+GROUP BY e.id;
+
 
 -- name: GetAnyBookingByUsersAndEvent :many
 (
