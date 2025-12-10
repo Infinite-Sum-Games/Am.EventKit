@@ -8,29 +8,27 @@ import (
 func StudentAuthRoutes(r *gin.RouterGroup) {
 	r.POST("/user/check", CheckEmailExist)
 
-	// CSRF requests
 	r.GET("/user/login", LoginUserCsrf)
 	r.GET("/user/register", RegisterUserAccountCsrf)
 	r.GET("/user/register/otp/verify", VerifyUserOtpCsrf)
 	r.GET("/user/forgot-password", ForgotUserPasswordCsrf)
 	r.GET("/user/forgot-password/otp/verify", ConfirmPasswordChangeCsrf)
 
-	// Actual requests
 	r.POST("/user/login", mw.VerifyCsrf, LoginUser)
 	r.POST("/user/register", mw.VerifyCsrf, RegisterUserAccount)
 	r.POST("/user/register/otp/verify", mw.TempAuth, mw.VerifyCsrf, VerifyUserOtp)
 	r.GET("/user/register/otp/resend", mw.TempAuth, ResendUserOtp)
-
 	r.POST("/user/forgot-password", mw.VerifyCsrf, ForgotUserPassword)
 	r.POST("/user/forgot-password/otp/verify", mw.TempAuth, mw.VerifyCsrf, ConfirmPasswordChange)
 	r.GET("/user/forgot-password/otp/resend", mw.TempAuth, ResendPasswordChangeOtp)
+
 	r.GET("/user/session", mw.Auth, mw.CheckUser, FetchUserSession)
 	r.GET("/user/logout", mw.Auth, mw.CheckUser, Logout)
 }
 
 func OrganizerAuthRoutes(r *gin.RouterGroup) {
 	r.GET("/organizer/login", LoginOrganizerCsrf)
-	r.POST("/organizer/login", LoginOrganizer)
+	r.POST("/organizer/login", mw.VerifyCsrf, LoginOrganizer)
 	r.GET("/organizer/logout", mw.Auth, mw.CheckOrganizer, Logout)
 }
 
