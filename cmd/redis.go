@@ -36,8 +36,12 @@ func InitRedis() (*redis.Client, error) {
 	return rdb, nil
 }
 
-func CloseRedis(client *redis.Client) {
+func CloseRedis(client *redis.Client) error {
 	if client != nil {
-		client.Close()
+		if err := client.Close(); err != nil {
+			return err
+		}
 	}
+	return nil
+
 }

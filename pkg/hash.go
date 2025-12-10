@@ -48,7 +48,8 @@ func GenerateSHA512Hash(
 		"",               // 14 udf8
 		"",               // 15 udf9
 		"",               // 16 udf10
-		cmd.Env.PayUSalt, // 25 salt (mandatory)
+		"",               // 17
+		cmd.Env.PayUSalt, // 18
 	}
 	data := strings.Join(fields, "|")
 
