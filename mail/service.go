@@ -92,11 +92,16 @@ func (m *MailerService) worker(id int) {
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
 				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on first attempt, retrying once...", id), err)
-				// Retry once immediately
-				err = sender.Send(req.To, req.Subject, req.Type, req.Data)
-				if err != nil {
-					pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on second attempt", id), err)
-					// After the second failure, the email is considered lost.
+				// Retry thrice immediately
+				for i := range 3 {
+					err = sender.Send(req.To, req.Subject, req.Type, req.Data)
+					if err != nil {
+						pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on %d attempt", id, i), err)
+					}
+				}
+				// After three failure, the email is never lost :)
+				if err := m.Enqueue(req); err != nil {
+					pkg.Log.Error("[MAILER-ERROR]: Failed to re-endqueue unsent mail", err)
 				}
 			}
 			m.wg.Done()
