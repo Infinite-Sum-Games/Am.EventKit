@@ -100,12 +100,23 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	}
 	defer conn.Release()
 
+	isStudent := c.GetBool("STUDENT-ROLE")
+	isOrganizer := c.GetBool("ORGANIZER-ROLE")
+	isAdmin := c.GetBool("ADMIN-ROLE")
+
 	q := db.New()
-	_, err = q.RevokeRefreshTokenQuery(ctx, conn, email)
+
+	if isStudent {
+		_, err = q.RevokeRefreshTokenQuery(ctx, conn, email)
+	} else if isOrganizer {
+		_, err = q.RevokeOrganizerRefreshTokenQuery(ctx, conn, email)
+	} else if isAdmin {
+		_, err = q.RevokeAdminRefreshTokenQuery(ctx, conn, email)
+	}
+
 	if err != nil {
 		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
 		return
 	}
-
 	Log.InfoCtx(c, "[AUTH-INFO]: Successfully revoked Refresh Token in DB")
 }

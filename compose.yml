@@ -1,5 +1,5 @@
 services:
-  # Primary database
+
   postgres:
     image: postgres:17-alpine
     container_name: anokha-postgres
@@ -40,22 +40,6 @@ services:
     networks:
       - app_network
 
-  # PostgreSQL Exporter to export Postgres metrics to Prometheus
-  # postgres_exporter:
-  #   image: prometheuscommunity/postgres-exporter:v0.15.0
-  #   container_name: anokha-postgres-exporter
-  #   restart: on-failure
-  #   environment:
-  #     DATA_SOURCE_NAME: "postgresql://postgres:1234@postgres:5432/postgres?sslmode=disable"
-  #   ports:
-  #     - "9187:9187"
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - app_network
-  #     - monitoring_network
-  
-  # Prometheus
   # prometheus:
   #   image: prom/prometheus:v2.52.0
   #   container_name: anokha-prometheus
@@ -69,14 +53,13 @@ services:
   #     - monitoring_network
   #   extra_hosts:
   #     - "anokha-backend-host:host-gateway" 
-
-  # Grafana for visualizing metrics
+  #
   # grafana:
   #   image: grafana/grafana:11.0.0
   #   container_name: anokha-grafana
   #   restart: on-failure
   #   ports:
-  #     - "3000:3000"
+  #     - "3001:3000"
   #   environment:
   #     GF_SECURITY_ADMIN_USER: admin
   #     GF_SECURITY_ADMIN_PASSWORD: admin

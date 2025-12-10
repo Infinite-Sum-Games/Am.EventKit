@@ -20,31 +20,13 @@ func Auth(c *gin.Context) {
 		return
 	}
 
-	// Check if refresh token is valid. If yes, only then check for access token
-	// validity. If access token is valid then setup gin.Context map otherwise
-	// mint new token and then setup gin.Context map
-	validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"message": "Acess denied.",
-		})
-		pkg.Log.ErrorCtx(c, "[COOKIE-ERROR]: Failed to verify refresh token", err)
-		return
-	}
-
-	refreshTokenClaims := validToken.Claims()
-	userId, _ := refreshTokenClaims["aud"].(string)
-	email, _ := refreshTokenClaims["jti"].(string)
-	isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
-	isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
-	isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
-
 	// FLOW: Extract AuthToken
-	// 1. If AuthToken available then verify it
+	// 1. If AuthToken available then verify it and set the gin.Context
 	// 2. If not available then check against DB and see if a refresh token
 	// exists there and if it is a valid one or not
 	// 3. If the token is valid then new authToken can be minted, added to
-	// the cookie
+	// the cookie and the gin.Context be populate as well
+
 	accessToken, accessErr := c.Cookie("access_token")
 	if accessErr == nil && pkg.VerifyTokens(c, accessToken, refreshToken) {
 		c.Next()
@@ -52,6 +34,25 @@ func Auth(c *gin.Context) {
 	}
 
 	if accessErr == http.ErrNoCookie {
+		// Check if refresh token is valid. If yes, only then check for access token
+		// validity. If access token is valid then setup gin.Context map otherwise
+		// mint new token and then setup gin.Context map
+		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "Access denied.",
+			})
+			pkg.Log.ErrorCtx(c, "[COOKIE-ERROR]: Failed to verify refresh token", err)
+			return
+		}
+
+		refreshTokenClaims := validToken.Claims()
+		userId, _ := refreshTokenClaims["aud"].(string)
+		email, _ := refreshTokenClaims["jti"].(string)
+		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
+		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
+		isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
+
 		// Creating and setting auth token, so it can be used for future requests
 		authToken, err := pkg.CreateAuthToken(userId, email, pkg.Roles{
 			IsUser:      isStudent,
@@ -67,13 +68,6 @@ func Auth(c *gin.Context) {
 		}
 		pkg.SetAuthCookie(c, authToken)
 	}
-
-	// Setup the context for further requests
-	c.Set("userId", userId)
-	c.Set("email", email)
-	c.Set("STUDENT-ROLE", isStudent)
-	c.Set("ORGANIZER-ROLE", isOrganizer)
-	c.Set("ADMIN-ROLE", isAdmin)
 
 	c.Next()
 }

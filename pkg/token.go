@@ -11,6 +11,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 /*
@@ -205,8 +206,10 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	}
 
 	refreshClaims := parsedRefToken.Claims()
-	emailClaim := refreshClaims["jti"]
-	email := fmt.Sprintf("%s", emailClaim)
+	email := refreshClaims["jti"].(string)
+	isStudent, _ := refreshClaims["STUDENT-ROLE"].(bool)
+	isOrganizer, _ := refreshClaims["ORGANIZER-ROLE"].(bool)
+	isAdmin, _ := refreshClaims["ADMIN-ROLE"].(bool)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -218,12 +221,20 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	defer conn.Release()
 
 	q := db.New()
-	token, err := q.CheckRefreshTokenQuery(ctx, conn, email)
 
 	// Possible scenarios
 	// 1. RefreshToken does not exist
 	// 2. RefreshToken has become invalid
 	// 3. RefreshToken is perfect and it can generate AuthToken
+	var token pgtype.Text
+	if isStudent {
+		token, err = q.CheckRefreshTokenQuery(ctx, conn, email)
+	} else if isOrganizer {
+		token, err = q.CheckOrganizerRefreshTokenQuery(ctx, conn, email)
+	} else if isAdmin {
+		token, err = q.CheckAdminRefreshTokenQuery(ctx, conn, email)
+	}
+
 	if err != nil {
 		Log.FatalCtx(c, "[AUTH-ERROR] Failed to fetch refresh token from DB", err)
 		return nil, err

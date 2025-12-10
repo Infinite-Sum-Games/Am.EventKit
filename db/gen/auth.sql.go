@@ -126,37 +126,6 @@ func (q *Queries) GetStudentOtpQuery(ctx context.Context, db DBTX, arg GetStuden
 	return i, err
 }
 
-const loginOrganizerQuery = `-- name: LoginOrganizerQuery :one
-SELECT
-  id,
-  email,
-  password,
-  refresh_token
-FROM
-  organizer
-WHERE
-  email = $1
-`
-
-type LoginOrganizerQueryRow struct {
-	ID           uuid.UUID   `json:"id"`
-	Email        string      `json:"email"`
-	Password     string      `json:"password"`
-	RefreshToken pgtype.Text `json:"refresh_token"`
-}
-
-func (q *Queries) LoginOrganizerQuery(ctx context.Context, db DBTX, email string) (LoginOrganizerQueryRow, error) {
-	row := db.QueryRow(ctx, loginOrganizerQuery, email)
-	var i LoginOrganizerQueryRow
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Password,
-		&i.RefreshToken,
-	)
-	return i, err
-}
-
 const loginUserQuery = `-- name: LoginUserQuery :one
 SELECT
   id,
@@ -395,29 +364,6 @@ RETURNING
 
 func (q *Queries) RevokeRefreshTokenQuery(ctx context.Context, db DBTX, email string) (pgtype.Text, error) {
 	row := db.QueryRow(ctx, revokeRefreshTokenQuery, email)
-	var refresh_token pgtype.Text
-	err := row.Scan(&refresh_token)
-	return refresh_token, err
-}
-
-const updateOrganizerRefreshTokenQuery = `-- name: UpdateOrganizerRefreshTokenQuery :one
-UPDATE organizer
-SET 
-  refresh_token = $1,
-  updated_at = NOW()
-WHERE
-  email = $2
-RETURNING
-  refresh_token
-`
-
-type UpdateOrganizerRefreshTokenQueryParams struct {
-	RefreshToken pgtype.Text `json:"refresh_token"`
-	Email        string      `json:"email"`
-}
-
-func (q *Queries) UpdateOrganizerRefreshTokenQuery(ctx context.Context, db DBTX, arg UpdateOrganizerRefreshTokenQueryParams) (pgtype.Text, error) {
-	row := db.QueryRow(ctx, updateOrganizerRefreshTokenQuery, arg.RefreshToken, arg.Email)
 	var refresh_token pgtype.Text
 	err := row.Scan(&refresh_token)
 	return refresh_token, err

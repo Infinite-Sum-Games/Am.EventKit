@@ -113,4 +113,5 @@ func LoginAdmin(c *gin.Context) {
 		"name":    result.Name,
 		"email":   result.Email,
 	})
+	pkg.Log.SuccessCtx(c)
 }
