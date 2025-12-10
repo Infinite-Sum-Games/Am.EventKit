@@ -21,16 +21,6 @@ WHERE
 RETURNING
   refresh_token;
 
--- name: UpdateOrganizerRefreshTokenQuery :one
-UPDATE organizer
-SET 
-  refresh_token = $1,
-  updated_at = NOW()
-WHERE
-  email = $2
-RETURNING
-  refresh_token;
-
 -- name: RevokeRefreshTokenQuery :one
 UPDATE
 	student
@@ -107,18 +97,6 @@ FROM
 WHERE
   email = $1
   AND account_status = 'VERIFIED';
-
--- name: LoginOrganizerQuery :one
-SELECT
-  id,
-  email,
-  password,
-  refresh_token
-FROM
-  organizer
-WHERE
-  email = $1;
-
 
 -- name: PasswordChangeVerifyOtpQuery :one
 SELECT 

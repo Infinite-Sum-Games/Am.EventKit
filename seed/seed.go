@@ -330,11 +330,18 @@ func SeedOrganizers(conn *pgx.Conn) error {
 		return nil
 	}
 
+	hashedPassword, err := pkg.Hash("ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f")
+	if err != nil {
+		pkg.Log.Error("Error inserting organizers: %v\n", err)
+		return err
+	}
+
 	// Manually seed a few organizers for reference
 	manualOrganizers := []db.SeedOrganizerQueryParams{
 		{
 			Name:        "Computer Science and Engineering",
 			Email:       "cse@cb.amrita.edu",
+			Password:    hashedPassword,
 			OrgType:     db.OrganizerTypeEnum("DEPARTMENT"),
 			StudentHead: "Tharun Kumarr A",
 			FacultyHead: "Dr. Ritwik M",
@@ -342,6 +349,7 @@ func SeedOrganizers(conn *pgx.Conn) error {
 		{
 			Name:        "Amrita Centre for Entrepreneurship",
 			Email:       "ace@cb.amrita.edu",
+			Password:    hashedPassword,
 			OrgType:     db.OrganizerTypeEnum("CLUB"),
 			StudentHead: "Thanus Kumaar A",
 			FacultyHead: "Dr. Dhanya MD",
