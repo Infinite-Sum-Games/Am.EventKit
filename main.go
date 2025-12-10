@@ -122,6 +122,13 @@ func StartApp() {
 	}
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
+	// Initialize Rate Limiter
+	cmd.Redis, err = cmd.InitRedis()
+	if err != nil {
+		return
+	}
+	pkg.Log.Info("[OK]: Rate limiter serivce started successfully")
+
 	// Initialize Mailer Service
 	mail.Mail, err = mail.NewMailerService("mail/mail-queue", 4)
 	if err != nil {

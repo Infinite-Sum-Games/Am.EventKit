@@ -5,9 +5,13 @@ meta {
 }
 
 put {
-  url: {{baseUrl}}/events/favourite/1063f213-5096-49b2-8292-bc7f37d08cc2
+  url: {{baseUrl}}/events/favourite/:eventId
   body: none
   auth: inherit
+}
+
+params:path {
+  eventId: 1063f213-5096-49b2-8292-bc7f37d08cc2
 }
 
 settings {

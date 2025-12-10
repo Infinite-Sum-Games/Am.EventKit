@@ -31,7 +31,7 @@ services:
       DATABASE_URL: postgresql://postgres:1234@postgres:5432/postgres
       STORE_PATH: /app
     restart: on-failure
-    depends:
+    depends_on:
       - postgres
     ports:
       - "4983:4983"
@@ -40,7 +40,50 @@ services:
     networks:
       - app_network
 
-  # prometheus:
+  # Rate limiting layer
+  valkey:
+    image: valkey/valkey:8.1.1-alpine
+    container_name: anokha-redis
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: valkey-server --appendonly yes # persistance
+    volumes:
+      - valkey_data:/data
+    networks:
+      - valkey_network
+
+  # UI for Valkey (cache)
+  insight:
+    image: redislabs/redisinsight:latest
+    container_name: anokha-insight
+    restart: on-failure
+    ports:
+      - "5540:5540"
+    depends_on:
+      - valkey
+    environment:
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+    networks:
+      - valkey_network
+
+  # PostgreSQL Exporter to export Postgres metrics to Prometheus
+  # postgres_exporter:
+  #   image: prometheuscommunity/postgres-exporter:v0.15.0
+  #   container_name: anokha-postgres-exporter
+  #   restart: on-failure
+  #   environment:
+  #     DATA_SOURCE_NAME: "postgresql://postgres:1234@postgres:5432/postgres?sslmode=disable"
+  #   ports:
+  #     - "9187:9187"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - app_network
+  #     - monitoring_network
+  
+  # Prometheus
   #   image: prom/prometheus:v2.52.0
   #   container_name: anokha-prometheus
   #   restart: on-failure
@@ -68,13 +111,29 @@ services:
   #   networks:
   #     - monitoring_network
 
+  # Workflow management with RabbitMQ
+  rabbitmq:
+    image: rabbitmq:4.1.5-management-alpine
+    container_name: anokha-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
 networks:
   app_network:
     driver: bridge
-  # monitoring_network:
-  #   driver: bridge
+  valkey_network:
+    driver: bridge
 
 volumes:
   postgres_data:
   drizzle_gateway_data:
-  # grafana_data:
+  valkey_data:
