@@ -100,7 +100,9 @@ func (m *MailerService) worker(id int) {
 					}
 				}
 				// After three failure, the email is never lost :)
-				m.Enqueue(req)
+				if err := m.Enqueue(req); err != nil {
+					pkg.Log.Error("[MAILER-ERROR]: Failed to re-endqueue unsent mail", err)
+				}
 			}
 			m.wg.Done()
 		}
