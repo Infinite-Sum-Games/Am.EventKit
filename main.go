@@ -23,7 +23,6 @@ import (
 	mail "github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
 	pkg "github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
-	rl "github.com/Thanus-Kumaar/anokha-2025-backend/rate-limiter"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -124,7 +123,7 @@ func StartApp() {
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
 	// Initialize Rate Limiter
-	rl.Limiter, err = cmd.InitRedis()
+	cmd.Redis, err = cmd.InitRedis()
 	if err != nil {
 		return
 	}
