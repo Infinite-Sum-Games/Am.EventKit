@@ -13,6 +13,7 @@ const (
 
 type PayUVerifyResponse struct {
 	Status             int                      `json:"status"`
+	Msg                string                   `json:"msg"`
 	TransactionDetails map[string]PayUTxnDetail `json:"transaction_details"`
 }
 
