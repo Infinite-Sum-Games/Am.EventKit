@@ -1,0 +1,21 @@
+-- +goose Up
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS discount (
+  id UUID DEFAULT gen_random_uuid(),
+  discount_type TEXT NOT NULL,
+  discounted_solo_seats NUMERIC,
+  discounted_team_seats NUMERIC,
+  start_time TIMESTAMP,
+  end_time TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+)
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+ALTER TABLE event
+ADD COLUMN discount_id UUID DEFAULT NULL,
+ADD CONSTRAINT fk_event_discount
+    FOREIGN KEY (discount_id)
+    REFERENCES discount(id);
+-- +goose StatementEnd
