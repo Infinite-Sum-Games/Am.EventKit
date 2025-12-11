@@ -10,6 +10,7 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,10 @@ import (
 )
 
 func VerifyTransaction(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "VERIFY")
+	if !ok {
+		return
+	}
 	var req models.VerifyTransactionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -217,11 +222,26 @@ func VerifyTransaction(c *gin.Context) {
 			ID:        booking.ID,
 		})
 		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to update booking status", err)
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
 			})
 			return
+		}
+
+		eventData, err := q.GetEventByIdQuery(ctx, tx, booking.EventID)
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to retrive event data", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+		}
+		student, err := q.GetStudentByEmail(ctx, tx, email)
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to retrive student data", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
 		}
 
 		if err := tx.Commit(ctx); err != nil {
@@ -229,6 +249,42 @@ func VerifyTransaction(c *gin.Context) {
 				"message": "Oops! Something happened. Please try again later",
 			})
 			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+			return
+		}
+
+		var schedules []models.EventScheduleInput
+		schedulesBytes, _ := json.Marshal(eventData.Schedules)
+		_ = json.Unmarshal(schedulesBytes, &schedules)
+
+		var selected models.EventScheduleInput
+		if len(schedules) > 0 {
+			selected = schedules[0]
+			for _, s := range schedules {
+				d1, _ := time.Parse("2006-01-02", s.EventDate)
+				d2, _ := time.Parse("2006-01-02", selected.EventDate)
+				if d1.Before(d2) {
+					selected = s
+				}
+			}
+		}
+
+		err = mail.Mail.Enqueue(&mail.EmailRequest{
+			To:      []string{},
+			Subject: "Event Registration - Anokha 2026",
+			Type:    "event-reg",
+			Data: &mail.RegistrationData{
+				UserName:      student.Name,
+				EventName:     eventData.EventName,
+				EventDate:     selected.EventDate,
+				EventTime:     selected.StartTime + " - " + selected.EndTime,
+				EventLocation: selected.Venue,
+			},
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[MAIL-ERROR]: Failed to add request to email queue", err)
 			return
 		}
 		pkg.Log.SuccessCtx(c)
