@@ -9,7 +9,9 @@ CREATE TABLE IF NOT EXISTS discount (
   end_time TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
-)
+
+  CONSTRAINT "discount_pkey" PRIMARY KEY (id)
+);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
