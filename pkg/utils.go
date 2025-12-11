@@ -28,6 +28,34 @@ func ToPgInt4(value int32) pgtype.Int4 {
 	return pgtype.Int4{Int32: int32(value), Valid: true}
 }
 
+func ToPgNumericPr(i *int) pgtype.Numeric {
+	if i == nil {
+		return pgtype.Numeric{
+			Valid: false,
+		}
+	}
+	bigInt := big.NewInt(int64(*i))
+	return pgtype.Numeric{
+		Int:   bigInt,
+		Exp:   0,
+		Valid: true,
+	}
+}
+
+func ToPgTimestamp(s string) (pgtype.Timestamp, error) {
+	if s == "" {
+		return pgtype.Timestamp{Valid: false}, nil
+	}
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return pgtype.Timestamp{}, err
+	}
+	return pgtype.Timestamp{
+		Time:  t,
+		Valid: true,
+	}, nil
+}
+
 func ParseTime(s string) (time.Time, error) {
 	// Expect format HH:MM:SS (e.g. "10:00:00") and attach today's date (UTC).
 	t, err := time.Parse("15:04:05", s)
