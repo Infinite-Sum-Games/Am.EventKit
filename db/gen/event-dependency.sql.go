@@ -28,6 +28,88 @@ func (q *Queries) AddEventDependency(ctx context.Context, db DBTX, arg AddEventD
 	return err
 }
 
+const listAllEventDependencies = `-- name: ListAllEventDependencies :many
+SELECT start_event, end_event
+FROM event_dependency_mapping
+`
+
+type ListAllEventDependenciesRow struct {
+	StartEvent uuid.UUID `json:"start_event"`
+	EndEvent   uuid.UUID `json:"end_event"`
+}
+
+func (q *Queries) ListAllEventDependencies(ctx context.Context, db DBTX) ([]ListAllEventDependenciesRow, error) {
+	rows, err := db.Query(ctx, listAllEventDependencies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAllEventDependenciesRow
+	for rows.Next() {
+		var i ListAllEventDependenciesRow
+		if err := rows.Scan(&i.StartEvent, &i.EndEvent); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDependenciesForEvent = `-- name: ListDependenciesForEvent :many
+SELECT start_event
+FROM event_dependency_mapping
+WHERE end_event = $1
+`
+
+func (q *Queries) ListDependenciesForEvent(ctx context.Context, db DBTX, endEvent uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := db.Query(ctx, listDependenciesForEvent, endEvent)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var start_event uuid.UUID
+		if err := rows.Scan(&start_event); err != nil {
+			return nil, err
+		}
+		items = append(items, start_event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDependentsForEvent = `-- name: ListDependentsForEvent :many
+SELECT end_event
+FROM event_dependency_mapping
+WHERE start_event = $1
+`
+
+func (q *Queries) ListDependentsForEvent(ctx context.Context, db DBTX, startEvent uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := db.Query(ctx, listDependentsForEvent, startEvent)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var end_event uuid.UUID
+		if err := rows.Scan(&end_event); err != nil {
+			return nil, err
+		}
+		items = append(items, end_event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeEventDependency = `-- name: RemoveEventDependency :execrows
 DELETE FROM event_dependency_mapping
 WHERE start_event = $1 AND end_event = $2
