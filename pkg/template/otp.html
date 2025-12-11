@@ -1,145 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Anokha 2025 - OTP Verification</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Anokha 2026 - OTP Verification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        /* Base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+      /* Base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-        body {
-            background-color: rgb(255, 249, 230); /* Light gold background */
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
+      body {
+        background-color: rgb(255, 249, 230); /* Light gold background */
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border-top: 8px solid rgb(255, 192, 27);
+      }
+
+      .logo {
+        display: block;
+        margin: 0 auto;
+        height: 80px;
+      }
+
+      h1 {
+        text-align: center;
+        color: #1f2937;
+        margin-top: 20px;
+        font-size: 26px;
+        font-weight: 600;
+      }
+
+      .greeting {
+        margin-top: 25px;
+        font-size: 17px;
+        color: #374151;
+      }
+
+      .instruction {
+        margin: 18px 0;
+        font-size: 16px;
+        color: #4b5563;
+      }
+
+      .otp-box {
+        display: flex;
+        justify-content: center;
+        margin: 25px 0;
+      }
+
+      .otp-box p {
+        width: 50px;
+        height: 50px;
+        margin: 0 5px;
+        border: 2px solid rgb(255, 192, 27);
+        border-radius: 10px;
+        text-align: center;
+        line-height: 50px;
+        font-size: 20px;
+        font-weight: 600;
+        color: rgb(255, 192, 27);
+        background-color: #fffdf4;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .note {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 12px;
+        text-align: center;
+      }
+
+      .footer {
+        margin-top: 40px;
+        font-size: 14px;
+        color: #6b7280;
+        text-align: center;
+      }
+
+      .footer p {
+        margin-bottom: 8px;
+      }
+
+      .contact-link {
+        color: #d97706;
+        text-decoration: none;
+      }
+
+      .contact-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 600px) {
+        .otp-box p {
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
+          line-height: 40px;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 35px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            border-top: 8px solid rgb(255, 192, 27);
+          padding: 25px;
         }
-
-        .logo {
-            display: block;
-            margin: 0 auto;
-            height: 80px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #1f2937;
-            margin-top: 20px;
-            font-size: 26px;
-            font-weight: 600;
-        }
-
-        .greeting {
-            margin-top: 25px;
-            font-size: 17px;
-            color: #374151;
-        }
-
-        .instruction {
-            margin: 18px 0;
-            font-size: 16px;
-            color: #4b5563;
-        }
-
-        .otp-box {
-            display: flex;
-            justify-content: center;
-            margin: 25px 0;
-        }
-
-        .otp-box p {
-            width: 50px;
-            height: 50px;
-            margin: 0 5px;
-            border: 2px solid rgb(255, 192, 27);
-            border-radius: 10px;
-            text-align: center;
-            line-height: 50px;
-            font-size: 20px;
-            font-weight: 600;
-            color: rgb(255, 192, 27);
-            background-color: #fffdf4;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .note {
-            font-size: 14px;
-            color: #6b7280;
-            margin-top: 12px;
-            text-align: center;
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 14px;
-            color: #6b7280;
-            text-align: center;
-        }
-
-        .footer p {
-            margin-bottom: 8px;
-        }
-
-        .contact-link {
-            color: #d97706;
-            text-decoration: none;
-        }
-
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 600px) {
-            .otp-box p {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-                line-height: 40px;
-            }
-
-            .container {
-                padding: 25px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <img src="anok" alt="Anokha Logo" class="logo">
-        <h1>OTP Verification</h1>
+      <img
+        src="https://z8zpxxhr4u.ufs.sh/f/a50ALO7tkuEHROc2RQ2LzkZWMT7gKYsJ21pBfPUrFyAxE8Ib"
+        alt="Anokha Logo"
+        class="logo"
+      />
+      <h1>OTP Verification</h1>
 
-        <p class="greeting">Hello {{.UserName}},</p>
-        <p class="instruction">Please use the following one-time password (OTP) to complete your verification:</p>
+      <p class="greeting">Hello {{.UserName}},</p>
+      <p class="instruction">
+        Please use the following one-time password (OTP) to complete your
+        verification:
+      </p>
 
-        <div class="otp-box">
-            {{range .OTP}}
-                <p>{{.}}</p>
-            {{end}}
-        </div>
+      <div class="otp-box">
+        {{range .OTP}}
+        <p>{{.}}</p>
+        {{end}}
+      </div>
 
-        <p class="note">This OTP is valid for 5 minutes. Please do not share it with anyone for your account's safety.</p>
+      <p class="note">
+        This OTP is valid for 5 minutes. Please do not share it with anyone for
+        your account's safety.
+      </p>
 
-        <div class="footer">
-            <p>Warm regards,</p>
-            <p><strong>Team WMD</strong></p>
-            <p>Anokha 2025<br>Amrita Vishwa Vidyapeetham, Coimbatore</p>
-            <p>Need help? <a href="mailto:contact@anokha25.in" class="contact-link">contact@anokha25.in</a></p>
-        </div>
+      <div class="footer">
+        <p>Warm regards,</p>
+        <p><strong>Team WMD</strong></p>
+        <p>Anokha 2026<br />Amrita Vishwa Vidyapeetham, Coimbatore</p>
+        <p>
+          Need help?
+          <a href="mailto:anokhapr@cb.amrita.edu" class="contact-link"
+            >anokhapr@cb.amrita.edu</a
+          >
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>
