@@ -57,12 +57,25 @@ func CreateDiscount(c *gin.Context) {
 
 	q := db.New()
 
+	startTS, err := pkg.ToPgTimestamp(req.StartTime)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[DISCOUNT-ERROR]: Failed to parse start time", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid start_time"})
+		return
+	}
+	endTS, err := pkg.ToPgTimestamp(req.EndTime)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[DISCOUNT-ERROR]: Failed to parse end time", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid end_time"})
+		return
+	}
+
 	discount, err := q.CreateDiscount(ctx, conn, db.CreateDiscountParams{
 		DiscountType:        req.DiscountType,
-		DiscountedSoloSeats: req.DiscountedSoloSeats,
-		DiscountedTeamSeats: req.DiscountedTeamSeats,
-		StartTime:           req.StartTime,
-		EndTime:             req.EndTime,
+		DiscountedSoloSeats: pkg.ToPgNumericPr(req.DiscountedSoloSeats),
+		DiscountedTeamSeats: pkg.ToPgNumericPr(req.DiscountedTeamSeats),
+		StartTime:           startTS,
+		EndTime:             endTS,
 	})
 
 	if err != nil {
@@ -102,13 +115,26 @@ func EditDiscount(c *gin.Context) {
 
 	q := db.New()
 
+	startTS, err := pkg.ToPgTimestamp(req.StartTime)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[DISCOUNT-ERROR]: Failed to parse start time", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid start_time"})
+		return
+	}
+	endTS, err := pkg.ToPgTimestamp(req.EndTime)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[DISCOUNT-ERROR]: Failed to parse end time", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid end_time"})
+		return
+	}
+
 	rowsAffected, err := q.EditDiscount(ctx, conn, db.EditDiscountParams{
 		ID:                  discountID,
 		DiscountType:        req.DiscountType,
-		DiscountedSoloSeats: req.DiscountedSoloSeats,
-		DiscountedTeamSeats: req.DiscountedTeamSeats,
-		StartTime:           req.StartTime,
-		EndTime:             req.EndTime,
+		DiscountedSoloSeats: pkg.ToPgNumericPr(req.DiscountedSoloSeats),
+		DiscountedTeamSeats: pkg.ToPgNumericPr(req.DiscountedTeamSeats),
+		StartTime:           startTS,
+		EndTime:             endTS,
 	})
 
 	if err != nil {
