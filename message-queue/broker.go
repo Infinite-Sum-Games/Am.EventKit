@@ -54,7 +54,8 @@ func (r *MsgBroker) connect() error {
 	// used to receive all commands to RabbitMQ in the AMQP format.
 	r.channel, err = r.conn.Channel()
 	if err != nil {
-		r.conn.Close()
+		// If this too fails, it's fine as the parent process will be killed
+		_ = r.conn.Close()
 		return err
 	}
 
