@@ -313,6 +313,14 @@ type Event struct {
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
+type EventDependencyMapping struct {
+	ID         uuid.UUID        `json:"id"`
+	StartEvent uuid.UUID        `json:"start_event"`
+	EndEvent   uuid.UUID        `json:"end_event"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
 type EventSchedule struct {
 	ID        uuid.UUID        `json:"id"`
 	EventID   uuid.UUID        `json:"event_id"`
