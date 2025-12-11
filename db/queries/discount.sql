@@ -15,7 +15,7 @@ INSERT INTO discount (
 )
 RETURNING *;
 
--- name: EditDiscount :one
+-- name: EditDiscount :execrows
 UPDATE discount
 SET
   discount_type = COALESCE($2, discount_type),
@@ -27,6 +27,6 @@ SET
 WHERE id = $1
 RETURNING *;
 
--- name: DeleteDiscount :exec
+-- name: DeleteDiscount :execrows
 DELETE FROM discount
 WHERE id = $1;

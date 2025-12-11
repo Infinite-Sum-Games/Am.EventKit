@@ -55,17 +55,20 @@ func (q *Queries) CreateDiscount(ctx context.Context, db DBTX, arg CreateDiscoun
 	return i, err
 }
 
-const deleteDiscount = `-- name: DeleteDiscount :exec
+const deleteDiscount = `-- name: DeleteDiscount :execrows
 DELETE FROM discount
 WHERE id = $1
 `
 
-func (q *Queries) DeleteDiscount(ctx context.Context, db DBTX, id uuid.UUID) error {
-	_, err := db.Exec(ctx, deleteDiscount, id)
-	return err
+func (q *Queries) DeleteDiscount(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteDiscount, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
-const editDiscount = `-- name: EditDiscount :one
+const editDiscount = `-- name: EditDiscount :execrows
 UPDATE discount
 SET
   discount_type = COALESCE($2, discount_type),
@@ -87,8 +90,8 @@ type EditDiscountParams struct {
 	EndTime             pgtype.Timestamp `json:"end_time"`
 }
 
-func (q *Queries) EditDiscount(ctx context.Context, db DBTX, arg EditDiscountParams) (Discount, error) {
-	row := db.QueryRow(ctx, editDiscount,
+func (q *Queries) EditDiscount(ctx context.Context, db DBTX, arg EditDiscountParams) (int64, error) {
+	result, err := db.Exec(ctx, editDiscount,
 		arg.ID,
 		arg.DiscountType,
 		arg.DiscountedSoloSeats,
@@ -96,18 +99,10 @@ func (q *Queries) EditDiscount(ctx context.Context, db DBTX, arg EditDiscountPar
 		arg.StartTime,
 		arg.EndTime,
 	)
-	var i Discount
-	err := row.Scan(
-		&i.ID,
-		&i.DiscountType,
-		&i.DiscountedSoloSeats,
-		&i.DiscountedTeamSeats,
-		&i.StartTime,
-		&i.EndTime,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getAllDiscounts = `-- name: GetAllDiscounts :many
