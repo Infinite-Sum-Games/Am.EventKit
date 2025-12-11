@@ -290,6 +290,17 @@ type Booking struct {
 	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
 }
 
+type Discount struct {
+	ID                  uuid.UUID        `json:"id"`
+	DiscountType        string           `json:"discount_type"`
+	DiscountedSoloSeats pgtype.Numeric   `json:"discounted_solo_seats"`
+	DiscountedTeamSeats pgtype.Numeric   `json:"discounted_team_seats"`
+	StartTime           pgtype.Timestamp `json:"start_time"`
+	EndTime             pgtype.Timestamp `json:"end_time"`
+	CreatedAt           pgtype.Timestamp `json:"created_at"`
+	UpdatedAt           pgtype.Timestamp `json:"updated_at"`
+}
+
 type Event struct {
 	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
@@ -311,6 +322,7 @@ type Event struct {
 	CreatedAt      pgtype.Timestamp   `json:"created_at"`
 	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
+	DiscountID     pgtype.UUID        `json:"discount_id"`
 }
 
 type EventSchedule struct {
