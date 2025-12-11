@@ -39,7 +39,6 @@ func NewBroker(connStr string) (*MsgBroker, error) {
 
 	go client.handleReconnect()
 
-	pkg.Log.Info("[OK]: Message broker initialized successfully.")
 	return client, nil
 }
 

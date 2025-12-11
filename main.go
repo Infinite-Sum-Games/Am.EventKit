@@ -18,6 +18,7 @@ import (
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
+	mq "github.com/Thanus-Kumaar/anokha-2025-backend/message-queue"
 
 	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	mail "github.com/Thanus-Kumaar/anokha-2025-backend/mail"
@@ -122,12 +123,20 @@ func StartApp() {
 	}
 	pkg.Log.Info("[OK]: Initialized database pool successfully")
 
-	// Initialize Rate Limiter
+	// Initialize Redis for caching and rate limiing
 	cmd.Redis, err = cmd.InitRedis()
 	if err != nil {
+		pkg.Log.Info("[CRASH]: Redis failed to start")
 		return
 	}
 	pkg.Log.Info("[OK]: Rate limiter serivce started successfully")
+
+	// Initialize RabbitMQ for durable message passing
+	mq.Rabbit, err := mq.NewBroker(cmd.Env.MsgBrokerConnUrl)
+	if err != nil {
+		return
+	}
+	pkg.Log.Info("[OK]: Message broker initialized successfully.")
 
 	// Initialize Mailer Service
 	mail.Mail, err = mail.NewMailerService("mail/mail-queue", 4)
