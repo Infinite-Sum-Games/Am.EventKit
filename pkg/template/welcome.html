@@ -1,155 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Welcome to Anokha 2025</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Anokha 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        /* Reset & base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, sans-serif;
-        }
+      /* Reset & base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", "Segoe UI", Tahoma, Geneva, sans-serif;
+      }
 
-        body {
-            background-color: #fff7f5; /* Tinge of rgb(255, 61, 32) */
-            color: #333;
-            padding: 20px;
-        }
+      body {
+        background-color: #fff7f5; /* Tinge of rgb(255, 61, 32) */
+        color: #333;
+        padding: 20px;
+      }
 
+      .container {
+        max-width: 640px;
+        margin: auto;
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+        border-left: 8px solid rgb(255, 61, 32);
+      }
+
+      .header-img {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .header-img img {
+        height: 80px;
+      }
+
+      .content h2 {
+        font-size: 24px;
+        color: #1f2937;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .content p {
+        font-size: 16px;
+        color: #4b5563;
+        margin-bottom: 18px;
+        line-height: 1.6;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #fff0eb;
+        border-left: 4px solid rgb(255, 61, 32);
+        border-radius: 10px;
+      }
+
+      .feature-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        margin-right: 15px;
+      }
+
+      .feature-item p {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .location {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .location:hover {
+        text-decoration: underline;
+      }
+
+      .contact-link {
+        color: rgb(255, 61, 32);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .contact-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 600px) {
         .container {
-            max-width: 640px;
-            margin: auto;
-            background: #ffffff;
-            padding: 35px;
-            border-radius: 12px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-            border-left: 8px solid rgb(255, 61, 32);
-        }
-
-        .header-img {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header-img img {
-            height: 80px;
+          padding: 25px;
         }
 
         .content h2 {
-            font-size: 24px;
-            color: #1f2937;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
-        .content p {
-            font-size: 16px;
-            color: #4b5563;
-            margin-bottom: 18px;
-            line-height: 1.6;
+          font-size: 20px;
         }
 
         .feature-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #fff0eb;
-            border-left: 4px solid rgb(255, 61, 32);
-            border-radius: 10px;
+          flex-direction: column;
+          align-items: flex-start;
         }
 
         .feature-item img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            margin-right: 15px;
+          margin-bottom: 10px;
         }
-
-        .feature-item p {
-            margin: 0;
-            font-size: 15px;
-        }
-
-        .location {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .location:hover {
-            text-decoration: underline;
-        }
-
-        .contact-link {
-            color: rgb(255, 61, 32);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 25px;
-            }
-
-            .content h2 {
-                font-size: 20px;
-            }
-
-            .feature-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .feature-item img {
-                margin-bottom: 10px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header-img">
-            <img src="image" alt="Anokha Logo">
+      <div class="header-img">
+        <img
+          src="https://z8zpxxhr4u.ufs.sh/f/a50ALO7tkuEHROc2RQ2LzkZWMT7gKYsJ21pBfPUrFyAxE8Ib"
+          alt="Anokha Logo"
+        />
+      </div>
+      <div class="content">
+        <h2>Dear {{.UserName}},</h2>
+
+        <p>
+          We are delighted to welcome you to <strong>Anokha 2026</strong>, the
+          annual technical extravaganza at Amrita Vishwa Vidyapeetham,
+          Coimbatore! Get ready to embark on a thrilling journey of innovation,
+          learning, and creativity.
+        </p>
+
+        <div class="feature-item">
+          <img
+            src="https://i.pinimg.com/736x/f6/3c/ea/f63cea7ca3521d0a2b8adbe4f3e10aa5.jpg"
+            alt="Date Icon"
+          />
+          <p><strong>Date:</strong><br />Jan 7 2026 to Jan 9 2026</p>
         </div>
-        <div class="content">
-            <h2>Dear {{.UserName}},</h2>
 
-            <p>We are delighted to welcome you to <strong>Anokha 2025</strong>, the annual technical extravaganza at 
-               Amrita Vishwa Vidyapeetham, Coimbatore! Get ready to embark on a thrilling journey of innovation, 
-               learning, and creativity.</p>
-
-            <div class="feature-item">
-                <img src="https://i.pinimg.com/736x/f6/3c/ea/f63cea7ca3521d0a2b8adbe4f3e10aa5.jpg" alt="Date Icon">
-                <p><strong>Date:</strong><br>____ 2025 to ____ 2025</p>
-            </div>
-
-            <div class="feature-item">
-                <img src="https://media.istockphoto.com/id/1193451471/vector/map-pin-vector-glyph-icon.jpg?s=612x612&w=0&k=20&c=wuWVeHuthNAXzjOO5_VY9SUOd-6cxwpVH8VVfh6Y7Lc=" alt="Location Icon">
-                <a class="location" target="_blank" href="https://www.google.com/maps/dir/10.9111928,76.9059512/amrita+vishwa+vidyapeetham/@10.9059161,76.8926599,15.31z/data=!4m9!4m8!1m1!4e1!1m5!1m1!1s0x3ba85c95d3e828eb:0x2785cb4510629029!2m2!1d76.9006279!2d10.9026791?entry=ttu">
-                    <p><strong>Location:</strong><br>Amrita Vishwa Vidyapeetham, Coimbatore</p>
-                </a>
-            </div>
-
-            <p>We're looking forward to meeting you at Amrita and witnessing the incredible innovations 
-               you'll bring to the table. See you soon at Anokha 2025!</p>
-
-            <p>Warm Regards,<br>
-               <strong>WMD Team</strong><br>
-               Anokha 2025<br>
-               Amrita Vishwa Vidyapeetham<br>
-               Coimbatore Campus</p>
-
-            <p>If you have any questions or need assistance, reach out at 
-                <a href="mailto:contact@anokha25.in" class="contact-link">contact@anokha25.in</a>.
+        <div class="feature-item">
+          <img
+            src="https://media.istockphoto.com/id/1193451471/vector/map-pin-vector-glyph-icon.jpg?s=612x612&w=0&k=20&c=wuWVeHuthNAXzjOO5_VY9SUOd-6cxwpVH8VVfh6Y7Lc="
+            alt="Location Icon"
+          />
+          <a
+            class="location"
+            target="_blank"
+            href="https://www.google.com/maps/dir/10.9111928,76.9059512/amrita+vishwa+vidyapeetham/@10.9059161,76.8926599,15.31z/data=!4m9!4m8!1m1!4e1!1m5!1m1!1s0x3ba85c95d3e828eb:0x2785cb4510629029!2m2!1d76.9006279!2d10.9026791?entry=ttu"
+          >
+            <p>
+              <strong>Location:</strong><br />Amrita Vishwa Vidyapeetham,
+              Coimbatore
             </p>
+          </a>
         </div>
+
+        <p>
+          We're looking forward to meeting you at Amrita and witnessing the
+          incredible innovations you'll bring to the table. See you soon at
+          Anokha 2026!
+        </p>
+
+        <p>
+          Warm Regards,<br />
+          <strong>WMD Team</strong><br />
+          Anokha 2026<br />
+          Amrita Vishwa Vidyapeetham<br />
+          Coimbatore Campus
+        </p>
+
+        <p>
+          If you have any questions or need assistance, reach out at
+          <a href="mailto:anokhapr@cb.amrita.edu" class="contact-link"
+            >anokhapr@cb.amrita.edu</a
+          >.
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>
