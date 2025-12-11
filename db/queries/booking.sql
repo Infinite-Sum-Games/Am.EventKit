@@ -81,6 +81,9 @@ WHERE id = $2;
 -- name: GetBookingByTxnID :one
 SELECT * FROM bookings WHERE txn_id = $1;
 
+-- name: GetTeamMembersByTeamID :many
+SELECT * FROM team_members WHERE team_id = $1;
+
 -- name: GetTeamIDByBooking :one
 SELECT id FROM teams WHERE booking_id = $1;
 

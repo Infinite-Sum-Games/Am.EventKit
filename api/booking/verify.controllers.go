@@ -17,6 +17,10 @@ import (
 )
 
 func VerifyTransaction(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "VERIFY")
+	if !ok {
+		return
+	}
 	var req models.VerifyTransactionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -132,6 +136,15 @@ func VerifyTransaction(c *gin.Context) {
 
 	gatewayStatus := models.MapPayUStatus(payURes, req.TxnID)
 
+	event, err := q.GetEventByIdQuery(ctx, tx, booking.EventID)
+	if err != nil {
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get event details", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		return
+	}
+
 	if gatewayStatus == models.PaymentFailed || gatewayStatus == models.PaymentNotFound {
 		// Restoring the seats
 		err = q.UpdateEventSeats(ctx, tx, db.UpdateEventSeatsParams{
@@ -147,18 +160,10 @@ func VerifyTransaction(c *gin.Context) {
 		}
 
 		// If team event, then remove the team details
-		event, err := q.GetEventByIdQuery(ctx, tx, booking.EventID)
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get event details", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			return
-		}
 		if event.IsGroup {
 			teamID, err := q.GetTeamIDByBooking(ctx, tx, booking.ID)
 			if err != nil && err != sql.ErrNoRows {
-				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to get team ID", err)
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get team ID", err)
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Oops! Something happened. Please try again later",
 				})
@@ -167,7 +172,7 @@ func VerifyTransaction(c *gin.Context) {
 			if err == nil {
 				// delete members first due to foreign key relation
 				if err := q.DeleteTeamDetailsOfTeam(ctx, tx, teamID); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to delete team members", err)
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to delete team members", err)
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"message": "Oops! Something happened. Please try again later",
 					})
@@ -175,7 +180,7 @@ func VerifyTransaction(c *gin.Context) {
 				}
 				// delete team
 				if err := q.DeleteTeam(ctx, tx, booking.ID); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to delete team", err)
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to delete team", err)
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"message": "Oops! Something happened. Please try again later",
 					})
@@ -190,7 +195,7 @@ func VerifyTransaction(c *gin.Context) {
 			ID:        booking.ID,
 		})
 		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to update booking status", err)
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
 			})
@@ -217,11 +222,71 @@ func VerifyTransaction(c *gin.Context) {
 			ID:        booking.ID,
 		})
 		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR] Failed to update booking status", err)
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
 			})
 			return
+		}
+
+		// Getting the schedule ids of the selected event
+		schedules, err := q.GetSchedulesByEventID(ctx, tx, event.ID)
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get schedules in success", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			return
+		}
+		if !event.IsGroup {
+			student, err := q.GetStudentByEmail(ctx, tx, email)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get student in success", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+			for _, s := range schedules {
+				_, err := q.CreateSoloEventParticipant(ctx, tx, db.CreateSoloEventParticipantParams{
+					StudentID:       booking.StudentID,
+					EventID:         booking.EventID,
+					EventScheduleID: s,
+					BookingID:       booking.ID,
+					StudentName:     student.Name,
+					StudentEmail:    student.Email,
+				})
+				if err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to insert in solo participant", err)
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"message": "Oops! Something happened. Please try again later",
+					})
+					return
+				}
+			}
+		} else {
+			teamId, err := q.GetTeamIDByBooking(ctx, tx, booking.ID)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get team details in verify", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+			members, err := q.GetTeamMembersByTeamID(ctx, tx, teamId)
+			// Inserting
+			for _, s := range schedules {
+				for _, m := range members {
+					_, err := q.CreateTeamAttendance(ctx, tx, db.CreateTeamAttendanceParams{
+						StudentID:       m.StudentID,
+						EventScheduleID: s,
+					})
+					if err != nil {
+						// handle error
+					}
+				}
+			}
+
 		}
 
 		if err := tx.Commit(ctx); err != nil {
