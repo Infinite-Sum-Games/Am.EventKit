@@ -17,7 +17,6 @@ func EventRoutes(r *gin.RouterGroup) {
 
 	r.POST("/", mw.Auth, mw.CheckAdmin, CreateEvent)
 	r.PUT("/:eventId", mw.Auth, mw.CheckAdmin, EditEvent)
-	// r.DELETE("/:eventId", mw.Auth, mw.CheckAdmin, DeleteEvent)
 	r.PUT("/:eventId/toggle-status", mw.Auth, mw.CheckAdmin, ToggleEventStatus)
 
 	r.PUT("/favourite/:eventId", mw.Auth, mw.CheckUser, StarEvent)
