@@ -7,7 +7,7 @@ import (
 
 func DiscountRoutes(r *gin.RouterGroup) {
 	r.GET("/", mw.Auth, mw.CheckAdmin, GetAllDiscounts)
-	// r.POST("/", mw.Auth, mw.CheckAdmin, CreateDiscount)
-	// r.PUT("/:discountId", mw.Auth, mw.CheckAdmin, EditDiscount)
-	// r.DELETE("/:organizerId", mw.Auth, mw.CheckAdmin, DeleteDiscount)
+	r.POST("/", mw.Auth, mw.CheckAdmin, CreateDiscount)
+	r.PUT("/:discountId", mw.Auth, mw.CheckAdmin, EditDiscount)
+	r.DELETE("/:organizerId", mw.Auth, mw.CheckAdmin, DeleteDiscount)
 }
