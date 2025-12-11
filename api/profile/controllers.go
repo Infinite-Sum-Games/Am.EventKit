@@ -187,7 +187,8 @@ func GetTickets(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	data, err := q.GetUserTicketsQuery(ctx, conn, db.GetUserTicketsQueryParams{
+
+	soloEvents, err := q.GetMySoloEventTickets(ctx, conn, db.GetMySoloEventTicketsParams{
 		ID:    studentID,
 		Email: email,
 	})
@@ -195,13 +196,26 @@ func GetTickets(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-AUTH-ERROR]: Failed to fetch events by user", err)
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to fetch solo tickets", err)
+		return
+	}
+
+	teamEvents, err := q.GetMyTeamEventTickets(ctx, conn, db.GetMyTeamEventTicketsParams{
+		ID:    studentID,
+		Email: email,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[PROFILE-ERROR]: Failed to fetch team tickets", err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Tickets fetched successfully",
-		"tickets": data,
+		"message":     "Tickets fetched successfully",
+		"solo_events": soloEvents,
+		"team_events": teamEvents,
 	})
 	pkg.Log.SuccessCtx(c)
 }

@@ -136,95 +136,137 @@ func (q *Queries) GetAllTransactionsOfUserQuery(ctx context.Context, db DBTX, st
 	return items, nil
 }
 
-const getUserTicketsQuery = `-- name: GetUserTicketsQuery :many
-WITH 
-  user_solo_events AS (
-    SELECT
-      e.id,
-      e.name,
-      e.price,
-      e.is_technical,
-      e.event_mode,
-      NULL::text AS team_name,
+const getMySoloEventTickets = `-- name: GetMySoloEventTickets :many
+SELECT
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
 
-      COALESCE(
-        JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-          'schedule_id', es.id,
-          'date', es.event_date,
-          'start_time', es.start_time,
-          'end_time', es.end_time,
-          'venue', es.venue
-        )) FILTER (WHERE e.id IS NOT NULL),
-      '[]'::jsonb
-      ) AS schedules
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'schedule_id', es.id,
+        'date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue
+    )) FILTER (WHERE e.id IS NOT NULL),
+    '[]'::jsonb
+  ) AS schedules
 
-    FROM
-      event e
-    LEFT JOIN solo_event_participant sep ON e.id = sep.event_id
-    LEFT JOIN bookings b ON sep.booking_id = b.id
-    LEFT JOIN student s ON sep.student_id = s.id
-    LEFT JOIN event_schedule es ON e.id = es.event_id
-    WHERE
-      s.id = $1
-      AND s.email = $2
-      AND b.txn_status = 'SUCCESS'
-    GROUP BY 
-      e.id,
-      e.name,
-      e.price,
-      e.is_technical,
-      e.event_mode
-  ),
-  user_team_events AS (
-    SELECT
-      e.id,
-      e.name as event_name,
-      e.price,
-      e.is_technical,
-      e.event_mode,
-      t.team_name,
-
-      COALESCE(
-        JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-          'schedule_id', es.id,
-          'date', es.event_date,
-          'start_time', es.start_time,
-          'end_time', es.end_time,
-          'venue', es.venue
-        )) FILTER (WHERE e.id IS NOT NULL),
-      '[]'::jsonb
-      ) AS schedules
-
-    FROM
-      event e
-    LEFT JOIN teams t ON e.id = t.event_id
-    LEFT JOIN team_members tm ON t.id = tm.team_id
-    LEFT JOIN bookings b ON t.booking_id = b.id
-    LEFT JOIN student s ON tm.student_id = s.id
-    LEFT JOIN event_schedule es ON e.id = es.event_id
-    WHERE
-      s.id = $1
-      AND s.email = $2
-      AND b.txn_status = 'SUCCESS'
-    GROUP BY
-      e.id,
-      e.name,
-      e.price,
-      e.is_technical,
-      e.event_mode,
-      t.team_name
-  )
-SELECT id, name, price, is_technical, event_mode, team_name, schedules FROM user_solo_events
-UNION
-SELECT id, event_name, price, is_technical, event_mode, team_name, schedules FROM user_team_events
+FROM event e
+LEFT JOIN solo_event_participant sep 
+  ON e.id = sep.event_id
+LEFT JOIN bookings b 
+  ON sep.booking_id = b.id
+LEFT JOIN student s 
+  ON sep.student_id = s.id
+LEFT JOIN event_schedule es
+  ON e.id = es.event_id
+WHERE
+  s.email = $1
+  AND s.id = $2
+  AND b.txn_status = 'SUCCESS'
+GROUP BY
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode
 `
 
-type GetUserTicketsQueryParams struct {
+type GetMySoloEventTicketsParams struct {
+	Email string    `json:"email"`
+	ID    uuid.UUID `json:"id"`
+}
+
+type GetMySoloEventTicketsRow struct {
+	ID          uuid.UUID      `json:"id"`
+	Name        string         `json:"name"`
+	Price       pgtype.Numeric `json:"price"`
+	IsTechnical pgtype.Bool    `json:"is_technical"`
+	EventMode   EventModeEnum  `json:"event_mode"`
+	Schedules   interface{}    `json:"schedules"`
+}
+
+func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, arg GetMySoloEventTicketsParams) ([]GetMySoloEventTicketsRow, error) {
+	rows, err := db.Query(ctx, getMySoloEventTickets, arg.Email, arg.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMySoloEventTicketsRow
+	for rows.Next() {
+		var i GetMySoloEventTicketsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Price,
+			&i.IsTechnical,
+			&i.EventMode,
+			&i.Schedules,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMyTeamEventTickets = `-- name: GetMyTeamEventTickets :many
+SELECT
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
+  t.team_name,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'schedule_id', es.id,
+        'date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue
+    )) FILTER (WHERE e.id IS NOT NULL),
+    '[]'::jsonb
+  ) AS schedules
+
+FROM event e
+LEFT JOIN teams t 
+  ON e.id = t.event_id
+LEFT JOIN team_members tm 
+  ON t.id = tm.team_id
+LEFT JOIN bookings b 
+  ON t.booking_id = b.id
+LEFT JOIN student s 
+  ON tm.student_id = s.id
+LEFT JOIN event_schedule es 
+  ON e.id = es.event_id
+WHERE
+  s.id = $1
+  AND s.email = $2
+  AND b.txn_status = 'SUCCESS'
+GROUP BY
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
+  t.team_name
+`
+
+type GetMyTeamEventTicketsParams struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
 }
 
-type GetUserTicketsQueryRow struct {
+type GetMyTeamEventTicketsRow struct {
 	ID          uuid.UUID      `json:"id"`
 	Name        string         `json:"name"`
 	Price       pgtype.Numeric `json:"price"`
@@ -234,15 +276,15 @@ type GetUserTicketsQueryRow struct {
 	Schedules   interface{}    `json:"schedules"`
 }
 
-func (q *Queries) GetUserTicketsQuery(ctx context.Context, db DBTX, arg GetUserTicketsQueryParams) ([]GetUserTicketsQueryRow, error) {
-	rows, err := db.Query(ctx, getUserTicketsQuery, arg.ID, arg.Email)
+func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, arg GetMyTeamEventTicketsParams) ([]GetMyTeamEventTicketsRow, error) {
+	rows, err := db.Query(ctx, getMyTeamEventTickets, arg.ID, arg.Email)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUserTicketsQueryRow
+	var items []GetMyTeamEventTicketsRow
 	for rows.Next() {
-		var i GetUserTicketsQueryRow
+		var i GetMyTeamEventTicketsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
