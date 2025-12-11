@@ -129,10 +129,10 @@ func StartApp() {
 		pkg.Log.Info("[CRASH]: Redis failed to start")
 		return
 	}
-	pkg.Log.Info("[OK]: Rate limiter serivce started successfully")
+	pkg.Log.Info("[OK]: Redis serivce started successfully")
 
 	// Initialize RabbitMQ for durable message passing
-	mq.Rabbit, err := mq.NewBroker(cmd.Env.MsgBrokerConnUrl)
+	mq.Rabbit, err = mq.NewBroker(cmd.Env.MsgBrokerConnUrl)
 	if err != nil {
 		return
 	}
