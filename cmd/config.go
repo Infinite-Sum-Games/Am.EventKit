@@ -11,23 +11,24 @@ import (
 )
 
 type EnvConfig struct {
-	Environment   string `mapstructure:"env"`
-	Port          int    `mapstructure:"port"`
-	ClientDomain  string `mapstructure:"client_domain"`
-	CookieDomain  string `mapstructure:"cookie_domain"`
-	CookieSecure  bool   `mapstructure:"cookie_secure"`
-	DatabaseURL   string `mapstructure:"database_url"`
-	RedisHost     string `mapstructure:"redis_host"`
-	RedisPort     int    `mapstructure:"redis_port"`
-	RedisUsername string `mapstructure:"redis_username"`
-	RedisPassword string `mapstructure:"redis_password"`
-	SMTPHost      string `mapstructure:"smtp_host"`
-	SMTPPort      int    `mapstructure:"smtp_port"`
-	SMTPUsername  string `mapstructure:"smtp_username"`
-	SMTPPassword  string `mapstructure:"smtp_password"`
-	PayUKey       string `mapstructure:"payu_key"`
-	PayUSalt      string `mapstructure:"payu_salt"`
-	PayUVerifyURL string `mapstructure:"payu_verify_url"`
+	Environment      string `mapstructure:"env"`
+	Port             int    `mapstructure:"port"`
+	ClientDomain     string `mapstructure:"client_domain"`
+	CookieDomain     string `mapstructure:"cookie_domain"`
+	CookieSecure     bool   `mapstructure:"cookie_secure"`
+	DatabaseURL      string `mapstructure:"database_url"`
+	MsgBrokerConnUrl string `mapstructure:"rabbitmq_url"`
+	RedisHost        string `mapstructure:"redis_host"`
+	RedisPort        int    `mapstructure:"redis_port"`
+	RedisUsername    string `mapstructure:"redis_username"`
+	RedisPassword    string `mapstructure:"redis_password"`
+	SMTPHost         string `mapstructure:"smtp_host"`
+	SMTPPort         int    `mapstructure:"smtp_port"`
+	SMTPUsername     string `mapstructure:"smtp_username"`
+	SMTPPassword     string `mapstructure:"smtp_password"`
+	PayUKey          string `mapstructure:"payu_key"`
+	PayUSalt         string `mapstructure:"payu_salt"`
+	PayUVerifyURL    string `mapstructure:"payu_verify_url"`
 }
 
 var Env *EnvConfig
