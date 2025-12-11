@@ -21,4 +21,8 @@ func EventRoutes(r *gin.RouterGroup) {
 
 	r.PUT("/favourite/:eventId", mw.Auth, mw.CheckUser, StarEvent)
 	r.DELETE("/favourite/:eventId", mw.Auth, mw.CheckUser, UnstarEvent)
+
+	r.GET("/dependency", mw.Auth, mw.CheckAdmin, GetAllDependencies)
+	r.POST("/dependency", mw.Auth, mw.CheckAdmin, AddDependency)
+	r.DELETE("/dependency", mw.Auth, mw.CheckAdmin, RemoveDependency)
 }

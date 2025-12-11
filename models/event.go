@@ -6,6 +6,7 @@ import (
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+	"github.com/google/uuid"
 )
 
 type EventScheduleInput struct {
@@ -132,4 +133,16 @@ type UpdateEventRequest struct {
 func (r UpdateEventRequest) Validate() error {
 	// reuse same rules as create
 	return CreateEventRequest(r).Validate()
+}
+
+type EventDependencyRequest struct {
+	StartEvent uuid.UUID `json:"start_event"`
+	EndEvent   uuid.UUID `json:"end_event"`
+}
+
+func (r EventDependencyRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.StartEvent, v.Required),
+		v.Field(&r.EndEvent, v.Required),
+	)
 }
