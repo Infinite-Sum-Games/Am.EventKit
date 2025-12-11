@@ -35,3 +35,85 @@ LEFT JOIN
   event e
 ON b.event_id = e.id
 WHERE b.student_id = $1;
+
+-- name: GetMySoloEventTickets :many
+SELECT
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'schedule_id', es.id,
+        'date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue
+    )) FILTER (WHERE e.id IS NOT NULL),
+    '[]'::jsonb
+  ) AS schedules
+
+FROM event e
+LEFT JOIN solo_event_participant sep 
+  ON e.id = sep.event_id
+LEFT JOIN bookings b 
+  ON sep.booking_id = b.id
+LEFT JOIN student s 
+  ON sep.student_id = s.id
+LEFT JOIN event_schedule es
+  ON e.id = es.event_id
+WHERE
+  s.email = $1
+  AND s.id = $2
+  AND b.txn_status = 'SUCCESS'
+GROUP BY
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode;
+
+-- name: GetMyTeamEventTickets :many
+SELECT
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
+  t.team_name,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'schedule_id', es.id,
+        'date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue
+    )) FILTER (WHERE e.id IS NOT NULL),
+    '[]'::jsonb
+  ) AS schedules
+
+FROM event e
+LEFT JOIN teams t 
+  ON e.id = t.event_id
+LEFT JOIN team_members tm 
+  ON t.id = tm.team_id
+LEFT JOIN bookings b 
+  ON t.booking_id = b.id
+LEFT JOIN student s 
+  ON tm.student_id = s.id
+LEFT JOIN event_schedule es 
+  ON e.id = es.event_id
+WHERE
+  s.id = $1
+  AND s.email = $2
+  AND b.txn_status = 'SUCCESS'
+GROUP BY
+  e.id,
+  e.name,
+  e.price,
+  e.is_technical,
+  e.event_mode,
+  t.team_name;
