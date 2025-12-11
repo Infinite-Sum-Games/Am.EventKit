@@ -5,15 +5,15 @@ meta {
 }
 
 post {
-  url: {baseUrl}}/auth/organizer/login
+  url: {{baseUrl}}/auth/organizer/login
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "email": "cse@amrita.edu", // fake emails following <dept-abbr>@amrita.edu pattern
-    "password": "SHA-256(hash-password)"
+    "email": "cse@cb.amrita.edu", // fake emails following <dept-abbr>@amrita.edu
+    "password": "ff7bd97b1a7789ddd2775122fd6817f3173672da9f802ceec57f284325bf589f"
   }
 }
 
