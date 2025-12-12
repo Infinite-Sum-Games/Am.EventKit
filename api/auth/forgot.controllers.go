@@ -123,7 +123,7 @@ func ForgotUserPassword(c *gin.Context) {
 
 	emailReq := mail.EmailRequest{
 		To:      []string{result.Email},
-		Subject: "Password Reset OTP - Anokha 2025",
+		Subject: "Password Reset OTP - Anokha 2026",
 		Type:    "otp",
 		Data: &mail.OTPTemplateData{
 			UserName: result.Name,
@@ -232,7 +232,7 @@ func ResendPasswordChangeOtp(c *gin.Context) {
 
 	emailReq := mail.EmailRequest{
 		To:      []string{email},
-		Subject: fmt.Sprintf("Resend Password Reset OTP - Anokha 2025 - %d", time.Now().UnixMilli()),
+		Subject: fmt.Sprintf("Resend Password Reset OTP - Anokha 2026 - %d", time.Now().UnixMilli()),
 		Type:    "otp",
 		Data: &mail.OTPTemplateData{
 			UserName: result.Name,
