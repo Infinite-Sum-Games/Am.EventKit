@@ -1,28 +1,22 @@
 services:
 
   postgres:
-    image: postgres:17-alpine
+    image: anokha/postgres-cron:18
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+    command: >
+      postgres -c shared_preload_libraries=pg_cron
+              -c cron.database_name=postgres
     ports:
       - "5432:5432"
     restart: on-failure
     networks:
       - app_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
+      - postgres_data:/var/lib/postgresql
 
   drizzle-gate:
     image: ghcr.io/drizzle-team/gateway:latest
