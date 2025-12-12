@@ -274,7 +274,14 @@ func VerifyTransaction(c *gin.Context) {
 				return
 			}
 			members, err := q.GetTeamMembersByTeamID(ctx, tx, teamId)
-			// Inserting
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to fetch team members.", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+			// Inserting into team attendance table
 			for _, s := range schedules {
 				for _, m := range members {
 					_, err := q.CreateTeamAttendance(ctx, tx, db.CreateTeamAttendanceParams{
@@ -282,7 +289,11 @@ func VerifyTransaction(c *gin.Context) {
 						EventScheduleID: s,
 					})
 					if err != nil {
-						// handle error
+						pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to insert into team attd.", err)
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"message": "Oops! Something happened. Please try again later",
+						})
+						return
 					}
 				}
 			}
