@@ -239,15 +239,17 @@ func VerifyTransaction(c *gin.Context) {
 			})
 			return
 		}
+
+		// Getting details of the student - needed for mail and attendance
+		student, err := q.GetStudentByEmail(ctx, tx, email)
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to retrive student data", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+		}
+
 		if !event.IsGroup {
-			student, err := q.GetStudentByEmail(ctx, tx, email)
-			if err != nil {
-				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to get student in success", err)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Oops! Something happened. Please try again later",
-				})
-				return
-			}
 			for _, s := range schedules {
 				_, err := q.CreateSoloEventParticipant(ctx, tx, db.CreateSoloEventParticipantParams{
 					StudentID:       booking.StudentID,
@@ -301,21 +303,6 @@ func VerifyTransaction(c *gin.Context) {
 
 		}
 
-		eventData, err := q.GetEventByIdQuery(ctx, tx, booking.EventID)
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to retrive event data", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-		}
-		student, err := q.GetStudentByEmail(ctx, tx, email)
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to retrive student data", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-		}
-
 		if err := tx.Commit(ctx); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
@@ -324,14 +311,14 @@ func VerifyTransaction(c *gin.Context) {
 			return
 		}
 
-		var schedules []models.EventScheduleInput
-		schedulesBytes, _ := json.Marshal(eventData.Schedules)
-		_ = json.Unmarshal(schedulesBytes, &schedules)
+		var completeSchedules []models.EventScheduleInput
+		schedulesBytes, _ := json.Marshal(event.Schedules)
+		_ = json.Unmarshal(schedulesBytes, &completeSchedules)
 
 		var selected models.EventScheduleInput
-		if len(schedules) > 0 {
-			selected = schedules[0]
-			for _, s := range schedules {
+		if len(completeSchedules) > 0 {
+			selected = completeSchedules[0]
+			for _, s := range completeSchedules {
 				d1, _ := time.Parse("2006-01-02", s.EventDate)
 				d2, _ := time.Parse("2006-01-02", selected.EventDate)
 				if d1.Before(d2) {
@@ -346,7 +333,7 @@ func VerifyTransaction(c *gin.Context) {
 			Type:    "event-reg",
 			Data: &mail.RegistrationData{
 				UserName:      student.Name,
-				EventName:     eventData.EventName,
+				EventName:     event.EventName,
 				EventDate:     selected.EventDate,
 				EventTime:     selected.StartTime + " - " + selected.EndTime,
 				EventLocation: selected.Venue,
