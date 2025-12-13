@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"net/http"
 	"time"
@@ -14,136 +15,124 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func CreateEvent(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func NewEvent(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	req, ok := pkg.ValidateRequest[models.CreateEventRequest](c)
-	if !ok {
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
 		return
 	}
-
-	tx, err := cmd.DBPool.Begin(ctx)
-	if pkg.HandleDbTxnErr(c, err, "EVENT") {
-		return
-	}
-	defer pkg.RollbackTx(c, tx, ctx, "EVENT")
+	defer conn.Release()
 
 	q := db.New()
-	eventID, err := q.CreateEventQuery(ctx, tx, db.CreateEventQueryParams{
-		Name:           req.Name,
-		Blurb:          req.Blurb,
-		Description:    req.Description,
-		CoverImageUrl:  pkg.ToPgText(req.CoverImageURL),
-		Price:          pgtype.Numeric{Valid: true, Int: big.NewInt(int64(req.Price))},
-		IsPerHead:      req.IsPerHead,
-		Rules:          req.Rules,
-		EventType:      db.EventTypeEnum(req.EventType),
-		IsGroup:        req.IsGroup,
-		MaxTeamsize:    pkg.ToPgInt4(req.MaxTeamSize),
-		MinTeamsize:    pkg.ToPgInt4(req.MinTeamSize),
-		TotalSeats:     req.TotalSeats,
-		SeatsFilled:    req.SeatsFilled,
-		EventStatus:    db.EventStatusEnum(req.EventStatus),
-		EventMode:      db.EventModeEnum(req.EventMode),
-		AttendanceMode: db.AttendanceModeEnum(req.AttendanceMode),
+	result, err := q.NewUntitledEventQuery(ctx, conn, db.NewUntitledEventQueryParams{
+		Name:        fmt.Sprintf("Untitled %d", time.UnixMilli(time.Now().Unix())),
+		Blurb:       "",
+		Description: "",
+		Price: pgtype.Numeric{
+			Valid: true,
+			Int:   big.NewInt(int64(0)),
+		},
+		IsPerHead: true,
+		Rules:     "",
+		EventType: db.EventTypeEnumEVENT,
+		IsGroup:   false,
+		MinTeamsize: pgtype.Int4{
+			Valid: true,
+			Int32: 1,
+		},
+		MaxTeamsize: pgtype.Int4{
+			Valid: true,
+			Int32: 1,
+		},
+		TotalSeats:     0,
+		EventStatus:    db.EventStatusEnumCLOSED,
+		EventMode:      db.EventModeEnumOFFLINE,
+		AttendanceMode: db.AttendanceModeEnumSOLO,
+		IsTechnical: pgtype.Bool{
+			Valid: true,
+			Bool:  false,
+		},
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to create event", err)
+		pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to create new event", err)
 		return
 	}
 
-	// 2) schedules
-	for _, sch := range req.Schedules {
-		eventDate, _ := time.Parse("2006-01-02", sch.EventDate)
-		startTime, _ := time.Parse(time.RFC3339, sch.StartTime)
-		endTime, _ := time.Parse(time.RFC3339, sch.EndTime)
-
-		if err := q.InsertEventScheduleQuery(ctx, tx, db.InsertEventScheduleQueryParams{
-			EventID:   eventID,
-			EventDate: pgtype.Date{Time: eventDate, Valid: true},
-			StartTime: pgtype.Timestamp{Time: startTime, Valid: true},
-			EndTime:   pgtype.Timestamp{Time: endTime, Valid: true},
-			Venue:     sch.Venue,
-		}); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to insert event schedule", err)
-			return
-		}
-	}
-
-	// 3) tag mappings
-	for _, tagIDStr := range req.TagIDs {
-		tagID, ok := pkg.GrabUuid(c, tagIDStr, "EVENT", "tag")
-		if !ok {
-			return
-		}
-
-		if err := q.InsertEventTagMappingQuery(ctx, tx, db.InsertEventTagMappingQueryParams{
-			TagID:   tagID,
-			EventID: eventID,
-		}); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to insert tag mapping", err)
-			return
-		}
-	}
-
-	// 4) organizer mappings
-	for _, orgIDStr := range req.OrganizerIDs {
-		orgID, ok := pkg.GrabUuid(c, orgIDStr, "EVENT", "organizer")
-		if !ok {
-			return
-		}
-
-		if err := q.InsertEventOrganizerMappingQuery(ctx, tx, db.InsertEventOrganizerMappingQueryParams{
-			EventID:     eventID,
-			OrganizerID: orgID,
-		}); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to insert organizer mapping", err)
-			return
-		}
-	}
-
-	// 5) people mappings
-	for _, personIDStr := range req.PeopleIDs {
-		personID, ok := pkg.GrabUuid(c, personIDStr, "EVENT", "person")
-		if !ok {
-			return
-		}
-
-		if err := q.InsertPeopleToEventMappingQuery(ctx, tx, db.InsertPeopleToEventMappingQueryParams{
-			EventID:  eventID,
-			PersonID: personID,
-		}); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[EVENT-ERROR]: Failed to insert people mapping", err)
-			return
-		}
-	}
-
-	err = tx.Commit(ctx)
-	if pkg.HandleDbTxnCommitErr(c, err, "EVENT") {
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message":  "Event created successfully",
-		"event_id": eventID,
+	c.JSON(http.StatusOK, gin.H{
+		"event_name":      result.Name,
+		"blurb":           result.Blurb,
+		"description":     result.Description,
+		"poster_url":      result.CoverImageUrl.String,
+		"price":           result.Price.Int,
+		"is_per_head":     result.IsPerHead,
+		"rules":           result.Rules,
+		"is_group":        result.IsGroup,
+		"min_teamsize":    result.MinTeamsize.Int32,
+		"max_teamsize":    result.MaxTeamsize.Int32,
+		"seat_count":      result.TotalSeats,
+		"event_type":      result.EventType,
+		"is_technical":    result.IsTechnical,
+		"is_offline":      result.EventMode == db.EventModeEnumOFFLINE,
+		"attendance_mode": result.AttendanceMode,
+		"is_published":    result.EventStatus == db.EventStatusEnumACTIVE,
+		"people":          nil,
+		"organizers":      nil,
+		"tags":            nil,
+		"schedules":       nil,
 	})
 	pkg.Log.SuccessCtx(c)
+}
+
+// Name, Blurb, Description, Rules
+func AddEventDetails(c *gin.Context) {
+
+}
+
+// Poster URL
+func AddEventPoster(c *gin.Context) {
+
+}
+
+// IsTeam, MinSize, MaxSize, Seats
+func AddEventDimension(c *gin.Context) {
+
+}
+
+// EventType, Mark As Completed, EventMode, AttendanceType
+func AddEventToggles(c *gin.Context) {
+}
+
+func ConnectEventAndOrganizer(c *gin.Context) {
+
+}
+
+func DisonnectEventAndOrganizer(c *gin.Context) {
+
+}
+
+func ConnectEventAndTags(c *gin.Context) {
+
+}
+
+func DisonnectEventAndTags(c *gin.Context) {
+
+}
+
+func AttachNewEventSchedule(c *gin.Context) {
+
+}
+
+func EditEventSchedule(c *gin.Context) {
+
+}
+
+func DeleteEventSchedule(c *gin.Context) {
+
 }
 
 func EditEvent(c *gin.Context) {
