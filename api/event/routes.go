@@ -16,14 +16,22 @@ func EventRoutes(r *gin.RouterGroup) {
 
 	// Admin event controllers
 	r.GET("/admin/new", NewEvent)
+	r.POST("/admin/details", AddEventDetails)
 	r.POST("/admin/poster", AddEventPoster)
 	r.DELETE("/admin/poster", DeleteEventPoster)
-	r.POST("/admin/", AddEventDimension)
+	r.POST("/admin/size", AddEventDimension)
 	r.POST("/admin/toggle", AddEventToggles)
-	r.POST("/admin/")
+	r.POST("/admin/organizer", ConnectEventAndOrganizer)
+	r.DELETE("/admin/organizer", DisconnectEventAndOrganizer)
+	r.POST("/admin/tags", ConnectEventAndTags)
+	r.DELETE("/admin/tags", DisonnectEventAndTags)
+	r.POST("/admin/schedule", AddEventSchedule)
+	r.PUT("/admin/schedule", EditEventSchedule)
+	r.DELETE("/admin/schedule", DeleteEventSchedule)
+	r.POST("/admin/publish/:eventId", PublishEvent)
+	r.DELETE("/admin/publish/:eventId", UnpublishEvent)
 
 	// Deprecated routes; under refactoring
 	r.PUT("/:eventId", mw.Auth, mw.CheckAdmin, EditEvent)
 	r.PUT("/:eventId/toggle-status", mw.Auth, mw.CheckAdmin, ToggleEventStatus)
-
 }
