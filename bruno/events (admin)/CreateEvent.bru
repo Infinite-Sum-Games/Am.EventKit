@@ -4,54 +4,10 @@ meta {
   seq: 3
 }
 
-post {
-  url: {{baseUrl}}/events
+get {
+  url: {{baseUrl}}/events/new
   body: json
   auth: inherit
-}
-
-body:json {
-  {
-    "name": "AI Hackathon",
-    "blurb": "Build cool AI projects in 24 hours",
-    "description": "A 24-hour hackathon focused on building innovative AI-powered applications.",
-    "cover_image_url": "https://example.com/images/ai-hackathon.png",
-    "price": 100.0,
-    "is_per_head": true,
-    "rules": "No plagiarism. Teams must submit code on GitHub.",
-    "event_type": "EVENT",
-    "is_group": true,
-    "max_teamsize": 4,
-    "min_teamsize": 2,
-    "total_seats": 100,
-    "seats_filled": 0,
-    "event_status": "ACTIVE",
-    "event_mode": "OFFLINE",
-    "attendance_mode": "SOLO",
-    "organizer_ids": [
-      "45450ef9-d607-490b-b43c-55930954c1ff"
-    ],
-    "tag_ids": [
-      "f49da278-953e-46ef-87f0-85fb41052cac"
-    ],
-    "people_ids": [
-      "4c544c94-d3be-4128-807b-bc215e1f4df1"
-    ],
-    "schedules": [
-      {
-        "event_date": "2025-11-29",
-        "start_time": "10:00:00",
-        "end_time": "12:00:00",
-        "venue": "Main Auditorium"
-      },
-      {
-        "event_date": "2025-11-30",
-        "start_time": "14:00:00",
-        "end_time": "16:00:00",
-        "venue": "Lab 101"
-      }
-    ]
-  }
 }
 
 settings {

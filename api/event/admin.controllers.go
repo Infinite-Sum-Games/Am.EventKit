@@ -13,6 +13,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/segmentio/ksuid"
 )
 
 func NewEvent(c *gin.Context) {
@@ -27,7 +28,7 @@ func NewEvent(c *gin.Context) {
 
 	q := db.New()
 	result, err := q.NewUntitledEventQuery(ctx, conn, db.NewUntitledEventQueryParams{
-		Name:        fmt.Sprintf("Untitled %d", time.UnixMilli(time.Now().Unix())),
+		Name:        fmt.Sprintf("Untitled %s", ksuid.New().String()),
 		Blurb:       "",
 		Description: "",
 		Price: pgtype.Numeric{
@@ -80,10 +81,10 @@ func NewEvent(c *gin.Context) {
 		"is_offline":      result.EventMode == db.EventModeEnumOFFLINE,
 		"attendance_mode": result.AttendanceMode,
 		"is_published":    result.EventStatus == db.EventStatusEnumACTIVE,
-		"people":          nil,
-		"organizers":      nil,
-		"tags":            nil,
-		"schedules":       nil,
+		"people":          []string{},
+		"organizers":      []string{},
+		"tags":            []string{},
+		"schedules":       []string{},
 	})
 	pkg.Log.SuccessCtx(c)
 }
