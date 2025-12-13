@@ -65,6 +65,7 @@ func NewEvent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+		"message":          "New event created successfully",
 		"event_id":         result.ID.String(),
 		"event_name":       result.Name,
 		"blurb":            result.Blurb,
