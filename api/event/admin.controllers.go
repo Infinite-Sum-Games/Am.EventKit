@@ -65,26 +65,26 @@ func NewEvent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"event_name":      result.Name,
-		"blurb":           result.Blurb,
-		"description":     result.Description,
-		"poster_url":      result.CoverImageUrl.String,
-		"price":           result.Price.Int,
-		"is_per_head":     result.IsPerHead,
-		"rules":           result.Rules,
-		"is_group":        result.IsGroup,
-		"min_teamsize":    result.MinTeamsize.Int32,
-		"max_teamsize":    result.MaxTeamsize.Int32,
-		"seat_count":      result.TotalSeats,
-		"event_type":      result.EventType,
-		"is_technical":    result.IsTechnical,
-		"is_offline":      result.EventMode == db.EventModeEnumOFFLINE,
-		"attendance_mode": result.AttendanceMode,
-		"is_published":    result.EventStatus == db.EventStatusEnumACTIVE,
-		"people":          []string{},
-		"organizers":      []string{},
-		"tags":            []string{},
-		"schedules":       []string{},
+		"event_name":       result.Name,
+		"blurb":            result.Blurb,
+		"description":      result.Description,
+		"poster_url":       result.CoverImageUrl.String,
+		"price":            result.Price.Int,
+		"pricing_per_head": result.IsPerHead,
+		"rules":            result.Rules,
+		"is_group":         result.IsGroup,
+		"min_teamsize":     result.MinTeamsize.Int32,
+		"max_teamsize":     result.MaxTeamsize.Int32,
+		"seat_count":       result.TotalSeats,
+		"event_type":       result.EventType,
+		"is_technical":     result.IsTechnical,
+		"is_offline":       result.EventMode == db.EventModeEnumOFFLINE,
+		"attendance_mode":  result.AttendanceMode,
+		"is_published":     result.EventStatus == db.EventStatusEnumACTIVE,
+		"people":           []string{},
+		"organizers":       []string{},
+		"tags":             []string{},
+		"schedules":        []string{},
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -96,7 +96,10 @@ func AddEventDetails(c *gin.Context) {
 
 // Poster URL
 func AddEventPoster(c *gin.Context) {
-
+	req, ok := pkg.ValidateRequest[AddEventPosterRequest](c)
+	if !ok {
+		return
+	}
 }
 
 // IsTeam, MinSize, MaxSize, Seats
