@@ -114,7 +114,7 @@ func SeedStudents(conn *pgx.Conn) error {
 	q := db.New()
 
 	students, _ := q.ViewStudentSeedQuery(context.Background(), conn)
-	if students[0] > 0 {
+	if len(students) > 0 {
 		pkg.Log.Info("Students already seeded, skipping...")
 		return nil
 	}
@@ -831,6 +831,77 @@ func SeedEventTagMapping(conn *pgx.Conn) error {
 	return nil
 }
 
+func SeedBookings(conn *pgx.Conn) error {
+	ctx := context.Background()
+	q := db.New()
+
+	// 1. Check if bookings already exist
+	bookings, _ := q.ViewBookingsSeedQuery(ctx, conn)
+	if len(bookings) > 0 {
+		pkg.Log.Info("Bookings already seeded, skipping...")
+		return nil
+	}
+
+	// 2. Fetch Events
+	events, err := q.ViewEventSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing events: %v\n", err)
+		return err
+	}
+
+	// 3. Fetch Students
+	students, err := q.ViewStudentSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing students: %v\n", err)
+		return err
+	}
+
+	pkg.Log.Info("Seeding bookings...")
+
+	for _, student := range students {
+		for _, event := range events {
+
+			// to avoid a dense matrix where everyone booked everything.
+			randomNumber := gofakeit.Float32Range(0, 1)
+
+			if randomNumber < 0.3 {
+
+				// A. Determine Status Logic
+				statusRand := gofakeit.Float32Range(0, 1)
+				txnStatus := "SUCCESS"
+				seatsReleased := int32(0)
+
+				if statusRand > 0.95 {
+					txnStatus = "FAILED"
+					seatsReleased = 1
+				} else if statusRand > 0.90 {
+					txnStatus = "PENDING"
+				}
+
+				// B. Prepare Parameters
+				params := db.SeedBookingsQueryParams{
+					TxnID:           "TXN-" + gofakeit.UUID(),
+					StudentID:       student.ID,
+					EventID:         event.ID,
+					RegistrationFee: event.Price,
+					ProductInfo:     event.Name,
+					SeatsReleased:   seatsReleased,
+					TxnStatus:       txnStatus,
+				}
+
+				err := q.SeedBookingsQuery(ctx, conn, params)
+				if err != nil {
+					pkg.Log.Error("Failed to seed booking", err)
+					return err
+				}
+			}
+		}
+	}
+
+	pkg.Log.Info("Bookings seeded successfully.")
+	return nil
+}
+
 func seed() {
 	conn, err := initDB()
 	if err != nil {
@@ -885,6 +956,11 @@ func seed() {
 		os.Exit(1)
 	}
 	if err := SeedEventTagMapping(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SeedBookings(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}

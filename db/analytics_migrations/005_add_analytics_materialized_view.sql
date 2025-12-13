@@ -1,5 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+DROP MATERIALIZED VIEW IF EXISTS revenue_analytics;
+
 CREATE MATERIALIZED VIEW revenue_analytics AS
 SELECT
     1 AS id,
@@ -64,6 +70,8 @@ ON revenue_analytics(id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+DROP MATERIALIZED VIEW IF EXISTS event_registration_analytics;
+
 CREATE MATERIALIZED VIEW event_registration_analytics AS
 SELECT
     1 AS id,
@@ -119,6 +127,8 @@ ON event_registration_analytics(id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+DROP MATERIALIZED VIEW IF EXISTS people_registration_analytics;
+
 CREATE MATERIALIZED VIEW people_registration_analytics AS
 SELECT
     1 AS id,
@@ -143,6 +153,8 @@ ON people_registration_analytics(id);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+DROP MATERIALIZED VIEW IF EXISTS transaction_analytics;
+
 CREATE MATERIALIZED VIEW transaction_analytics AS
 SELECT
     1 AS id,
