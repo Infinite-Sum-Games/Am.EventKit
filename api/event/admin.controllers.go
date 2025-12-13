@@ -284,9 +284,10 @@ func MarkEventAsCompleted(c *gin.Context) {
 	result, err := q.MarkEventAsCompletedQuery(ctx, conn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "",
+			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -315,9 +316,10 @@ func UnmarkEventAsCompleted(c *gin.Context) {
 	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "",
+			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
