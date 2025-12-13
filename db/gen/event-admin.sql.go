@@ -12,6 +12,107 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteEventPosterQuery = `-- name: DeleteEventPosterQuery :one
+UPDATE event
+SET cover_image_url = NULL
+WHERE id = $1
+RETURNING id
+`
+
+func (q *Queries) DeleteEventPosterQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, deleteEventPosterQuery, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deleteEventScheduleByIdQuery = `-- name: DeleteEventScheduleByIdQuery :one
+DELETE FROM event_schedule
+WHERE id = $1
+RETURNING id
+`
+
+func (q *Queries) DeleteEventScheduleByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, deleteEventScheduleByIdQuery, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const disconnectEventAndOrganizerQuery = `-- name: DisconnectEventAndOrganizerQuery :exec
+DELETE FROM event_to_organizer_mapping
+WHERE 
+  event_id = $1
+  AND organizer_id = $2
+RETURNING id
+`
+
+type DisconnectEventAndOrganizerQueryParams struct {
+	EventID     uuid.UUID `json:"event_id"`
+	OrganizerID uuid.UUID `json:"organizer_id"`
+}
+
+func (q *Queries) DisconnectEventAndOrganizerQuery(ctx context.Context, db DBTX, arg DisconnectEventAndOrganizerQueryParams) error {
+	_, err := db.Exec(ctx, disconnectEventAndOrganizerQuery, arg.EventID, arg.OrganizerID)
+	return err
+}
+
+const disconnectEventAndPeopleQuery = `-- name: DisconnectEventAndPeopleQuery :one
+DELETE FROM people_to_event_mapping
+WHERE 
+  event_id = $1
+  AND person_id = $2
+RETURNING id
+`
+
+type DisconnectEventAndPeopleQueryParams struct {
+	EventID  uuid.UUID `json:"event_id"`
+	PersonID uuid.UUID `json:"person_id"`
+}
+
+func (q *Queries) DisconnectEventAndPeopleQuery(ctx context.Context, db DBTX, arg DisconnectEventAndPeopleQueryParams) (int32, error) {
+	row := db.QueryRow(ctx, disconnectEventAndPeopleQuery, arg.EventID, arg.PersonID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const disconnectEventAndTags = `-- name: DisconnectEventAndTags :one
+DELETE FROM event_tag_mapping
+WHERE 
+  event_id = $1
+  AND tag_id = $2
+RETURNING
+  event_id
+`
+
+type DisconnectEventAndTagsParams struct {
+	EventID uuid.UUID `json:"event_id"`
+	TagID   uuid.UUID `json:"tag_id"`
+}
+
+func (q *Queries) DisconnectEventAndTags(ctx context.Context, db DBTX, arg DisconnectEventAndTagsParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, disconnectEventAndTags, arg.EventID, arg.TagID)
+	var event_id uuid.UUID
+	err := row.Scan(&event_id)
+	return event_id, err
+}
+
+const markEventAsCompletedQuery = `-- name: MarkEventAsCompletedQuery :one
+UPDATE event
+SET
+  event_status = 'COMPLETED'
+WHERE
+  id = $1
+RETURNING
+  event_status
+`
+
+func (q *Queries) MarkEventAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+	row := db.QueryRow(ctx, markEventAsCompletedQuery, id)
+	var event_status EventStatusEnum
+	err := row.Scan(&event_status)
+	return event_status, err
+}
+
 const newUntitledEventQuery = `-- name: NewUntitledEventQuery :one
 INSERT INTO event (
   name,
@@ -129,4 +230,55 @@ func (q *Queries) NewUntitledEventQuery(ctx context.Context, db DBTX, arg NewUnt
 		&i.EventStatus,
 	)
 	return i, err
+}
+
+const publishEventQuery = `-- name: PublishEventQuery :one
+UPDATE event
+SET
+  event_status = 'ACTIVE'
+WHERE
+  id = $1
+RETURNING
+  event_status
+`
+
+func (q *Queries) PublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+	row := db.QueryRow(ctx, publishEventQuery, id)
+	var event_status EventStatusEnum
+	err := row.Scan(&event_status)
+	return event_status, err
+}
+
+const unmarkEventsAsCompletedQuery = `-- name: UnmarkEventsAsCompletedQuery :one
+UPDATE event
+SET
+  event_status = 'ACTIVE'
+WHERE
+  id = $1
+RETURNING
+  event_status
+`
+
+func (q *Queries) UnmarkEventsAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+	row := db.QueryRow(ctx, unmarkEventsAsCompletedQuery, id)
+	var event_status EventStatusEnum
+	err := row.Scan(&event_status)
+	return event_status, err
+}
+
+const unpublishEventQuery = `-- name: UnpublishEventQuery :one
+UPDATE event
+SET
+  event_status = 'CLOSED'
+WHERE
+  id = $1
+RETURNING
+  event_status
+`
+
+func (q *Queries) UnpublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+	row := db.QueryRow(ctx, unpublishEventQuery, id)
+	var event_status EventStatusEnum
+	err := row.Scan(&event_status)
+	return event_status, err
 }
