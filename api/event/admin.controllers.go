@@ -65,6 +65,7 @@ func NewEvent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+		"event_id":         result.ID.String(),
 		"event_name":       result.Name,
 		"blurb":            result.Blurb,
 		"description":      result.Description,
@@ -95,12 +96,17 @@ func AddEventDetails(c *gin.Context) {
 }
 
 // Poster URL
-func AddEventPoster(c *gin.Context) {
-	req, ok := pkg.ValidateRequest[AddEventPosterRequest](c)
-	if !ok {
-		return
-	}
-}
+// func AddEventPoster(c *gin.Context) {
+// 	req, ok := pkg.ValidateRequest[AddEventPosterRequest](c)
+// 	if !ok {
+// 		return
+// 	}
+//
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"event_id":   result.ID,
+// 		"poster_url": result.ConverImageUrl.String,
+// 	})
+// }
 
 // IsTeam, MinSize, MaxSize, Seats
 func AddEventDimension(c *gin.Context) {

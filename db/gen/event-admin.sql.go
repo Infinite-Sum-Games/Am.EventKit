@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -32,6 +33,7 @@ INSERT INTO event (
   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
 )
 RETURNING 
+  id,
   name,
   blurb,
   description,
@@ -69,6 +71,7 @@ type NewUntitledEventQueryParams struct {
 }
 
 type NewUntitledEventQueryRow struct {
+	ID             uuid.UUID          `json:"id"`
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
@@ -107,6 +110,7 @@ func (q *Queries) NewUntitledEventQuery(ctx context.Context, db DBTX, arg NewUnt
 	)
 	var i NewUntitledEventQueryRow
 	err := row.Scan(
+		&i.ID,
 		&i.Name,
 		&i.Blurb,
 		&i.Description,
