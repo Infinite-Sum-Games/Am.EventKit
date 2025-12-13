@@ -99,8 +99,7 @@ func AddNewPerson(c *gin.Context) {
 }
 
 func UpdatePersonDetails(c *gin.Context) {
-	id := c.Param("id")
-	personId, ok := pkg.GrabUuid(c, id, "PEOPLE", "person")
+	personId, ok := pkg.GrabUuid(c, c.Param("personId"), "PEOPLE", "person")
 	if !ok {
 		return
 	}
@@ -155,7 +154,7 @@ func UpdatePersonDetails(c *gin.Context) {
 }
 
 func DeletePerson(c *gin.Context) {
-	personId, ok := pkg.GrabUuid(c, c.Param("id"), "PEOPLE", "person")
+	personId, ok := pkg.GrabUuid(c, c.Param("personId"), "PEOPLE", "person")
 	if !ok {
 		return
 	}
