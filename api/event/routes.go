@@ -16,11 +16,11 @@ func EventRoutes(r *gin.RouterGroup) {
 
 	// Admin event controllers
 	r.GET("/admin/new", NewEvent)
-	r.POST("/admin/details", AddEventDetails)
-	r.POST("/admin/poster", AddEventPoster)
+	r.POST("/admin/details/:eventId", AddEventDetails)
+	r.POST("/admin/poster/:eventId", AddEventPoster)
 	r.DELETE("/admin/poster/:eventId", DeleteEventPoster)
-	r.POST("/admin/size", AddEventDimension)
-	r.POST("/admin/toggle", AddEventToggles)
+	r.POST("/admin/size/:eventId", AddEventDimension)
+	r.POST("/admin/toggle/:eventId", AddEventToggles)
 	r.POST("/admin/organizer", ConnectEventAndOrganizer)
 	r.DELETE("/admin/organizer", DisconnectEventAndOrganizer)
 	r.POST("/admin/tags", ConnectEventAndTags)
