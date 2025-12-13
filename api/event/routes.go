@@ -11,7 +11,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.GET("/auth/", mw.Auth, mw.CheckUser, FetchAllEventsWithAuth)
 	r.GET("/auth/:eventId", mw.Auth, mw.CheckUser, FetchEventByEventIdWithAuth)
 
-	r.GET("/new", NewEvent)
+	r.GET("/admin/new", NewEvent)
 	r.PUT("/:eventId", mw.Auth, mw.CheckAdmin, EditEvent)
 	r.PUT("/:eventId/toggle-status", mw.Auth, mw.CheckAdmin, ToggleEventStatus)
 
