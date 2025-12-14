@@ -1,0 +1,16 @@
+meta {
+  name: disonnectEventAndOrganizer
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/events/admin/organizer
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

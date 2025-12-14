@@ -1,0 +1,19 @@
+meta {
+  name: updateEventDimensions
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/events/admin/size/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 
+}
+
+settings {
+  encodeUrl: true
+}

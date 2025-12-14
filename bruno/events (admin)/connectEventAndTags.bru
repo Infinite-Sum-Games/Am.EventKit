@@ -1,0 +1,16 @@
+meta {
+  name: connectEventAndTags
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/events/admin/tag
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

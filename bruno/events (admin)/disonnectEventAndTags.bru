@@ -1,0 +1,16 @@
+meta {
+  name: disonnectEventAndTags
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/events/admin/tag
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

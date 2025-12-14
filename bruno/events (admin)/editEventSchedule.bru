@@ -1,0 +1,20 @@
+meta {
+  name: editEventSchedule
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/events/admin/schedule/:scheduleId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  scheduleId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

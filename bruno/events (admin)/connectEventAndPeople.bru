@@ -1,0 +1,16 @@
+meta {
+  name: connectEventAndPeople
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/events/admin/people
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -303,58 +303,82 @@ func AddEventDimension(c *gin.Context) {
 }
 
 // // EventType, Mark As Completed, EventMode, AttendanceType
-//
-//	func AddEventToggles(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.AddEventTogglesRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		var eventMode = db.EventModeEnumONLINE
-//
-//		if req.IsOffline {
-//			eventMode = db.EventModeEnumOFFLINE
-//		}
-//
-//		q := db.New()
-//		result, err := q.AddEventTogglesQuery(ctx, conn, db.AddEventTogglesQueryParams{
-//			AttendanceMode: req.AttendanceMode,
-//			IsTechnical:    req.IsTechnical,
-//			IsGroup:        req.IsGroup,
-//			EventMode:      eventMode,
-//		})
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event togglables", err)
-//			return
-//		}
-//
-//		eventIsCompleted := result.EventStatus == db.EventStatusEnumCOMPLETED
-//		eventIsActive := result.EventStatus == db.EventStatusEnumACTIVE
-//		eventIsOffline := result.EventMode == db.EventModeEnumOFFLINE
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message":         "Event toggle metadata added successfully",
-//			"event_type":      result.EventType,
-//			"attendance_mode": result.AttendanceMode,
-//			"is_offline":      eventIsOffline,
-//			"is_technical":    result.IsTechnical,
-//			"is_published":    eventIsCompleted || eventIsActive,
-//			"is_completed":    eventIsCompleted,
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
+func AddEventToggles(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.AddEventTogglesRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	// Logic
+	var eventMode = db.EventModeEnumONLINE
+	var attendanceMode = db.AttendanceModeEnumSOLO
+	var eventType = db.EventTypeEnumEVENT
+	var eventStatus = db.EventStatusEnumCLOSED
+
+	if req.IsOffline {
+		eventMode = db.EventModeEnumOFFLINE
+	}
+	if req.AttendanceMode == "DUO" {
+		attendanceMode = db.AttendanceModeEnumDUO
+	}
+	if req.EventType == "WORKSHOP" {
+		eventType = db.EventTypeEnumWORKSHOP
+	}
+	// Check for publishing before completed. Publishing means both
+	// ACTIVE state and COMPLETED state
+	if req.IsPublished {
+		eventStatus = db.EventStatusEnumACTIVE
+	}
+	if req.IsCompleted {
+		eventStatus = db.EventStatusEnumCOMPLETED
+	}
+
+	q := db.New()
+	result, err := q.AddEventTogglesQuery(ctx, conn, db.AddEventTogglesQueryParams{
+		ID:             eventId,
+		EventType:      eventType, // EVENT | WORKSHOP
+		EventMode:      eventMode, // IsOffline or not
+		AttendanceMode: attendanceMode,
+		IsTechnical:    pgtype.Bool{Bool: req.IsTechnical, Valid: true},
+		EventStatus:    eventStatus, // PUBLISHED | COMPLETED | CLOSED
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event togglables", err)
+		return
+	}
+
+	eventIsCompleted := result.EventStatus == db.EventStatusEnumCOMPLETED
+	eventIsActive := result.EventStatus == db.EventStatusEnumACTIVE
+	eventIsOffline := result.EventMode == db.EventModeEnumOFFLINE
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Event toggle metadata added successfully",
+		"event_type":      result.EventType,      // WORKSHOP | EVENT
+		"attendance_mode": result.AttendanceMode, // SOLO | DUO
+		"is_offline":      eventIsOffline,
+		"is_technical":    result.IsTechnical,
+		"is_published":    eventIsCompleted || eventIsActive,
+		"is_completed":    eventIsCompleted,
+	})
+	pkg.Log.SuccessCtx(c)
+}
 
 func ConnectEventAndOrganizer(c *gin.Context) {
 	req, ok := pkg.ValidateRequest[models.ConnectEventAndOrganizerRequest](c)

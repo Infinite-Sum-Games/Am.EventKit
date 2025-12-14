@@ -1,0 +1,16 @@
+meta {
+  name: addEventSchedule
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/events/admin/schedule
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
