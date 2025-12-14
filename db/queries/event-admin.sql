@@ -67,21 +67,74 @@ RETURNING
   id,
   cover_image_url;
 
--- name: PublishEventQuery :one
-UPDATE event
-SET
-  event_status = 'ACTIVE'
-WHERE
-  id = $1
-RETURNING
-  event_status;
-
 -- name: DeleteEventPosterQuery :one
 UPDATE event
 SET 
   cover_image_url = NULL
-WHERE id = $1
+WHERE 
+  id = $1
 RETURNING id;
+
+-- name: AddEventDimensionQuery :one
+UPDATE event
+SET
+  is_group = $1,
+  total_seats = $2,
+  min_teamsize = $3,
+  max_teamsize = $4,
+  updated_at = NOW()
+WHERE
+  id = $1
+RETURNING
+  is_group,
+  total_seats,
+  min_teamsize,
+  max_teamsize
+  updated_at;
+
+-- name: AddEventTogglesQuery :one
+UPDATE event
+SET
+  event_type = $1,
+  is_group = $2,
+  event_status = $3,
+  event_mode = $4,
+  attendance_mode = $5,
+  updated_at = NOW()
+WHERE
+  id = $6
+RETURNING
+  event_type,
+  is_group,
+  event_status,
+  event_mode,
+  attendance_mode,
+  updated_at;
+
+-- name: ConnectEventAndOrganizerQuery :one
+INSERT INTO event_to_organizer_mapping (
+  event_id,
+  organizer_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  organizer_id;
+
+-- name: DisconnectEventAndOrganizerQuery :one
+DELETE FROM event_to_organizer_mapping
+WHERE 
+  event_id = $1
+  AND organizer_id = $2
+RETURNING id;
+
+-- name: ConnectEventAndTagsQuery :one
+INSERT INTO event_tag_mapping (
+  event_id,
+  tag_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  tag_id;
 
 -- name: DisconnectEventAndTags :one
 DELETE FROM event_tag_mapping
@@ -91,11 +144,44 @@ WHERE
 RETURNING
   event_id;
 
--- name: DisconnectEventAndOrganizerQuery :one
-DELETE FROM event_to_organizer_mapping
+-- name: AddEventScheduleQuery :one
+INSERT INTO event_schedule (
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  venue
+) VALUES ($1, $2, $3, $4, $5)
+RETURNING
+  id,
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  updated_at;
+
+-- name: EditEventScheduleQuery :one
+UPDATE event_schedule
+SET
+  event_date = $1,
+  start_time = $2,
+  end_time = $3,
+  venue = $4,
+  updated_at = NOW()
+WHERE
+  id = $5
+RETURNING
+  id,
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  updated_at;
+
+-- name: DeleteEventScheduleByIdQuery :one
+DELETE FROM event_schedule
 WHERE 
-  event_id = $1
-  AND organizer_id = $2
+  id = $1
 RETURNING id;
 
 -- name: DisconnectEventAndPeopleQuery :one
@@ -105,35 +191,46 @@ WHERE
   AND person_id = $2
 RETURNING id;
 
--- name: DeleteEventScheduleByIdQuery :one
-DELETE FROM event_schedule
-WHERE 
+-- name: PublishEventQuery :one
+UPDATE event
+SET
+  event_status = 'ACTIVE',
+  updated_at = NOW()
+WHERE
   id = $1
-RETURNING id;
+RETURNING
+  event_status,
+  updated_at;
 
 -- name: UnpublishEventQuery :one
 UPDATE event
 SET
-  event_status = 'CLOSED'
+  event_status = 'CLOSED',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status;
+  event_status,
+  updated_at;
 
 -- name: MarkEventAsCompletedQuery :one
 UPDATE event
 SET
-  event_status = 'COMPLETED'
+  event_status = 'COMPLETED',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status;
+  event_status,
+  updated_at;
 
 -- name: UnmarkEventsAsCompletedQuery :one
 UPDATE event
 SET
-  event_status = 'ACTIVE'
+  event_status = 'ACTIVE',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status;
+  event_status,
+  updated_at;

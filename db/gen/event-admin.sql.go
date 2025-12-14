@@ -76,6 +76,55 @@ func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEven
 	return i, err
 }
 
+const addEventDimensionQuery = `-- name: AddEventDimensionQuery :one
+UPDATE event
+SET
+  is_group = $1,
+  total_seats = $2,
+  min_teamsize = $3,
+  max_teamsize = $4,
+  updated_at = NOW()
+WHERE
+  id = $1
+RETURNING
+  is_group,
+  total_seats,
+  min_teamsize,
+  max_teamsize
+  updated_at
+`
+
+type AddEventDimensionQueryParams struct {
+	IsGroup     bool        `json:"is_group"`
+	TotalSeats  int32       `json:"total_seats"`
+	MinTeamsize pgtype.Int4 `json:"min_teamsize"`
+	MaxTeamsize pgtype.Int4 `json:"max_teamsize"`
+}
+
+type AddEventDimensionQueryRow struct {
+	IsGroup     bool        `json:"is_group"`
+	TotalSeats  int32       `json:"total_seats"`
+	MinTeamsize pgtype.Int4 `json:"min_teamsize"`
+	UpdatedAt   pgtype.Int4 `json:"updated_at"`
+}
+
+func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEventDimensionQueryParams) (AddEventDimensionQueryRow, error) {
+	row := db.QueryRow(ctx, addEventDimensionQuery,
+		arg.IsGroup,
+		arg.TotalSeats,
+		arg.MinTeamsize,
+		arg.MaxTeamsize,
+	)
+	var i AddEventDimensionQueryRow
+	err := row.Scan(
+		&i.IsGroup,
+		&i.TotalSeats,
+		&i.MinTeamsize,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const addEventPosterQuery = `-- name: AddEventPosterQuery :one
 UPDATE event
 SET
@@ -104,11 +153,179 @@ func (q *Queries) AddEventPosterQuery(ctx context.Context, db DBTX, arg AddEvent
 	return i, err
 }
 
+const addEventScheduleQuery = `-- name: AddEventScheduleQuery :one
+INSERT INTO event_schedule (
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  venue
+) VALUES ($1, $2, $3, $4, $5)
+RETURNING
+  id,
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  updated_at
+`
+
+type AddEventScheduleQueryParams struct {
+	EventID   uuid.UUID        `json:"event_id"`
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Venue     string           `json:"venue"`
+}
+
+type AddEventScheduleQueryRow struct {
+	ID        uuid.UUID        `json:"id"`
+	EventID   uuid.UUID        `json:"event_id"`
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) AddEventScheduleQuery(ctx context.Context, db DBTX, arg AddEventScheduleQueryParams) (AddEventScheduleQueryRow, error) {
+	row := db.QueryRow(ctx, addEventScheduleQuery,
+		arg.EventID,
+		arg.EventDate,
+		arg.StartTime,
+		arg.EndTime,
+		arg.Venue,
+	)
+	var i AddEventScheduleQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.EventDate,
+		&i.StartTime,
+		&i.EndTime,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const addEventTogglesQuery = `-- name: AddEventTogglesQuery :one
+UPDATE event
+SET
+  event_type = $1,
+  is_group = $2,
+  event_status = $3,
+  event_mode = $4,
+  attendance_mode = $5,
+  updated_at = NOW()
+WHERE
+  id = $6
+RETURNING
+  event_type,
+  is_group,
+  event_status,
+  event_mode,
+  attendance_mode,
+  updated_at
+`
+
+type AddEventTogglesQueryParams struct {
+	EventType      EventTypeEnum      `json:"event_type"`
+	IsGroup        bool               `json:"is_group"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	ID             uuid.UUID          `json:"id"`
+}
+
+type AddEventTogglesQueryRow struct {
+	EventType      EventTypeEnum      `json:"event_type"`
+	IsGroup        bool               `json:"is_group"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
+}
+
+func (q *Queries) AddEventTogglesQuery(ctx context.Context, db DBTX, arg AddEventTogglesQueryParams) (AddEventTogglesQueryRow, error) {
+	row := db.QueryRow(ctx, addEventTogglesQuery,
+		arg.EventType,
+		arg.IsGroup,
+		arg.EventStatus,
+		arg.EventMode,
+		arg.AttendanceMode,
+		arg.ID,
+	)
+	var i AddEventTogglesQueryRow
+	err := row.Scan(
+		&i.EventType,
+		&i.IsGroup,
+		&i.EventStatus,
+		&i.EventMode,
+		&i.AttendanceMode,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const connectEventAndOrganizerQuery = `-- name: ConnectEventAndOrganizerQuery :one
+INSERT INTO event_to_organizer_mapping (
+  event_id,
+  organizer_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  organizer_id
+`
+
+type ConnectEventAndOrganizerQueryParams struct {
+	EventID     uuid.UUID `json:"event_id"`
+	OrganizerID uuid.UUID `json:"organizer_id"`
+}
+
+type ConnectEventAndOrganizerQueryRow struct {
+	EventID     uuid.UUID `json:"event_id"`
+	OrganizerID uuid.UUID `json:"organizer_id"`
+}
+
+func (q *Queries) ConnectEventAndOrganizerQuery(ctx context.Context, db DBTX, arg ConnectEventAndOrganizerQueryParams) (ConnectEventAndOrganizerQueryRow, error) {
+	row := db.QueryRow(ctx, connectEventAndOrganizerQuery, arg.EventID, arg.OrganizerID)
+	var i ConnectEventAndOrganizerQueryRow
+	err := row.Scan(&i.EventID, &i.OrganizerID)
+	return i, err
+}
+
+const connectEventAndTagsQuery = `-- name: ConnectEventAndTagsQuery :one
+INSERT INTO event_tag_mapping (
+  event_id,
+  tag_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  tag_id
+`
+
+type ConnectEventAndTagsQueryParams struct {
+	EventID uuid.UUID `json:"event_id"`
+	TagID   uuid.UUID `json:"tag_id"`
+}
+
+type ConnectEventAndTagsQueryRow struct {
+	EventID uuid.UUID `json:"event_id"`
+	TagID   uuid.UUID `json:"tag_id"`
+}
+
+func (q *Queries) ConnectEventAndTagsQuery(ctx context.Context, db DBTX, arg ConnectEventAndTagsQueryParams) (ConnectEventAndTagsQueryRow, error) {
+	row := db.QueryRow(ctx, connectEventAndTagsQuery, arg.EventID, arg.TagID)
+	var i ConnectEventAndTagsQueryRow
+	err := row.Scan(&i.EventID, &i.TagID)
+	return i, err
+}
+
 const deleteEventPosterQuery = `-- name: DeleteEventPosterQuery :one
 UPDATE event
 SET 
   cover_image_url = NULL
-WHERE id = $1
+WHERE 
+  id = $1
 RETURNING id
 `
 
@@ -192,21 +409,84 @@ func (q *Queries) DisconnectEventAndTags(ctx context.Context, db DBTX, arg Disco
 	return event_id, err
 }
 
+const editEventScheduleQuery = `-- name: EditEventScheduleQuery :one
+UPDATE event_schedule
+SET
+  event_date = $1,
+  start_time = $2,
+  end_time = $3,
+  venue = $4,
+  updated_at = NOW()
+WHERE
+  id = $5
+RETURNING
+  id,
+  event_id,
+  event_date,
+  start_time,
+  end_time,
+  updated_at
+`
+
+type EditEventScheduleQueryParams struct {
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Venue     string           `json:"venue"`
+	ID        uuid.UUID        `json:"id"`
+}
+
+type EditEventScheduleQueryRow struct {
+	ID        uuid.UUID        `json:"id"`
+	EventID   uuid.UUID        `json:"event_id"`
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) EditEventScheduleQuery(ctx context.Context, db DBTX, arg EditEventScheduleQueryParams) (EditEventScheduleQueryRow, error) {
+	row := db.QueryRow(ctx, editEventScheduleQuery,
+		arg.EventDate,
+		arg.StartTime,
+		arg.EndTime,
+		arg.Venue,
+		arg.ID,
+	)
+	var i EditEventScheduleQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.EventDate,
+		&i.StartTime,
+		&i.EndTime,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const markEventAsCompletedQuery = `-- name: MarkEventAsCompletedQuery :one
 UPDATE event
 SET
-  event_status = 'COMPLETED'
+  event_status = 'COMPLETED',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status
+  event_status,
+  updated_at
 `
 
-func (q *Queries) MarkEventAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+type MarkEventAsCompletedQueryRow struct {
+	EventStatus EventStatusEnum  `json:"event_status"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) MarkEventAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (MarkEventAsCompletedQueryRow, error) {
 	row := db.QueryRow(ctx, markEventAsCompletedQuery, id)
-	var event_status EventStatusEnum
-	err := row.Scan(&event_status)
-	return event_status, err
+	var i MarkEventAsCompletedQueryRow
+	err := row.Scan(&i.EventStatus, &i.UpdatedAt)
+	return i, err
 }
 
 const newUntitledEventQuery = `-- name: NewUntitledEventQuery :one
@@ -331,50 +611,71 @@ func (q *Queries) NewUntitledEventQuery(ctx context.Context, db DBTX, arg NewUnt
 const publishEventQuery = `-- name: PublishEventQuery :one
 UPDATE event
 SET
-  event_status = 'ACTIVE'
+  event_status = 'ACTIVE',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status
+  event_status,
+  updated_at
 `
 
-func (q *Queries) PublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+type PublishEventQueryRow struct {
+	EventStatus EventStatusEnum  `json:"event_status"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) PublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (PublishEventQueryRow, error) {
 	row := db.QueryRow(ctx, publishEventQuery, id)
-	var event_status EventStatusEnum
-	err := row.Scan(&event_status)
-	return event_status, err
+	var i PublishEventQueryRow
+	err := row.Scan(&i.EventStatus, &i.UpdatedAt)
+	return i, err
 }
 
 const unmarkEventsAsCompletedQuery = `-- name: UnmarkEventsAsCompletedQuery :one
 UPDATE event
 SET
-  event_status = 'ACTIVE'
+  event_status = 'ACTIVE',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status
+  event_status,
+  updated_at
 `
 
-func (q *Queries) UnmarkEventsAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+type UnmarkEventsAsCompletedQueryRow struct {
+	EventStatus EventStatusEnum  `json:"event_status"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) UnmarkEventsAsCompletedQuery(ctx context.Context, db DBTX, id uuid.UUID) (UnmarkEventsAsCompletedQueryRow, error) {
 	row := db.QueryRow(ctx, unmarkEventsAsCompletedQuery, id)
-	var event_status EventStatusEnum
-	err := row.Scan(&event_status)
-	return event_status, err
+	var i UnmarkEventsAsCompletedQueryRow
+	err := row.Scan(&i.EventStatus, &i.UpdatedAt)
+	return i, err
 }
 
 const unpublishEventQuery = `-- name: UnpublishEventQuery :one
 UPDATE event
 SET
-  event_status = 'CLOSED'
+  event_status = 'CLOSED',
+  updated_at = NOW()
 WHERE
   id = $1
 RETURNING
-  event_status
+  event_status,
+  updated_at
 `
 
-func (q *Queries) UnpublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (EventStatusEnum, error) {
+type UnpublishEventQueryRow struct {
+	EventStatus EventStatusEnum  `json:"event_status"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) UnpublishEventQuery(ctx context.Context, db DBTX, id uuid.UUID) (UnpublishEventQueryRow, error) {
 	row := db.QueryRow(ctx, unpublishEventQuery, id)
-	var event_status EventStatusEnum
-	err := row.Scan(&event_status)
-	return event_status, err
+	var i UnpublishEventQueryRow
+	err := row.Scan(&i.EventStatus, &i.UpdatedAt)
+	return i, err
 }
