@@ -534,7 +534,8 @@ func PublishEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Successfully published event",
-		"event_status": result,
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -566,7 +567,8 @@ func UnpublishEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Event unmarked but is still in published state",
-		"event_status": result,
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 
@@ -599,7 +601,8 @@ func MarkEventAsCompleted(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Event marked as completed",
-		"event_status": result,
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -638,7 +641,8 @@ func UnmarkEventAsCompleted(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":      "Event unmarked but is still in published state",
-		"event_status": result,
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
