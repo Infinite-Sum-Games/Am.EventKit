@@ -713,7 +713,7 @@ func DeleteEventSchedule(c *gin.Context) {
 }
 
 func PublishEvent(c *gin.Context) {
-	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
 	if !ok {
 		return
 	}
@@ -746,7 +746,7 @@ func PublishEvent(c *gin.Context) {
 }
 
 func UnpublishEvent(c *gin.Context) {
-	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
 	if !ok {
 		return
 	}
