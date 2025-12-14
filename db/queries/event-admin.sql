@@ -37,6 +37,26 @@ RETURNING
   attendance_mode,
   event_status;
 
+-- name: AddEventDetailsQuery :one
+UPDATE event
+SET
+  name = $1,
+  blurb = $2,
+  description = $3,
+  rules = $4, 
+  price = $5,
+  is_per_head = $6
+WHERE
+  id = $7
+RETURNING
+  id,
+  name,
+  blurb,
+  description,
+  rules,
+  price,
+  is_per_head;
+
 -- name: PublishEventQuery :one
 UPDATE event
 SET
@@ -77,7 +97,8 @@ RETURNING id;
 
 -- name: DeleteEventScheduleByIdQuery :one
 DELETE FROM event_schedule
-WHERE id = $1
+WHERE 
+  id = $1
 RETURNING id;
 
 -- name: UnpublishEventQuery :one

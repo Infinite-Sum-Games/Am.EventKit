@@ -12,9 +12,74 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addEventDetailsQuery = `-- name: AddEventDetailsQuery :one
+UPDATE event
+SET
+  name = $1,
+  blurb = $2,
+  description = $3,
+  rules = $4, 
+  price = $5,
+  is_per_head = $6
+WHERE
+  id = $7
+RETURNING
+  id,
+  name,
+  blurb,
+  description,
+  rules,
+  price,
+  is_per_head
+`
+
+type AddEventDetailsQueryParams struct {
+	Name        string         `json:"name"`
+	Blurb       string         `json:"blurb"`
+	Description string         `json:"description"`
+	Rules       string         `json:"rules"`
+	Price       pgtype.Numeric `json:"price"`
+	IsPerHead   bool           `json:"is_per_head"`
+	ID          uuid.UUID      `json:"id"`
+}
+
+type AddEventDetailsQueryRow struct {
+	ID          uuid.UUID      `json:"id"`
+	Name        string         `json:"name"`
+	Blurb       string         `json:"blurb"`
+	Description string         `json:"description"`
+	Rules       string         `json:"rules"`
+	Price       pgtype.Numeric `json:"price"`
+	IsPerHead   bool           `json:"is_per_head"`
+}
+
+func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEventDetailsQueryParams) (AddEventDetailsQueryRow, error) {
+	row := db.QueryRow(ctx, addEventDetailsQuery,
+		arg.Name,
+		arg.Blurb,
+		arg.Description,
+		arg.Rules,
+		arg.Price,
+		arg.IsPerHead,
+		arg.ID,
+	)
+	var i AddEventDetailsQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Blurb,
+		&i.Description,
+		&i.Rules,
+		&i.Price,
+		&i.IsPerHead,
+	)
+	return i, err
+}
+
 const deleteEventPosterQuery = `-- name: DeleteEventPosterQuery :one
 UPDATE event
-SET cover_image_url = NULL
+SET 
+  cover_image_url = NULL
 WHERE id = $1
 RETURNING id
 `
@@ -27,7 +92,8 @@ func (q *Queries) DeleteEventPosterQuery(ctx context.Context, db DBTX, id uuid.U
 
 const deleteEventScheduleByIdQuery = `-- name: DeleteEventScheduleByIdQuery :one
 DELETE FROM event_schedule
-WHERE id = $1
+WHERE 
+  id = $1
 RETURNING id
 `
 

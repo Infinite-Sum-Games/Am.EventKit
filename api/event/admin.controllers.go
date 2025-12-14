@@ -70,29 +70,29 @@ func NewEvent(c *gin.Context) {
 	eventIsOffline := result.EventMode == db.EventModeEnumOFFLINE
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":          "New event created successfully",
-		"id":               result.ID.String(),
-		"name":             result.Name,
-		"blurb":            result.Blurb,
-		"description":      result.Description,
-		"poster_url":       result.CoverImageUrl.String,
-		"price":            result.Price.Int,
-		"pricing_per_head": result.IsPerHead,
-		"rules":            result.Rules,
-		"is_group":         result.IsGroup,
-		"min_teamsize":     result.MinTeamsize.Int32,
-		"max_teamsize":     result.MaxTeamsize.Int32,
-		"seat_count":       result.TotalSeats,
-		"event_type":       result.EventType,
-		"is_technical":     result.IsTechnical,
-		"is_offline":       eventIsOffline,
-		"attendance_mode":  result.AttendanceMode,
-		"is_published":     eventIsActive || eventIsCompleted,
-		"event_status":     eventIsCompleted,
-		"people":           []string{},
-		"organizers":       []string{},
-		"tags":             []string{},
-		"schedules":        []string{},
+		"message":         "New event created successfully",
+		"id":              result.ID.String(),
+		"name":            result.Name,
+		"blurb":           result.Blurb,
+		"description":     result.Description,
+		"poster_url":      result.CoverImageUrl.String,
+		"price":           result.Price.Int,
+		"is_per_head":     result.IsPerHead,
+		"rules":           result.Rules,
+		"is_group":        result.IsGroup,
+		"min_teamsize":    result.MinTeamsize.Int32,
+		"max_teamsize":    result.MaxTeamsize.Int32,
+		"seat_count":      result.TotalSeats,
+		"event_type":      result.EventType,
+		"is_technical":    result.IsTechnical,
+		"is_offline":      eventIsOffline,
+		"attendance_mode": result.AttendanceMode,
+		"is_published":    eventIsActive || eventIsCompleted,
+		"event_status":    eventIsCompleted,
+		"people":          []string{},
+		"organizers":      []string{},
+		"tags":            []string{},
+		"schedules":       []string{},
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -124,7 +124,11 @@ func AddEventDetails(c *gin.Context) {
 		Blurb:       req.Blurb,
 		Description: req.Description,
 		Rules:       req.Rules,
-		Price:       req.Price,
+		Price: pgtype.Numeric{
+			Int:   big.NewInt(int64(req.Price)),
+			Valid: true,
+		},
+		IsPerHead: req.IsPerHead,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -142,6 +146,7 @@ func AddEventDetails(c *gin.Context) {
 		"description": result.Description,
 		"rules":       result.Rules,
 		"price":       result.Price,
+		"is_per_head": result.IsPerHead,
 	})
 	pkg.Log.SuccessCtx(c)
 }
