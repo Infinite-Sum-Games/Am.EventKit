@@ -255,13 +255,7 @@ func AddEventDimension(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQuery{
-		EventId:     eventId,
-		IsGroup:     req.IsGroup,
-		TotalSeats:  req.TotalSeats,
-		MinTeamsize: req.MinTeamSize,
-		MaxTeamsize: req.MaxTeamSize,
-	})
+	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQueryParams{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -270,7 +264,9 @@ func AddEventDimension(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Event dimensions updated",
+		"message":     "Event dimensions updated",
+		"total_seats": result.TotalSeats,
+		"updated_at":  result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -414,8 +410,8 @@ func ConnectEventAndTags(c *gin.Context) {
 
 	q := db.New()
 	result, err := q.ConnectEventAndTagsQuery(ctx, conn, db.ConnectEventAndTagsQueryParams{
-		EventId: eventId,
-		TagId:   tagId,
+		EventID: eventId,
+		TagID:   tagId,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -427,13 +423,27 @@ func ConnectEventAndTags(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Tag added for event",
-		"id":      result.EventId,
-		"tag_id":  result.TagId,
+		"id":      result.EventID.String(),
+		"tag_id":  result.TagID.String(),
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
 func DisonnectEventAndTags(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.DisconnectEventAndTagsRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	tagId, ok := pkg.GrabUuid(c, req.TagId, "ADMIN-EVENT", "Tag")
+	if !ok {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -445,6 +455,30 @@ func DisonnectEventAndTags(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
+	result, err := q.DisonnectEventAndTagsQuery(ctx, conn,
+		db.DisconnectEventAndTagsParams{
+			EventID: eventId,
+			TagID:   tagId,
+		})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No mapping found for given eventId and tagId",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "",
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func AddEventSchedule(c *gin.Context) {
