@@ -6,7 +6,7 @@ import (
 )
 
 func TagRoutes(r *gin.RouterGroup) {
-	r.GET("/", GetAllEventTags)
+	r.GET("/", mw.Auth, mw.CheckAdmin, GetAllEventTags)
 	r.POST("/", mw.Auth, mw.CheckAdmin, CreateEventTag)
 	r.PUT("/:tagId", mw.Auth, mw.CheckAdmin, EditEventTag)
 	r.DELETE("/:tagId", mw.Auth, mw.CheckAdmin, DeleteEventTag)
