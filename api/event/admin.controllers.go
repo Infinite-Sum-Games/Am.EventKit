@@ -753,6 +753,20 @@ func EditEventSchedule(c *gin.Context) {
 		},
 		Venue: req.Venue,
 	})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to edit event schedule", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to edit event schedule", err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Successfully updated event schedule",
