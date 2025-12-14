@@ -490,7 +490,7 @@ func ConnectEventAndTags(c *gin.Context) {
 	if !ok {
 		return
 	}
-	tagId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Tag")
+	tagId, ok := pkg.GrabUuid(c, req.TagId, "ADMIN-EVENT", "Tag")
 	if !ok {
 		return
 	}
@@ -503,8 +503,6 @@ func ConnectEventAndTags(c *gin.Context) {
 		return
 	}
 	defer conn.Release()
-
-	fmt.Printf("%s")
 
 	q := db.New()
 	result, err := q.ConnectEventAndTagsQuery(ctx, conn, db.ConnectEventAndTagsQueryParams{
