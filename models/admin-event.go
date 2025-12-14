@@ -37,9 +37,12 @@ func (r AddEventDimensionRequest) Validate() error {
 }
 
 type AddEventTogglesRequest struct {
-	IsGroup            bool `json:"is_team_event"`
-	IsPublished        bool `json:"is_published"`
-	IsRegistrationOpen bool `json:"is_registration_open"`
+	IsOffline          bool   `json:"is_offline"`
+	AttendanceMode     string `json:"attendance_mode"`
+	IsTechnical        bool   `json:"is_technical"`
+	IsGroup            bool   `json:"is_group"`
+	IsPublished        bool   `json:"is_published"`
+	IsRegistrationOpen bool   `json:"is_registration_open"`
 }
 
 func (r AddEventTogglesRequest) Validate() error {
@@ -64,21 +67,39 @@ func (r DisconnectEventAndOrganizerRequest) Validate() error {
 	return nil
 }
 
-type ConnectEventAndTags struct {
+type ConnectEventAndTagsRequest struct {
 	EventId string `json:"id"`
 	TagId   string `json:"tag_id"`
 }
 
-func (r ConnectEventAndTags) Validate() error {
+func (r ConnectEventAndTagsRequest) Validate() error {
 	return nil
 }
 
 type DisconnectEventAndTagsRequest struct {
 	EventId string `json:"id"`
-	TagID   string `json:"tag_id"`
+	TagId   string `json:"tag_id"`
 }
 
 func (r DisconnectEventAndTagsRequest) Validate() error {
+	return nil
+}
+
+type ConnectEventAndPeopleRequest struct {
+	EventId  string `json:"id"`
+	PersonId string `json:"person_id"`
+}
+
+func (r ConnectEventAndPeopleRequest) Validate() error {
+	return nil
+}
+
+type DisconnectEventAndPeopleRequest struct {
+	EventId  string `json:"id"`
+	PersonId string `json:"person_id"`
+}
+
+func (r DisconnectEventAndPeopleRequest) Validate() error {
 	return nil
 }
 

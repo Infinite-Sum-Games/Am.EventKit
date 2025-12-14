@@ -225,6 +225,7 @@ WHERE
 RETURNING
   event_type,
   is_group,
+  is_technical,
   event_status,
   event_mode,
   attendance_mode,
@@ -243,6 +244,7 @@ type AddEventTogglesQueryParams struct {
 type AddEventTogglesQueryRow struct {
 	EventType      EventTypeEnum      `json:"event_type"`
 	IsGroup        bool               `json:"is_group"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
 	EventStatus    EventStatusEnum    `json:"event_status"`
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
@@ -262,6 +264,7 @@ func (q *Queries) AddEventTogglesQuery(ctx context.Context, db DBTX, arg AddEven
 	err := row.Scan(
 		&i.EventType,
 		&i.IsGroup,
+		&i.IsTechnical,
 		&i.EventStatus,
 		&i.EventMode,
 		&i.AttendanceMode,

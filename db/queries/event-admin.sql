@@ -106,6 +106,7 @@ WHERE
 RETURNING
   event_type,
   is_group,
+  is_technical,
   event_status,
   event_mode,
   attendance_mode,
