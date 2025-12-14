@@ -497,6 +497,9 @@ func AddEventSchedule(c *gin.Context) {
 
 func EditEventSchedule(c *gin.Context) {
 	scheduleId, ok := pkg.GrabUuid(c, c.Param("scheduleId"), "ADMIN-EVENT", "Schedule")
+	if !ok {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
