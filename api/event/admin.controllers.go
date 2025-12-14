@@ -233,6 +233,17 @@ func DeleteEventPoster(c *gin.Context) {
 
 // IsTeam, MinSize, MaxSize, Seats
 func AddEventDimension(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.AddEventDimensionRequest](c)
+	if !ok {
+		return
+	}
+
+	// TODO:
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -244,6 +255,24 @@ func AddEventDimension(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
+	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQuery{
+		EventId:     eventId,
+		IsGroup:     req.IsGroup,
+		TotalSeats:  req.TotalSeats,
+		MinTeamsize: req.MinTeamSize,
+		MaxTeamsize: req.MaxTeamSize,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Event dimensions updated",
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 // EventType, Mark As Completed, EventMode, AttendanceType
@@ -592,11 +621,18 @@ func UnmarkEventAsCompleted(c *gin.Context) {
 
 	q := db.New()
 	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
 		return
 	}
 
