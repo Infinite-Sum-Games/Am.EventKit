@@ -37,12 +37,12 @@ func (r AddEventDimensionRequest) Validate() error {
 }
 
 type AddEventTogglesRequest struct {
-	IsOffline          bool   `json:"is_offline"`
-	AttendanceMode     string `json:"attendance_mode"`
-	IsTechnical        bool   `json:"is_technical"`
-	IsGroup            bool   `json:"is_group"`
-	IsPublished        bool   `json:"is_published"`
-	IsRegistrationOpen bool   `json:"is_registration_open"`
+	EventType      string `json:"event_type"`
+	AttendanceMode string `json:"attendance_mode"`
+	IsOffline      bool   `json:"is_offline"`
+	IsTechnical    bool   `json:"is_technical"`
+	IsPublished    bool   `json:"is_published"`
+	IsCompleted    bool   `json:"is_completed"`
 }
 
 func (r AddEventTogglesRequest) Validate() error {

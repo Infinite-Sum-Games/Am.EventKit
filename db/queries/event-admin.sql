@@ -100,10 +100,10 @@ RETURNING
 UPDATE event
 SET
   event_type = $1,
-  is_group = $2,
-  event_status = $3,
-  event_mode = $4,
-  attendance_mode = $5,
+  event_mode = $2,
+  attendance_mode = $3,
+  is_technical = $4,
+  event_status = $5,
   updated_at = NOW()
 WHERE
   id = $6

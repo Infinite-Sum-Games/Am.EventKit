@@ -217,10 +217,10 @@ const addEventTogglesQuery = `-- name: AddEventTogglesQuery :one
 UPDATE event
 SET
   event_type = $1,
-  is_group = $2,
-  event_status = $3,
-  event_mode = $4,
-  attendance_mode = $5,
+  event_mode = $2,
+  attendance_mode = $3,
+  is_technical = $4,
+  event_status = $5,
   updated_at = NOW()
 WHERE
   id = $6
@@ -236,10 +236,10 @@ RETURNING
 
 type AddEventTogglesQueryParams struct {
 	EventType      EventTypeEnum      `json:"event_type"`
-	IsGroup        bool               `json:"is_group"`
-	EventStatus    EventStatusEnum    `json:"event_status"`
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
 	ID             uuid.UUID          `json:"id"`
 }
 
@@ -256,10 +256,10 @@ type AddEventTogglesQueryRow struct {
 func (q *Queries) AddEventTogglesQuery(ctx context.Context, db DBTX, arg AddEventTogglesQueryParams) (AddEventTogglesQueryRow, error) {
 	row := db.QueryRow(ctx, addEventTogglesQuery,
 		arg.EventType,
-		arg.IsGroup,
-		arg.EventStatus,
 		arg.EventMode,
 		arg.AttendanceMode,
+		arg.IsTechnical,
+		arg.EventStatus,
 		arg.ID,
 	)
 	var i AddEventTogglesQueryRow
