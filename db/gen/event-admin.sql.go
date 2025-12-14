@@ -76,6 +76,34 @@ func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEven
 	return i, err
 }
 
+const addEventPosterQuery = `-- name: AddEventPosterQuery :one
+UPDATE event
+SET
+  cover_image_url = $1
+WHERE
+  id = $2
+RETURNING
+  id,
+  cover_image_url
+`
+
+type AddEventPosterQueryParams struct {
+	CoverImageUrl pgtype.Text `json:"cover_image_url"`
+	ID            uuid.UUID   `json:"id"`
+}
+
+type AddEventPosterQueryRow struct {
+	ID            uuid.UUID   `json:"id"`
+	CoverImageUrl pgtype.Text `json:"cover_image_url"`
+}
+
+func (q *Queries) AddEventPosterQuery(ctx context.Context, db DBTX, arg AddEventPosterQueryParams) (AddEventPosterQueryRow, error) {
+	row := db.QueryRow(ctx, addEventPosterQuery, arg.CoverImageUrl, arg.ID)
+	var i AddEventPosterQueryRow
+	err := row.Scan(&i.ID, &i.CoverImageUrl)
+	return i, err
+}
+
 const deleteEventPosterQuery = `-- name: DeleteEventPosterQuery :one
 UPDATE event
 SET 

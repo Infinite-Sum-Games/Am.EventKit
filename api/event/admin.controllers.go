@@ -151,7 +151,6 @@ func AddEventDetails(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-// Poster URL
 func AddEventPoster(c *gin.Context) {
 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
 	if !ok {
@@ -174,8 +173,8 @@ func AddEventPoster(c *gin.Context) {
 
 	q := db.New()
 	result, err := q.AddEventPosterQuery(ctx, conn, db.AddEventPosterQueryParams{
-		EventId:       eventId,
-		CoverImageUrl: req.PosterUrl,
+		ID:            eventId,
+		CoverImageUrl: pgtype.Text{String: req.PosterUrl, Valid: true},
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -187,7 +186,7 @@ func AddEventPoster(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Successfully updated event poster",
-		"event_id":   result.ID,
+		"id":         result.ID,
 		"poster_url": result.CoverImageUrl.String,
 	})
 	pkg.Log.SuccessCtx(c)
@@ -209,7 +208,6 @@ func DeleteEventPoster(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-
 	_, err = q.DeleteEventPosterQuery(ctx, conn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

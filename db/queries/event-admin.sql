@@ -57,6 +57,16 @@ RETURNING
   price,
   is_per_head;
 
+-- name: AddEventPosterQuery :one
+UPDATE event
+SET
+  cover_image_url = $1
+WHERE
+  id = $2
+RETURNING
+  id,
+  cover_image_url;
+
 -- name: PublishEventQuery :one
 UPDATE event
 SET

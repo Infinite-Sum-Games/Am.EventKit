@@ -20,7 +20,7 @@ func (r AddEventDetailsRequest) Validate() error {
 }
 
 type AddEventPosterRequest struct {
-	EventPosterUrl string `json:"poster_url"`
+	PosterUrl string `json:"poster_url"`
 }
 
 func (r AddEventPosterRequest) Validate() error {
