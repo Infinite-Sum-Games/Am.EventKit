@@ -114,7 +114,7 @@ func AddEventDetails(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 
@@ -167,7 +167,7 @@ func AddEventPoster(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -211,7 +211,7 @@ func DeleteEventPoster(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -259,7 +259,7 @@ func AddEventDimension(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -314,7 +314,7 @@ func AddEventDimension(c *gin.Context) {
 //		defer cancel()
 //
 //		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 //			return
 //		}
 //		defer conn.Release()
@@ -375,7 +375,7 @@ func ConnectEventAndOrganizer(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -422,7 +422,7 @@ func DisconnectEventAndOrganizer(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -473,7 +473,7 @@ func ConnectEventAndTags(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -518,7 +518,7 @@ func DisonnectEventAndTags(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -569,7 +569,7 @@ func ConnectEventAndPeople(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -615,7 +615,7 @@ func DisconnectEventAndPeople(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-ERROR") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-ERROR") {
 		return
 	}
 	defer conn.Release()
@@ -653,7 +653,7 @@ func DisconnectEventAndPeople(c *gin.Context) {
 //		defer cancel()
 //
 //		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 //			return
 //		}
 //		defer conn.Release()
@@ -676,7 +676,7 @@ func DisconnectEventAndPeople(c *gin.Context) {
 //		defer cancel()
 //
 //		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 //			return
 //		}
 //		defer conn.Release()
@@ -694,7 +694,7 @@ func DeleteEventSchedule(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -725,7 +725,7 @@ func PublishEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -758,7 +758,7 @@ func UnpublishEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -792,7 +792,7 @@ func MarkEventAsCompleted(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -832,7 +832,7 @@ func UnmarkEventAsCompleted(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()

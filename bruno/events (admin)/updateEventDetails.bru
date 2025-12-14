@@ -1,11 +1,11 @@
 meta {
-  name: editEvent
+  name: updateEventDetails
   type: http
   seq: 3
 }
 
-put {
-  url: {{baseUrl}}/events/:eventId
+post {
+  url: {{baseUrl}}/events/admin/details/:eventId
   body: json
   auth: inherit
 }
@@ -19,42 +19,9 @@ body:json {
     "name": "AI Hackathon - Updated",
     "blurb": "Updated blurb for the AI hackathon",
     "description": "Updated description for the 24-hour AI hackathon.",
-    "cover_image_url": "https://example.com/images/ai-hackathon-updated.png",
+    "poster_url": "https://example.com/images/ai-hackathon-updated.png",
     "price": 150.0,
-    "is_per_head": true,
-    "rules": "No plagiarism. Teams must submit code on GitHub. Updated rules apply.",
-    "event_type": "EVENT",
-    "is_group": true,
-    "max_teamsize": 5,
-    "min_teamsize": 2,
-    "total_seats": 120,
-    "seats_filled": 10,
-    "event_status": "ACTIVE",
-    "event_mode": "OFFLINE",
-    "attendance_mode": "SOLO",
-    "organizer_ids": [
-      "45450ef9-d607-490b-b43c-55930954c1ff"
-    ],
-    "tag_ids": [
-      "f49da278-953e-46ef-87f0-85fb41052cac"
-    ],
-    "people_ids": [
-      "4c544c94-d3be-4128-807b-bc215e1f4df1"
-    ],
-    "schedules": [
-      {
-        "event_date": "2025-11-29",
-        "start_time": "11:00",
-        "end_time": "13:00",
-        "venue": "Main Auditorium"
-      },
-      {
-        "event_date": "2025-11-30",
-        "start_time": "15:00",
-        "end_time": "17:00",
-        "venue": "Lab 102"
-      }
-    ]
+    "rules": "No plagiarism. Teams must submit code on GitHub. Updated rules apply."
   }
 }
 
