@@ -71,8 +71,8 @@ func NewEvent(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":          "New event created successfully",
-		"event_id":         result.ID.String(),
-		"event_name":       result.Name,
+		"id":               result.ID.String(),
+		"name":             result.Name,
 		"blurb":            result.Blurb,
 		"description":      result.Description,
 		"poster_url":       result.CoverImageUrl.String,
@@ -234,7 +234,6 @@ func ConnectEventAndOrganizer(c *gin.Context) {
 }
 
 func DisconnectEventAndOrganizer(c *gin.Context) {
-
 }
 
 func ConnectEventAndTags(c *gin.Context) {
@@ -254,14 +253,98 @@ func EditEventSchedule(c *gin.Context) {
 }
 
 func DeleteEventSchedule(c *gin.Context) {
+	scheduleId, ok := pkg.GrabUuid(c, c.Param("organizerId"), "ADMIN-EVENT", "Organizer")
+	if !ok {
+		return
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.DeleteEventScheduleByIdQuery(ctx, conn, scheduleId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event schedule", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully removed event schedule",
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func PublishEvent(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.PublishEventQuery(ctx, conn, eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to publish event", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Successfully published event",
+		"event_status": result,
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func UnpublishEvent(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Event unmarked but is still in published state",
+		"event_status": result,
+	})
+	pkg.Log.SuccessCtx(c)
 
 }
 
