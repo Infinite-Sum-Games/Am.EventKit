@@ -243,7 +243,10 @@ func AddEventDimension(c *gin.Context) {
 		return
 	}
 
-	// TODO:
+	if !req.IsGroup {
+		req.MinTeamSize = 1
+		req.MaxTeamSize = 1
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -255,24 +258,42 @@ func AddEventDimension(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQueryParams{})
+	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQueryParams{
+		ID:         eventId,
+		IsGroup:    req.IsGroup,
+		TotalSeats: int32(req.TotalSeats),
+		MinTeamsize: pgtype.Int4{
+			Int32: int32(req.MinTeamSize),
+		},
+		MaxTeamsize: pgtype.Int4{
+			Int32: int32(req.MaxTeamSize),
+		},
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event dimensions", err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Event dimensions updated",
-		"total_seats": result.TotalSeats,
-		"updated_at":  result.UpdatedAt,
+		"message":      "Event dimensions updated",
+		"total_seats":  result.TotalSeats,
+		"is_group":     result.IsGroup,
+		"min_teamsize": result.MinTeamsize,
+		"max_teamsize": result.MaxTeamsize,
+		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
 // EventType, Mark As Completed, EventMode, AttendanceType
 func AddEventToggles(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.AddEventTogglesRequest](c)
+	if !ok {
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -283,7 +304,41 @@ func AddEventToggles(c *gin.Context) {
 	}
 	defer conn.Release()
 
+	var eventMode = db.EventModeEnumONLINE
+
+	if req.IsOffline {
+		eventMode = db.EventModeEnumOFFLINE
+	}
+
 	q := db.New()
+	result, err := q.AddEventTogglesQuery(ctx, conn, db.AddEventTogglesQueryParams{
+		AttendanceMode: req.AttendanceMode,
+		IsTechnical:    req.IsTechnical,
+		IsGroup:        req.IsGroup,
+		EventMode:      eventMode,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event togglables", err)
+		return
+	}
+
+	eventIsCompleted := result.EventStatus == db.EventStatusEnumCOMPLETED
+	eventIsActive := result.EventStatus == db.EventStatusEnumACTIVE
+	eventIsOffline := result.EventMode == db.EventModeEnumOFFLINE
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Event toggle metadata added successfully",
+		"event_type":      result.EventType,
+		"attendance_mode": result.AttendanceMode,
+		"is_offline":      eventIsOffline,
+		"is_technical":    result.IsTechnical,
+		"is_published":    eventIsCompleted || eventIsActive,
+		"is_completed":    eventIsCompleted,
+	})
+	pkg.Log.SuccessCtx(c)
 }
 
 func ConnectEventAndOrganizer(c *gin.Context) {
@@ -427,6 +482,14 @@ func ConnectEventAndTags(c *gin.Context) {
 		"tag_id":  result.TagID.String(),
 	})
 	pkg.Log.SuccessCtx(c)
+}
+
+func ConnectEventAndPeople(c *gin.Context) {
+
+}
+
+func DisconnectEventAndPeople(c *gin.Context) {
+
 }
 
 func DisonnectEventAndTags(c *gin.Context) {

@@ -30,6 +30,9 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.POST("/admin/tags", ConnectEventAndTags)
 	r.DELETE("/admin/tags", DisonnectEventAndTags)
 
+	r.POST("/admin/people", ConnectEventAndPeople)
+	r.DELETE("/admin/people", DisconnectEventAndPeople)
+
 	r.POST("/admin/schedule", AddEventSchedule)
 	r.PUT("/admin/schedule/:scheduleId", EditEventSchedule)
 	r.DELETE("/admin/schedule/:scheduleId", DeleteEventSchedule)
