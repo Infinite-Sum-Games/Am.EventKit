@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 func AnalyticsRoutes(r *gin.RouterGroup) {

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	apiAnalytics "github.com/Thanus-Kumaar/anokha-2025-backend/api/analytics"
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiBooking "github.com/Thanus-Kumaar/anokha-2025-backend/api/booking"
@@ -18,7 +19,6 @@ import (
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
 	apiProfile "github.com/Thanus-Kumaar/anokha-2025-backend/api/profile"
 	apiTag "github.com/Thanus-Kumaar/anokha-2025-backend/api/tag"
-	apiAnalytics "github.com/Thanus-Kumaar/anokha-2025-backend/api/analytics"
 	mq "github.com/Thanus-Kumaar/anokha-2025-backend/message-queue"
 
 	cmd "github.com/Thanus-Kumaar/anokha-2025-backend/cmd"

@@ -90,7 +90,7 @@ func GetPeopleAnalytics(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "Successfully fetched people analytics",
+		"message":                     "Successfully fetched people analytics",
 		"people_registration_summary": peopleRegistrationSummary,
 	})
 	pkg.Log.SuccessCtx(c)
@@ -119,8 +119,8 @@ func GetTransactionAnalytics(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "Successfully fetched participants analytics",
-		"transaction_summary":      transactionSummary,
+		"message":             "Successfully fetched participants analytics",
+		"transaction_summary": transactionSummary,
 	})
 	pkg.Log.SuccessCtx(c)
 }
