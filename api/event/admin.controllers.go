@@ -12,6 +12,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/segmentio/ksuid"
 )
@@ -151,85 +152,85 @@ func AddEventDetails(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-//
-// func AddEventPoster(c *gin.Context) {
-// 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	req, ok := pkg.ValidateRequest[models.AddEventPosterRequest](c)
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := cmd.DBPool.Acquire(ctx)
-// 	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-// 		return
-// 	}
-// 	defer conn.Release()
-//
-// 	q := db.New()
-// 	result, err := q.AddEventPosterQuery(ctx, conn, db.AddEventPosterQueryParams{
-// 		ID:            eventId,
-// 		CoverImageUrl: pgtype.Text{String: req.PosterUrl, Valid: true},
-// 	})
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to update event poster", err)
-// 		return
-// 	}
-//
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message":    "Successfully updated event poster",
-// 		"id":         result.ID,
-// 		"poster_url": result.CoverImageUrl.String,
-// 	})
-// 	pkg.Log.SuccessCtx(c)
-// }
-//
-// func DeleteEventPoster(c *gin.Context) {
-// 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := cmd.DBPool.Acquire(ctx)
-// 	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-// 		return
-// 	}
-// 	defer conn.Release()
-//
-// 	q := db.New()
-// 	_, err = q.DeleteEventPosterQuery(ctx, conn, eventId)
-// 	if err == pgx.ErrNoRows {
-// 		c.JSON(http.StatusNotFound, gin.H{
-// 			"message": "No event with given eventId exist",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
-// 		return
-// 	}
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
-// 		return
-// 	}
-//
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message": "Successfully deleted event poster",
-// 	})
-// 	pkg.Log.SuccessCtx(c)
-// }
+func AddEventPoster(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.AddEventPosterRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.AddEventPosterQuery(ctx, conn, db.AddEventPosterQueryParams{
+		ID:            eventId,
+		CoverImageUrl: pgtype.Text{String: req.PosterUrl, Valid: true},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to update event poster", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Successfully updated event poster",
+		"id":         result.ID,
+		"poster_url": result.CoverImageUrl.String,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func DeleteEventPoster(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.DeleteEventPosterQuery(ctx, conn, eventId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No event with given eventId exist",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully deleted event poster",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 //
 // // IsTeam, MinSize, MaxSize, Seats
 // func AddEventDimension(c *gin.Context) {
