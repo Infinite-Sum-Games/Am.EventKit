@@ -305,6 +305,33 @@ func (q *Queries) ConnectEventAndOrganizerQuery(ctx context.Context, db DBTX, ar
 	return i, err
 }
 
+const connectEventAndPeopleQuery = `-- name: ConnectEventAndPeopleQuery :one
+INSERT INTO people_to_event_mapping (
+  event_id,
+  person_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  person_id
+`
+
+type ConnectEventAndPeopleQueryParams struct {
+	EventID  uuid.UUID `json:"event_id"`
+	PersonID uuid.UUID `json:"person_id"`
+}
+
+type ConnectEventAndPeopleQueryRow struct {
+	EventID  uuid.UUID `json:"event_id"`
+	PersonID uuid.UUID `json:"person_id"`
+}
+
+func (q *Queries) ConnectEventAndPeopleQuery(ctx context.Context, db DBTX, arg ConnectEventAndPeopleQueryParams) (ConnectEventAndPeopleQueryRow, error) {
+	row := db.QueryRow(ctx, connectEventAndPeopleQuery, arg.EventID, arg.PersonID)
+	var i ConnectEventAndPeopleQueryRow
+	err := row.Scan(&i.EventID, &i.PersonID)
+	return i, err
+}
+
 const connectEventAndTagsQuery = `-- name: ConnectEventAndTagsQuery :one
 INSERT INTO event_tag_mapping (
   event_id,

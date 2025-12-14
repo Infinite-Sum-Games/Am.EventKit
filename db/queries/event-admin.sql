@@ -189,6 +189,15 @@ WHERE
   id = $1
 RETURNING id;
 
+-- name: ConnectEventAndPeopleQuery :one
+INSERT INTO people_to_event_mapping (
+  event_id,
+  person_id
+) VALUES ($1, $2)
+RETURNING
+  event_id,
+  person_id;
+
 -- name: DisconnectEventAndPeopleQuery :one
 DELETE FROM people_to_event_mapping
 WHERE 

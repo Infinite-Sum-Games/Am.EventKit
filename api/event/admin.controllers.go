@@ -498,53 +498,52 @@ func DisconnectEventAndOrganizer(c *gin.Context) {
 //		})
 //		pkg.Log.SuccessCtx(c)
 //	}
-//
-//	func ConnectEventAndPeople(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.ConnectEventAndPeopleRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
-//		if !ok {
-//			return
-//		}
-//		personId, ok := pkg.GrabUuid(c, req.PersonId, "ADMIN-EVENT", "Person")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//		result, err := q.ConnectEventAndPeopleQuery(ctx, conn,
-//			db.ConnectEventAndPeopleQueryParams{
-//				EventID:  eventId,
-//				PersonID: personId,
-//			})
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to connect event and people", err)
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"messasge":  "Successfully connected event and person",
-//			"id":        result.EventID,
-//			"person_id": result.PersonID,
-//		})
-//		pkg.Log.SuccessCtx(c)
-//
-// }
+
+func ConnectEventAndPeople(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.ConnectEventAndPeopleRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+	personId, ok := pkg.GrabUuid(c, req.PersonId, "ADMIN-EVENT", "Person")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.ConnectEventAndPeopleQuery(ctx, conn,
+		db.ConnectEventAndPeopleQueryParams{
+			EventID:  eventId,
+			PersonID: personId,
+		})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to connect event and people", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"messasge":  "Successfully connected event and person",
+		"id":        result.EventID,
+		"person_id": result.PersonID,
+	})
+	pkg.Log.SuccessCtx(c)
+}
 
 func DisconnectEventAndPeople(c *gin.Context) {
 	req, ok := pkg.ValidateRequest[models.DisconnectEventAndPeopleRequest](c)
