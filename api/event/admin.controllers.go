@@ -779,7 +779,6 @@ func UnpublishEvent(c *gin.Context) {
 		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
-
 }
 
 func MarkEventAsCompleted(c *gin.Context) {
