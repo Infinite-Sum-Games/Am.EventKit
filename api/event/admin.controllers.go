@@ -220,6 +220,7 @@ func DeleteEventPoster(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Successfully deleted event poster",
 	})
+	pkg.Log.SuccessCtx(c)
 }
 
 // IsTeam, MinSize, MaxSize, Seats
