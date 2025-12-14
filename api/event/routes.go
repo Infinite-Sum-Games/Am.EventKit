@@ -21,7 +21,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.POST("/admin/poster/:eventId", AddEventPoster)
 	r.DELETE("/admin/poster/:eventId", DeleteEventPoster)
 
-	// r.POST("/admin/size/:eventId", AddEventDimension)
+	r.POST("/admin/size/:eventId", AddEventDimension)
 	// r.POST("/admin/toggle/:eventId", AddEventToggles)
 	//
 	// r.POST("/admin/organizer", ConnectEventAndOrganizer)
@@ -39,11 +39,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	//
 	// r.POST("/admin/publish/:eventId", PublishEvent)
 	// r.DELETE("/admin/publish/:eventId", UnpublishEvent)
-	//
-	// r.POST("/admin/completed/:eventId", MarkEventAsCompleted)
-	// r.DELETE("/admin/completed/:eventId", UnmarkEventAsCompleted)
-	//
-	// Deprecated routes; under refactoring
-	r.PUT("/:eventId", mw.Auth, mw.CheckAdmin, EditEvent)
-	r.PUT("/:eventId/toggle-status", mw.Auth, mw.CheckAdmin, ToggleEventStatus)
+
+	r.POST("/admin/completed/:eventId", MarkEventAsCompleted)
+	r.DELETE("/admin/completed/:eventId", UnmarkEventAsCompleted)
 }

@@ -777,39 +777,39 @@ func AddEventDimension(c *gin.Context) {
 // 	pkg.Log.SuccessCtx(c)
 //
 // }
-//
-// func MarkEventAsCompleted(c *gin.Context) {
-// 	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := cmd.DBPool.Acquire(ctx)
-// 	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-// 		return
-// 	}
-// 	defer conn.Release()
-//
-// 	q := db.New()
-// 	result, err := q.MarkEventAsCompletedQuery(ctx, conn, eventId)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
-// 		return
-// 	}
-//
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message":      "Event marked as completed",
-// 		"event_status": result.EventStatus,
-// 		"updated_at":   result.UpdatedAt,
-// 	})
-// 	pkg.Log.SuccessCtx(c)
-// }
+
+func MarkEventAsCompleted(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.MarkEventAsCompletedQuery(ctx, conn, eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Event marked as completed",
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
+	})
+	pkg.Log.SuccessCtx(c)
+}
 
 func UnmarkEventAsCompleted(c *gin.Context) {
 	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
