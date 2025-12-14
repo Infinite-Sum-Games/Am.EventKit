@@ -504,6 +504,8 @@ func ConnectEventAndTags(c *gin.Context) {
 	}
 	defer conn.Release()
 
+	fmt.Printf("%s")
+
 	q := db.New()
 	result, err := q.ConnectEventAndTagsQuery(ctx, conn, db.ConnectEventAndTagsQueryParams{
 		EventID: eventId,
@@ -511,7 +513,7 @@ func ConnectEventAndTags(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"": "",
+			"messsage": "Oops! Something package. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add tag for event", err)
 		return
