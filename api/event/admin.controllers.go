@@ -22,7 +22,7 @@ func NewEvent(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "EVENT") {
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 	defer conn.Release()
@@ -177,11 +177,18 @@ func AddEventPoster(c *gin.Context) {
 		ID:            eventId,
 		CoverImageUrl: pgtype.Text{String: req.PosterUrl, Valid: true},
 	})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to update event poster", err)
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to update event poster", err)
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to update event poster", err)
 		return
 	}
 
@@ -212,16 +219,16 @@ func DeleteEventPoster(c *gin.Context) {
 	_, err = q.DeleteEventPosterQuery(ctx, conn, eventId)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "No event with given eventId exist",
+			"message": "Event not found",
 		})
-		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to delete event poster", err)
 		return
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Failed to delete event poster", err)
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to delete event poster", err)
 		return
 	}
 
