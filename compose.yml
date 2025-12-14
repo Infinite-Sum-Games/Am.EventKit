@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: anokha/postgres-cron:18
+    image: naganathan05/postgres-cron:18
     container_name: anokha-postgres
     environment:
       POSTGRES_USER: postgres

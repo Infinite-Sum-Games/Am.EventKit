@@ -16,11 +16,7 @@ func GetRevenueAnalytics(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ANALYTICS-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
 		return
 	}
 	defer conn.Release()
@@ -48,11 +44,7 @@ func GetEventRegistrationAnalytics(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ANALYTICS-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
 		return
 	}
 	defer conn.Release()
@@ -81,11 +73,7 @@ func GetPeopleAnalytics(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ANALYTICS-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
 		return
 	}
 	defer conn.Release()
@@ -114,11 +102,7 @@ func GetTransactionAnalytics(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.FatalCtx(c, "[ANALYTICS-FATAL]: Failed to acquire DB connection", err)
+	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
 		return
 	}
 	defer conn.Release()

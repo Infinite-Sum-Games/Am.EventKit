@@ -1,8 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
 
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-
 SELECT cron.schedule(
     'refresh_analytics_every_30min',
     '*/30 * * * *',
