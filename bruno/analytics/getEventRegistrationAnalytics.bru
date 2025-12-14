@@ -1,0 +1,50 @@
+meta {
+  name: GetEventRegistrationAnalytics
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/analytics/registrations
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Event Registration Analytics
+
+  Provides:
+  - Total event registrations
+  - Participants vs non-participants split
+  - Event-wise registration vs total seats
+
+  ## 200 OK
+  ```json
+  {
+    "message": "Successfully fetched registration analytics",
+    "registration_summary": {
+      "total_event_registrations": 0,
+      "participant_split": {
+        "participants": 0,
+        "non_participants": 0
+      },
+      "event_registration_stats": []
+    }
+  }
+
+  ```json
+  {
+    "message": "Access denied."
+  }
+
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later"
+  }
+}
