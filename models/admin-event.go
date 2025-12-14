@@ -28,8 +28,10 @@ func (r AddEventPosterRequest) Validate() error {
 }
 
 type AddEventDimensionRequest struct {
-	MinTeamSize int `json:"min_team_size"`
-	MaxTeamSize int `json:"max_team_size"`
+	IsGroup     bool `json:"is_group"`
+	MinTeamSize int  `json:"min_teamsize"`
+	MaxTeamSize int  `json:"max_teamsize"`
+	TotalSeats  int  `json:"total_seats"`
 }
 
 func (r AddEventDimensionRequest) Validate() error {
