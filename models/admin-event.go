@@ -39,7 +39,7 @@ func (r AddEventDimensionRequest) Validate() error {
 }
 
 type AddEventTogglesRequest struct {
-	IsTeamEvent        bool `json:"is_team_event"`
+	IsGroup            bool `json:"is_team_event"`
 	IsPublished        bool `json:"is_published"`
 	IsRegistrationOpen bool `json:"is_registration_open"`
 }
@@ -113,4 +113,3 @@ type DeleteEventScheduleRequest struct {
 func (r *DeleteEventScheduleRequest) Validate() error {
 	return nil
 }
-
