@@ -91,7 +91,7 @@ WHERE
 RETURNING
   event_id;
 
--- name: DisconnectEventAndOrganizerQuery :exec
+-- name: DisconnectEventAndOrganizerQuery :one
 DELETE FROM event_to_organizer_mapping
 WHERE 
   event_id = $1
