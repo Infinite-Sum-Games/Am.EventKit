@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type AddEventDetailsRequest struct {
@@ -67,8 +65,8 @@ func (r DisconnectEventAndOrganizerRequest) Validate() error {
 }
 
 type ConnectEventAndTags struct {
-	EventId uuid.UUID   `json:"id"`
-	TagIDs  []uuid.UUID `json:"tag_ids"`
+	EventId string `json:"id"`
+	TagId   string `json:"tag_id"`
 }
 
 func (r ConnectEventAndTags) Validate() error {
@@ -76,40 +74,28 @@ func (r ConnectEventAndTags) Validate() error {
 }
 
 type DisconnectEventAndTagsRequest struct {
-	EventId uuid.UUID `json:"id"`
-	TagID   uuid.UUID `json:"tag_id"`
+	EventId string `json:"id"`
+	TagID   string `json:"tag_id"`
 }
 
-func (r *DisconnectEventAndTagsRequest) Validate() error {
+func (r DisconnectEventAndTagsRequest) Validate() error {
 	return nil
 }
 
-type AttachNewEventScheduleRequest struct {
-	EventId  uuid.UUID `json:"event_id"`
+type AddNewEventScheduleRequest struct {
+	Venue string `json:"venue"`
+}
+
+func (r AddNewEventScheduleRequest) Validate() error {
+	return nil
+}
+
+type EditEventScheduleRequest struct {
 	Round    string    `json:"round"`
 	Datetime time.Time `json:"datetime"`
 	Venue    string    `json:"venue"`
 }
 
-func (r *AttachNewEventScheduleRequest) Validate() error {
-	return nil
-}
-
-type EditEventScheduleRequest struct {
-	ScheduleId uuid.UUID `json:"schedule_id"`
-	Round      string    `json:"round"`
-	Datetime   time.Time `json:"datetime"`
-	Venue      string    `json:"venue"`
-}
-
-func (r *EditEventScheduleRequest) Validate() error {
-	return nil
-}
-
-type DeleteEventScheduleRequest struct {
-	ScheduleId uuid.UUID `json:"schedule_id"`
-}
-
-func (r *DeleteEventScheduleRequest) Validate() error {
+func (r EditEventScheduleRequest) Validate() error {
 	return nil
 }
