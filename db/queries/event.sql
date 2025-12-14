@@ -77,9 +77,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'person_name', p.name,
-        'profession', p.profession,
-        'phone_number', p.phone_number,
-        'email', p.email
+        'profession', p.profession
       )) FILTER (WHERE p.id IS NOT NULL),
       '[]'::jsonb
     ) AS people
@@ -94,7 +92,9 @@ LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
 
-WHERE e.id = $1
+WHERE 
+  e.id = $1
+  AND e.event_status = 'ACTIVE'
 GROUP BY e.id;
 
 -- name: GetEventsWithAuthQuery :many
@@ -184,9 +184,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'person_name', p.name,
-        'profession', p.profession,
-        'phone_number', p.phone_number,
-        'email', p.email
+        'profession', p.profession
       )) FILTER (WHERE p.id IS NOT NULL),
       '[]'::jsonb
     ) AS people,
