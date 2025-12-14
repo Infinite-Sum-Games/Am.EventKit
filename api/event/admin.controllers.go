@@ -147,7 +147,7 @@ func AddEventDetails(c *gin.Context) {
 		"description": result.Description,
 		"rules":       result.Rules,
 		"price":       result.Price,
-		"is_per_head": result.IsPerHead,
+		"updated_at":  result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -196,6 +196,7 @@ func AddEventPoster(c *gin.Context) {
 		"message":    "Successfully updated event poster",
 		"id":         result.ID,
 		"poster_url": result.CoverImageUrl.String,
+		"updated_at": result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -238,64 +239,70 @@ func DeleteEventPoster(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-//
-// // IsTeam, MinSize, MaxSize, Seats
-// func AddEventDimension(c *gin.Context) {
-// 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	req, ok := pkg.ValidateRequest[models.AddEventDimensionRequest](c)
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	if !req.IsGroup {
-// 		req.MinTeamSize = 1
-// 		req.MaxTeamSize = 1
-// 	}
-//
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := cmd.DBPool.Acquire(ctx)
-// 	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-// 		return
-// 	}
-// 	defer conn.Release()
-//
-// 	q := db.New()
-// 	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQueryParams{
-// 		ID:         eventId,
-// 		IsGroup:    req.IsGroup,
-// 		TotalSeats: int32(req.TotalSeats),
-// 		MinTeamsize: pgtype.Int4{
-// 			Int32: int32(req.MinTeamSize),
-// 		},
-// 		MaxTeamsize: pgtype.Int4{
-// 			Int32: int32(req.MaxTeamSize),
-// 		},
-// 	})
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event dimensions", err)
-// 		return
-// 	}
-//
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message":      "Event dimensions updated",
-// 		"total_seats":  result.TotalSeats,
-// 		"is_group":     result.IsGroup,
-// 		"min_teamsize": result.MinTeamsize,
-// 		"max_teamsize": result.MaxTeamsize,
-// 		"updated_at":   result.UpdatedAt,
-// 	})
-// 	pkg.Log.SuccessCtx(c)
-// }
-//
+// IsTeam, MinSize, MaxSize, Seats
+func AddEventDimension(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.AddEventDimensionRequest](c)
+	if !ok {
+		return
+	}
+
+	if !req.IsGroup {
+		req.MinTeamSize = 1
+		req.MaxTeamSize = 1
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.AddEventDimensionQuery(ctx, conn, db.AddEventDimensionQueryParams{
+		ID:         eventId,
+		IsGroup:    req.IsGroup,
+		TotalSeats: int32(req.TotalSeats),
+		MinTeamsize: pgtype.Int4{
+			Int32: int32(req.MinTeamSize),
+		},
+		MaxTeamsize: pgtype.Int4{
+			Int32: int32(req.MaxTeamSize),
+		},
+	})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event dimensions", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event dimensions", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Event dimensions updated",
+		"total_seats":  result.TotalSeats,
+		"is_group":     result.IsGroup,
+		"min_teamsize": result.MinTeamsize,
+		"max_teamsize": result.MaxTeamsize,
+		"updated_at":   result.UpdatedAt,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 // // EventType, Mark As Completed, EventMode, AttendanceType
 // func AddEventToggles(c *gin.Context) {
 // 	req, ok := pkg.ValidateRequest[models.AddEventTogglesRequest](c)

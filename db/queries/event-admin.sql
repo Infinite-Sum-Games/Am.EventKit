@@ -45,7 +45,8 @@ SET
   description = $3,
   rules = $4, 
   price = $5,
-  is_per_head = $6
+  is_per_head = $6,
+  updated_at = NOW()
 WHERE
   id = $7
 RETURNING
@@ -55,17 +56,20 @@ RETURNING
   description,
   rules,
   price,
-  is_per_head;
+  is_per_head
+  updated_at;
 
 -- name: AddEventPosterQuery :one
 UPDATE event
 SET
-  cover_image_url = $1
+  cover_image_url = $1,
+  updated_at = NOW()
 WHERE
   id = $2
 RETURNING
   id,
-  cover_image_url;
+  cover_image_url,
+  updated_at;
 
 -- name: DeleteEventPosterQuery :one
 UPDATE event

@@ -20,7 +20,8 @@ SET
   description = $3,
   rules = $4, 
   price = $5,
-  is_per_head = $6
+  is_per_head = $6,
+  updated_at = NOW()
 WHERE
   id = $7
 RETURNING
@@ -31,6 +32,7 @@ RETURNING
   rules,
   price,
   is_per_head
+  updated_at
 `
 
 type AddEventDetailsQueryParams struct {
@@ -50,7 +52,7 @@ type AddEventDetailsQueryRow struct {
 	Description string         `json:"description"`
 	Rules       string         `json:"rules"`
 	Price       pgtype.Numeric `json:"price"`
-	IsPerHead   bool           `json:"is_per_head"`
+	UpdatedAt   bool           `json:"updated_at"`
 }
 
 func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEventDetailsQueryParams) (AddEventDetailsQueryRow, error) {
@@ -71,7 +73,7 @@ func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEven
 		&i.Description,
 		&i.Rules,
 		&i.Price,
-		&i.IsPerHead,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -132,12 +134,14 @@ func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEv
 const addEventPosterQuery = `-- name: AddEventPosterQuery :one
 UPDATE event
 SET
-  cover_image_url = $1
+  cover_image_url = $1,
+  updated_at = NOW()
 WHERE
   id = $2
 RETURNING
   id,
-  cover_image_url
+  cover_image_url,
+  updated_at
 `
 
 type AddEventPosterQueryParams struct {
@@ -146,14 +150,15 @@ type AddEventPosterQueryParams struct {
 }
 
 type AddEventPosterQueryRow struct {
-	ID            uuid.UUID   `json:"id"`
-	CoverImageUrl pgtype.Text `json:"cover_image_url"`
+	ID            uuid.UUID        `json:"id"`
+	CoverImageUrl pgtype.Text      `json:"cover_image_url"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) AddEventPosterQuery(ctx context.Context, db DBTX, arg AddEventPosterQueryParams) (AddEventPosterQueryRow, error) {
 	row := db.QueryRow(ctx, addEventPosterQuery, arg.CoverImageUrl, arg.ID)
 	var i AddEventPosterQueryRow
-	err := row.Scan(&i.ID, &i.CoverImageUrl)
+	err := row.Scan(&i.ID, &i.CoverImageUrl, &i.UpdatedAt)
 	return i, err
 }
 
