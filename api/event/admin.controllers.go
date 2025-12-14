@@ -764,7 +764,7 @@ func UnpublishEvent(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
-	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
+	result, err := q.UnpublishEventQuery(ctx, conn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -774,7 +774,7 @@ func UnpublishEvent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "Event unmarked but is still in published state",
+		"message":      "Unpublished event successfully",
 		"event_status": result.EventStatus,
 		"updated_at":   result.UpdatedAt,
 	})
