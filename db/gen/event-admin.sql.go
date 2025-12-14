@@ -175,8 +175,7 @@ RETURNING
   event_id,
   event_date,
   start_time,
-  end_time,
-  updated_at
+  end_time
 `
 
 type AddEventScheduleQueryParams struct {
@@ -193,7 +192,6 @@ type AddEventScheduleQueryRow struct {
 	EventDate pgtype.Date      `json:"event_date"`
 	StartTime pgtype.Timestamp `json:"start_time"`
 	EndTime   pgtype.Timestamp `json:"end_time"`
-	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) AddEventScheduleQuery(ctx context.Context, db DBTX, arg AddEventScheduleQueryParams) (AddEventScheduleQueryRow, error) {
@@ -211,7 +209,6 @@ func (q *Queries) AddEventScheduleQuery(ctx context.Context, db DBTX, arg AddEve
 		&i.EventDate,
 		&i.StartTime,
 		&i.EndTime,
-		&i.UpdatedAt,
 	)
 	return i, err
 }

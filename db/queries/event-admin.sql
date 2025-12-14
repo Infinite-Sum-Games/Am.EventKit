@@ -162,8 +162,7 @@ RETURNING
   event_id,
   event_date,
   start_time,
-  end_time,
-  updated_at;
+  end_time;
 
 -- name: EditEventScheduleQuery :one
 UPDATE event_schedule
