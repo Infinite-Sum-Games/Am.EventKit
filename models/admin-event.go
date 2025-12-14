@@ -37,10 +37,9 @@ func (r AddEventDimensionRequest) Validate() error {
 }
 
 type AddEventTogglesRequest struct {
-	EventId            uuid.UUID `json:"event_id"`
-	IsTeamEvent        *bool     `json:"is_team_event"`
-	IsPublished        *bool     `json:"is_published"`
-	IsRegistrationOpen *bool     `json:"is_registration_open"`
+	IsTeamEvent        bool `json:"is_team_event"`
+	IsPublished        bool `json:"is_published"`
+	IsRegistrationOpen bool `json:"is_registration_open"`
 }
 
 func (r AddEventTogglesRequest) Validate() error {
@@ -48,8 +47,8 @@ func (r AddEventTogglesRequest) Validate() error {
 }
 
 type ConnectEventAndOrganizerRequest struct {
-	EventId     uuid.UUID `json:"event_id"`
-	OrganizerId uuid.UUID `json:"organizer_id"`
+	EventId     string `json:"id"`
+	OrganizerId string `json:"organizer_id"`
 }
 
 func (r ConnectEventAndOrganizerRequest) Validate() error {
@@ -57,8 +56,8 @@ func (r ConnectEventAndOrganizerRequest) Validate() error {
 }
 
 type DisconnectEventAndOrganizerRequest struct {
-	EventId     uuid.UUID `json:"event_id"`
-	OrganizerId uuid.UUID `json:"organizer_id"`
+	EventId     string `json:"id"`
+	OrganizerId string `json:"organizer_id"`
 }
 
 func (r DisconnectEventAndOrganizerRequest) Validate() error {
@@ -66,7 +65,7 @@ func (r DisconnectEventAndOrganizerRequest) Validate() error {
 }
 
 type ConnectEventAndTags struct {
-	EventId uuid.UUID   `json:"event_id"`
+	EventId uuid.UUID   `json:"id"`
 	TagIDs  []uuid.UUID `json:"tag_ids"`
 }
 
@@ -75,7 +74,7 @@ func (r ConnectEventAndTags) Validate() error {
 }
 
 type DisconnectEventAndTagsRequest struct {
-	EventId uuid.UUID `json:"event_id"`
+	EventId uuid.UUID `json:"id"`
 	TagID   uuid.UUID `json:"tag_id"`
 }
 
