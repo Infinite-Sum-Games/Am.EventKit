@@ -162,6 +162,7 @@ RETURNING
   event_id,
   event_date,
   start_time,
+  venue,
   end_time;
 
 -- name: EditEventScheduleQuery :one
@@ -180,6 +181,7 @@ RETURNING
   event_date,
   start_time,
   end_time,
+  venue,
   updated_at;
 
 -- name: DeleteEventScheduleByIdQuery :one

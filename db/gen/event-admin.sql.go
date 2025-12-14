@@ -175,6 +175,7 @@ RETURNING
   event_id,
   event_date,
   start_time,
+  venue,
   end_time
 `
 
@@ -191,6 +192,7 @@ type AddEventScheduleQueryRow struct {
 	EventID   uuid.UUID        `json:"event_id"`
 	EventDate pgtype.Date      `json:"event_date"`
 	StartTime pgtype.Timestamp `json:"start_time"`
+	Venue     string           `json:"venue"`
 	EndTime   pgtype.Timestamp `json:"end_time"`
 }
 
@@ -208,6 +210,7 @@ func (q *Queries) AddEventScheduleQuery(ctx context.Context, db DBTX, arg AddEve
 		&i.EventID,
 		&i.EventDate,
 		&i.StartTime,
+		&i.Venue,
 		&i.EndTime,
 	)
 	return i, err
@@ -461,6 +464,7 @@ RETURNING
   event_date,
   start_time,
   end_time,
+  venue,
   updated_at
 `
 
@@ -478,6 +482,7 @@ type EditEventScheduleQueryRow struct {
 	EventDate pgtype.Date      `json:"event_date"`
 	StartTime pgtype.Timestamp `json:"start_time"`
 	EndTime   pgtype.Timestamp `json:"end_time"`
+	Venue     string           `json:"venue"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
@@ -496,6 +501,7 @@ func (q *Queries) EditEventScheduleQuery(ctx context.Context, db DBTX, arg EditE
 		&i.EventDate,
 		&i.StartTime,
 		&i.EndTime,
+		&i.Venue,
 		&i.UpdatedAt,
 	)
 	return i, err

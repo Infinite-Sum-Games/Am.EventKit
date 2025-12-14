@@ -304,7 +304,7 @@ func AddEventDimension(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-// // EventType, Mark As Completed, EventMode, AttendanceType
+// EventType, Mark As Completed, EventMode, AttendanceType
 func AddEventToggles(c *gin.Context) {
 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
 	if !ok {
@@ -673,42 +673,98 @@ func DisconnectEventAndPeople(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-// func AddEventSchedule(c *gin.Context) {
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message": "Successfully added event schedules",
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
-//
-//	func EditEventSchedule(c *gin.Context) {
-//		scheduleId, ok := pkg.GrabUuid(c, c.Param("scheduleId"), "ADMIN-EVENT", "Schedule")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//	}
+func AddEventSchedule(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.AddEventScheduleRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.AddEventScheduleQuery(ctx, conn, db.AddEventScheduleQueryParams{
+		EventID: eventId,
+		EventDate: pgtype.Date{
+			Valid: true,
+		},
+		StartTime: pgtype.Timestamp{
+			Valid: true,
+		},
+		EndTime: pgtype.Timestamp{
+			Valid: true,
+		},
+		Venue: req.Venue,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Successfully added event schedules",
+		"schedule_id": result.ID.String(),
+		"event_date":  result.EventDate,
+		"start_time":  result.StartTime,
+		"end_time":    result.EndTime,
+		"venue":       result.Venue,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func EditEventSchedule(c *gin.Context) {
+	scheduleId, ok := pkg.GrabUuid(c, c.Param("scheduleId"), "ADMIN-EVENT", "Schedule")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.EditEventScheduleRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.EditEventScheduleQuery(ctx, conn, db.EditEventScheduleQueryParams{
+		ID: scheduleId,
+		EventDate: pgtype.Date{
+			Valid: true,
+		},
+		StartTime: pgtype.Timestamp{
+			Valid: true,
+		},
+		EndTime: pgtype.Timestamp{
+			Valid: true,
+		},
+		Venue: req.Venue,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Successfully updated event schedule",
+		"schedule_id": scheduleId,
+		"event_date":  result.EventDate,
+		"start_time":  result.StartTime,
+		"end_time":    result.EndTime,
+		"venue":       result.Venue,
+		"updated_at":  result.UpdatedAt,
+	})
+	pkg.Log.SuccessCtx(c)
+}
 
 func DeleteEventSchedule(c *gin.Context) {
 	scheduleId, ok := pkg.GrabUuid(c, c.Param("scheduleId"), "ADMIN-EVENT", "Schedule")
