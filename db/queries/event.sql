@@ -59,8 +59,8 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'event_date', es.event_date,
-        'start_time', es.start_time::time,
-        'end_time', es.end_time::time,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
         'venue', es.venue
       )) FILTER (WHERE es.id IS NOT NULL),
       '[]'::jsonb
@@ -166,8 +166,8 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'event_date', es.event_date,
-        'start_time', es.start_time::time,
-        'end_time', es.end_time::time,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
         'venue', es.venue
       )) FILTER (WHERE es.id IS NOT NULL),
       '[]'::jsonb
