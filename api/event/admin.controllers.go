@@ -239,7 +239,6 @@ func DeleteEventPoster(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-// IsTeam, MinSize, MaxSize, Seats
 func AddEventDimension(c *gin.Context) {
 	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
 	if !ok {
@@ -811,43 +810,43 @@ func AddEventDimension(c *gin.Context) {
 // 	})
 // 	pkg.Log.SuccessCtx(c)
 // }
-//
-// func UnmarkEventAsCompleted(c *gin.Context) {
-// 	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
-// 	if !ok {
-// 		return
-// 	}
-//
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-//
-// 	conn, err := cmd.DBPool.Acquire(ctx)
-// 	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-// 		return
-// 	}
-// 	defer conn.Release()
-//
-// 	q := db.New()
-// 	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
-// 	if err == pgx.ErrNoRows {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
-// 		return
-// 	}
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{
-// 			"message": "Oops! Something happened. Please try again later",
-// 		})
-// 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
-// 		return
-// 	}
-//
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message":      "Event unmarked but is still in published state",
-// 		"event_status": result.EventStatus,
-// 		"updated_at":   result.UpdatedAt,
-// 	})
-// 	pkg.Log.SuccessCtx(c)
-// }
+
+func UnmarkEventAsCompleted(c *gin.Context) {
+	eventId, ok := pkg.GrabUuid(c, "eventId", "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.UnmarkEventsAsCompletedQuery(ctx, conn, eventId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to unmark event as completed", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Event unmarked but is still in published state",
+		"event_status": result.EventStatus,
+		"updated_at":   result.UpdatedAt,
+	})
+	pkg.Log.SuccessCtx(c)
+}
