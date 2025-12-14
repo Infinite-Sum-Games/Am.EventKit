@@ -1,11 +1,11 @@
 meta {
-  name: connectEventAndOrganizer
+  name: getAllAdminEvents
   type: http
-  seq: 9
+  seq: 1
 }
 
-post {
-  url: {{baseUrl}}/events/admin/organizer
+get {
+  url: {{baseUrl}}/events/admin
   body: none
   auth: inherit
 }
