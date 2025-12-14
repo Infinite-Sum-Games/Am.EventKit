@@ -132,9 +132,10 @@ func LoginUser(c *gin.Context) {
 	pkg.SetAuthCookie(c, authToken)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User logged in successfully",
-		"name":    result.Name,
-		"email":   result.Email,
+		"message":    "User logged in successfully",
+		"student_id": result.ID.String(),
+		"name":       result.Name,
+		"email":      result.Email,
 	})
 	pkg.Log.SuccessCtx(c)
 }
