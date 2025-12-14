@@ -131,7 +131,7 @@ func (q *Queries) DeleteEventScheduleByIdQuery(ctx context.Context, db DBTX, id 
 	return id, err
 }
 
-const disconnectEventAndOrganizerQuery = `-- name: DisconnectEventAndOrganizerQuery :exec
+const disconnectEventAndOrganizerQuery = `-- name: DisconnectEventAndOrganizerQuery :one
 DELETE FROM event_to_organizer_mapping
 WHERE 
   event_id = $1
@@ -144,9 +144,11 @@ type DisconnectEventAndOrganizerQueryParams struct {
 	OrganizerID uuid.UUID `json:"organizer_id"`
 }
 
-func (q *Queries) DisconnectEventAndOrganizerQuery(ctx context.Context, db DBTX, arg DisconnectEventAndOrganizerQueryParams) error {
-	_, err := db.Exec(ctx, disconnectEventAndOrganizerQuery, arg.EventID, arg.OrganizerID)
-	return err
+func (q *Queries) DisconnectEventAndOrganizerQuery(ctx context.Context, db DBTX, arg DisconnectEventAndOrganizerQueryParams) (int32, error) {
+	row := db.QueryRow(ctx, disconnectEventAndOrganizerQuery, arg.EventID, arg.OrganizerID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const disconnectEventAndPeopleQuery = `-- name: DisconnectEventAndPeopleQuery :one
