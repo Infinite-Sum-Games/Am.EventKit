@@ -15,7 +15,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.DELETE("/favourite/:eventId", mw.Auth, mw.CheckUser, UnstarEvent)
 
 	// Admin event controllers
-	r.GET("/admin/new", NewEvent)
+	r.GET("/admin/new", mw.Auth, mw.CheckUser, NewEvent)
 	r.POST("/admin/details/:eventId", AddEventDetails)
 	r.POST("/admin/poster/:eventId", AddEventPoster)
 	r.DELETE("/admin/poster/:eventId", DeleteEventPoster)

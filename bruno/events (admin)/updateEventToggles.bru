@@ -6,14 +6,26 @@ meta {
 
 post {
   url: {{baseUrl}}/events/admin/toggle/:eventId
-  body: none
+  body: json
   auth: inherit
 }
 
 params:path {
-  eventId: 
+  eventId: 9ae761e9-a4e3-4792-adc3-8f8286e92caa
+}
+
+body:json {
+  {
+    "event_type": "WORKSHOP",
+    "attendance_mode": "SOLO",
+    "is_offline": true,
+    "is_technical": true,
+    "is_published": true,
+    "is_completed": true
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

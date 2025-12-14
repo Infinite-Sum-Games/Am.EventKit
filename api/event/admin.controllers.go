@@ -271,9 +271,11 @@ func AddEventDimension(c *gin.Context) {
 		TotalSeats: int32(req.TotalSeats),
 		MinTeamsize: pgtype.Int4{
 			Int32: int32(req.MinTeamSize),
+			Valid: true,
 		},
 		MaxTeamsize: pgtype.Int4{
 			Int32: int32(req.MaxTeamSize),
+			Valid: true,
 		},
 	})
 	if err == pgx.ErrNoRows {
@@ -295,8 +297,8 @@ func AddEventDimension(c *gin.Context) {
 		"message":      "Event dimensions updated",
 		"total_seats":  result.TotalSeats,
 		"is_group":     result.IsGroup,
-		"min_teamsize": result.MinTeamsize,
-		"max_teamsize": result.MaxTeamsize,
+		"min_teamsize": result.MinTeamsize.Int32,
+		"max_teamsize": result.MaxTeamsize.Int32,
 		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
