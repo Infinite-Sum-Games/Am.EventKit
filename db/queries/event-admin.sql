@@ -89,7 +89,7 @@ RETURNING
   is_group,
   total_seats,
   min_teamsize,
-  max_teamsize
+  max_teamsize,
   updated_at;
 
 -- name: AddEventTogglesQuery :one

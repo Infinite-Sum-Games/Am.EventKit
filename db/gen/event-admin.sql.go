@@ -90,7 +90,7 @@ RETURNING
   is_group,
   total_seats,
   min_teamsize,
-  max_teamsize
+  max_teamsize,
   updated_at
 `
 
@@ -103,10 +103,11 @@ type AddEventDimensionQueryParams struct {
 }
 
 type AddEventDimensionQueryRow struct {
-	IsGroup     bool        `json:"is_group"`
-	TotalSeats  int32       `json:"total_seats"`
-	MinTeamsize pgtype.Int4 `json:"min_teamsize"`
-	UpdatedAt   pgtype.Int4 `json:"updated_at"`
+	IsGroup     bool             `json:"is_group"`
+	TotalSeats  int32            `json:"total_seats"`
+	MinTeamsize pgtype.Int4      `json:"min_teamsize"`
+	MaxTeamsize pgtype.Int4      `json:"max_teamsize"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEventDimensionQueryParams) (AddEventDimensionQueryRow, error) {
@@ -122,6 +123,7 @@ func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEv
 		&i.IsGroup,
 		&i.TotalSeats,
 		&i.MinTeamsize,
+		&i.MaxTeamsize,
 		&i.UpdatedAt,
 	)
 	return i, err
