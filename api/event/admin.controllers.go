@@ -355,105 +355,105 @@ func AddEventDimension(c *gin.Context) {
 //		})
 //		pkg.Log.SuccessCtx(c)
 //	}
-//
-//	func ConnectEventAndOrganizer(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.ConnectEventAndOrganizerRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		eventId, ok := pkg.GrabUuid(c, req.OrganizerId, "ADMIN-EVENT", "Event")
-//		if !ok {
-//			return
-//		}
-//		organizerId, ok := pkg.GrabUuid(c, req.OrganizerId, "ADMIN-EVENT", "Organizer")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//		result, err := q.ConnectEventAndOrganizerQuery(ctx, conn,
-//			db.ConnectEventAndOrganizerQueryParams{
-//				EventId:     eventId,
-//				OrganizerId: organizerId,
-//			},
-//		)
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to connect event and organizer", err)
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message":      "Successfully connected event with organizer",
-//			"id":           result.EventId,
-//			"organizer_id": result.OrganizerId,
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
-//
-//	func DisconnectEventAndOrganizer(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.DisconnectEventAndOrganizerRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
-//		if !ok {
-//			return
-//		}
-//		organizerId, ok := pkg.GrabUuid(c, req.OrganizerId, "ADMIN-EVENT", "Organizer")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//		_, err = q.DisconnectEventAndOrganizerQuery(ctx, conn,
-//			db.DisconnectEventAndOrganizerQueryParams{
-//				EventID:     eventId,
-//				OrganizerID: organizerId,
-//			})
-//		if err == pgx.ErrNoRows {
-//			c.JSON(http.StatusNotFound, gin.H{
-//				"message": "Could not find event and mapping to delete. Refresh the page.",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Could not delete event and organizer mapping", err)
-//			return
-//		}
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to delete event and organizer mapping", err)
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message": "Removed event and organizer mapping",
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
-//
+
+func ConnectEventAndOrganizer(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.ConnectEventAndOrganizerRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+	organizerId, ok := pkg.GrabUuid(c, req.OrganizerId, "ADMIN-EVENT", "Organizer")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.ConnectEventAndOrganizerQuery(ctx, conn,
+		db.ConnectEventAndOrganizerQueryParams{
+			EventID:     eventId,
+			OrganizerID: organizerId,
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to connect event and organizer", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Successfully connected event with organizer",
+		"id":           result.EventID,
+		"organizer_id": result.OrganizerID,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func DisconnectEventAndOrganizer(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.DisconnectEventAndOrganizerRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+	organizerId, ok := pkg.GrabUuid(c, req.OrganizerId, "ADMIN-EVENT", "Organizer")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.DisconnectEventAndOrganizerQuery(ctx, conn,
+		db.DisconnectEventAndOrganizerQueryParams{
+			EventID:     eventId,
+			OrganizerID: organizerId,
+		})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event and organizer mapping not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT]: Could not delete event and organizer mapping", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to delete event and organizer mapping", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Removed event and organizer mapping",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 //	func ConnectEventAndTags(c *gin.Context) {
 //		req, ok := pkg.ValidateRequest[models.ConnectEventAndTagsRequest](c)
 //		if !ok {
@@ -545,105 +545,109 @@ func AddEventDimension(c *gin.Context) {
 //		pkg.Log.SuccessCtx(c)
 //
 // }
-//
-//	func DisconnectEventAndPeople(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.DisconnectEventAndPeopleRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
-//		if !ok {
-//			return
-//		}
-//		personId, ok := pkg.GrabUuid(c, req.PersonId, "ADMIN-EVENT", "Person")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-ERROR") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//		result, err := q.DisconnectEventAndPeopleQuery(ctx, conn,
-//			db.DisconnectEventAndPeopleQueryParams{
-//				EventID:  eventId,
-//				PersonID: personId,
-//			})
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and people", err)
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message":   "Successfully disconnected event and person",
-//			"id":        result.EventID,
-//			"person_id": result.PersonID,
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
-//
-//	func DisonnectEventAndTags(c *gin.Context) {
-//		req, ok := pkg.ValidateRequest[models.DisconnectEventAndTagsRequest](c)
-//		if !ok {
-//			return
-//		}
-//
-//		eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
-//		if !ok {
-//			return
-//		}
-//
-//		tagId, ok := pkg.GrabUuid(c, req.TagId, "ADMIN-EVENT", "Tag")
-//		if !ok {
-//			return
-//		}
-//
-//		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-//		defer cancel()
-//
-//		conn, err := cmd.DBPool.Acquire(ctx)
-//		if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
-//			return
-//		}
-//		defer conn.Release()
-//
-//		q := db.New()
-//		result, err := q.DisonnectEventAndTagsQuery(ctx, conn,
-//			db.DisconnectEventAndTagsParams{
-//				EventID: eventId,
-//				TagID:   tagId,
-//			})
-//		if err == pgx.ErrNoRows {
-//			c.JSON(http.StatusNotFound, gin.H{
-//				"message": "No mapping found for given eventId and tagId",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
-//			return
-//		}
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{
-//				"message": "Oops! Something happened. Please try again later",
-//			})
-//			pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{
-//			"message": "",
-//		})
-//		pkg.Log.SuccessCtx(c)
-//	}
-//
+
+func DisconnectEventAndPeople(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.DisconnectEventAndPeopleRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+	personId, ok := pkg.GrabUuid(c, req.PersonId, "ADMIN-EVENT", "Person")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-ERROR") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.DisconnectEventAndPeopleQuery(ctx, conn,
+		db.DisconnectEventAndPeopleQueryParams{
+			EventID:  eventId,
+			PersonID: personId,
+		})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No mapping found for given event and person",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and people", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and people", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully disconnected event and person",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func DisonnectEventAndTags(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.DisconnectEventAndTagsRequest](c)
+	if !ok {
+		return
+	}
+
+	eventId, ok := pkg.GrabUuid(c, req.EventId, "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+	tagId, ok := pkg.GrabUuid(c, req.TagId, "ADMIN-EVENT", "Tag")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if !pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	_, err = q.DisconnectEventAndTagsQuery(ctx, conn,
+		db.DisconnectEventAndTagsQueryParams{
+			EventID: eventId,
+			TagID:   tagId,
+		})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "No mapping found for given event and tag",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to disconnect event and tag", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 // func AddEventSchedule(c *gin.Context) {
 //
 //		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -682,7 +686,7 @@ func AddEventDimension(c *gin.Context) {
 //	}
 
 func DeleteEventSchedule(c *gin.Context) {
-	scheduleId, ok := pkg.GrabUuid(c, c.Param("organizerId"), "ADMIN-EVENT", "Schedule")
+	scheduleId, ok := pkg.GrabUuid(c, c.Param("scheduleId"), "ADMIN-EVENT", "Schedule")
 	if !ok {
 		return
 	}

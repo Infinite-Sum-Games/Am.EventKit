@@ -400,7 +400,7 @@ func (q *Queries) DisconnectEventAndPeopleQuery(ctx context.Context, db DBTX, ar
 	return id, err
 }
 
-const disconnectEventAndTags = `-- name: DisconnectEventAndTags :one
+const disconnectEventAndTagsQuery = `-- name: DisconnectEventAndTagsQuery :one
 DELETE FROM event_tag_mapping
 WHERE 
   event_id = $1
@@ -409,13 +409,13 @@ RETURNING
   event_id
 `
 
-type DisconnectEventAndTagsParams struct {
+type DisconnectEventAndTagsQueryParams struct {
 	EventID uuid.UUID `json:"event_id"`
 	TagID   uuid.UUID `json:"tag_id"`
 }
 
-func (q *Queries) DisconnectEventAndTags(ctx context.Context, db DBTX, arg DisconnectEventAndTagsParams) (uuid.UUID, error) {
-	row := db.QueryRow(ctx, disconnectEventAndTags, arg.EventID, arg.TagID)
+func (q *Queries) DisconnectEventAndTagsQuery(ctx context.Context, db DBTX, arg DisconnectEventAndTagsQueryParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, disconnectEventAndTagsQuery, arg.EventID, arg.TagID)
 	var event_id uuid.UUID
 	err := row.Scan(&event_id)
 	return event_id, err

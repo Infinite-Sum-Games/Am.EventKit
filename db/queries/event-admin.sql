@@ -141,7 +141,7 @@ RETURNING
   event_id,
   tag_id;
 
--- name: DisconnectEventAndTags :one
+-- name: DisconnectEventAndTagsQuery :one
 DELETE FROM event_tag_mapping
 WHERE 
   event_id = $1
