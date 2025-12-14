@@ -1,5 +1,6 @@
 -- name: FetchUserSessionQuery :one
 SELECT 
+  id,
   name,
   email
 FROM
