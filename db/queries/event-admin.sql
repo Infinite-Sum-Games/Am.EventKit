@@ -84,7 +84,7 @@ SET
   max_teamsize = $4,
   updated_at = NOW()
 WHERE
-  id = $1
+  id = $5
 RETURNING
   is_group,
   total_seats,

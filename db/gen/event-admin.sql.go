@@ -85,7 +85,7 @@ SET
   max_teamsize = $4,
   updated_at = NOW()
 WHERE
-  id = $1
+  id = $5
 RETURNING
   is_group,
   total_seats,
@@ -99,6 +99,7 @@ type AddEventDimensionQueryParams struct {
 	TotalSeats  int32       `json:"total_seats"`
 	MinTeamsize pgtype.Int4 `json:"min_teamsize"`
 	MaxTeamsize pgtype.Int4 `json:"max_teamsize"`
+	ID          uuid.UUID   `json:"id"`
 }
 
 type AddEventDimensionQueryRow struct {
@@ -114,6 +115,7 @@ func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEv
 		arg.TotalSeats,
 		arg.MinTeamsize,
 		arg.MaxTeamsize,
+		arg.ID,
 	)
 	var i AddEventDimensionQueryRow
 	err := row.Scan(
