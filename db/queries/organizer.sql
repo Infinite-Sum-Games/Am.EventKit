@@ -1,9 +1,9 @@
 -- name: ListOrganizersQuery :many
 SELECT
   id,
-  name as organizer_name,
-  email as organizer_email,
-  org_type as organizer_type,
+  name,
+  email,
+  org_type,
   student_head,
   student_co_head,
   faculty_head

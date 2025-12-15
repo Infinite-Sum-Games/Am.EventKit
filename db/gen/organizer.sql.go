@@ -66,9 +66,9 @@ func (q *Queries) DeleteOrganizerByIDQuery(ctx context.Context, db DBTX, id uuid
 const listOrganizersQuery = `-- name: ListOrganizersQuery :many
 SELECT
   id,
-  name as organizer_name,
-  email as organizer_email,
-  org_type as organizer_type,
+  name,
+  email,
+  org_type,
   student_head,
   student_co_head,
   faculty_head
@@ -76,13 +76,13 @@ FROM organizer
 `
 
 type ListOrganizersQueryRow struct {
-	ID             uuid.UUID         `json:"id"`
-	OrganizerName  string            `json:"organizer_name"`
-	OrganizerEmail string            `json:"organizer_email"`
-	OrganizerType  OrganizerTypeEnum `json:"organizer_type"`
-	StudentHead    string            `json:"student_head"`
-	StudentCoHead  pgtype.Text       `json:"student_co_head"`
-	FacultyHead    string            `json:"faculty_head"`
+	ID            uuid.UUID         `json:"id"`
+	Name          string            `json:"name"`
+	Email         string            `json:"email"`
+	OrgType       OrganizerTypeEnum `json:"org_type"`
+	StudentHead   string            `json:"student_head"`
+	StudentCoHead pgtype.Text       `json:"student_co_head"`
+	FacultyHead   string            `json:"faculty_head"`
 }
 
 func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrganizersQueryRow, error) {
@@ -96,9 +96,9 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 		var i ListOrganizersQueryRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.OrganizerName,
-			&i.OrganizerEmail,
-			&i.OrganizerType,
+			&i.Name,
+			&i.Email,
+			&i.OrgType,
 			&i.StudentHead,
 			&i.StudentCoHead,
 			&i.FacultyHead,

@@ -1,0 +1,20 @@
+meta {
+  name: publishEvent
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/events/admin/publish/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 9ae761e9-a4e3-4792-adc3-8f8286e92caa
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

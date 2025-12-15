@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -35,6 +36,7 @@ func (q *Queries) FetchAdminSessionQuery(ctx context.Context, db DBTX, email str
 
 const fetchUserSessionQuery = `-- name: FetchUserSessionQuery :one
 SELECT 
+  id,
   name,
   email
 FROM
@@ -45,13 +47,14 @@ WHERE
 `
 
 type FetchUserSessionQueryRow struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
 }
 
 func (q *Queries) FetchUserSessionQuery(ctx context.Context, db DBTX, email string) (FetchUserSessionQueryRow, error) {
 	row := db.QueryRow(ctx, fetchUserSessionQuery, email)
 	var i FetchUserSessionQueryRow
-	err := row.Scan(&i.Name, &i.Email)
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
 }

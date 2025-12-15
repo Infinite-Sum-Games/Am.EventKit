@@ -1,0 +1,20 @@
+meta {
+  name: unmarkEventAsCompleted
+  type: http
+  seq: 21
+}
+
+delete {
+  url: {{baseUrl}}/events/admin/completed/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 9ae761e9-a4e3-4792-adc3-8f8286e92caa
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

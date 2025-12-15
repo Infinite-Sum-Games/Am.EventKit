@@ -1,0 +1,40 @@
+meta {
+  name: createEvent
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/events/admin/new
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Create a new event.
+  
+  ## 200 Created
+  
+  Just send the request and see it for yourself :) 
+  
+  ## 401 Unauthorized
+  
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+  
+  ### 500 Internal Server Error
+  
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later"
+  }
+  ```
+}

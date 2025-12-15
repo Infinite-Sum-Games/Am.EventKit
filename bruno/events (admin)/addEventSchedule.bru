@@ -1,11 +1,11 @@
 meta {
-  name: UnmarkCheckOut
+  name: addEventSchedule
   type: http
-  seq: 5
+  seq: 15
 }
 
-delete {
-  url: 
+post {
+  url: {{baseUrl}}/events/admin/schedule
   body: none
   auth: inherit
 }

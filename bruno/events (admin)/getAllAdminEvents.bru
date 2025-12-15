@@ -1,11 +1,11 @@
 meta {
-  name: UnmarkCheckOut
+  name: getAllAdminEvents
   type: http
-  seq: 5
+  seq: 1
 }
 
-delete {
-  url: 
+get {
+  url: {{baseUrl}}/events/admin
   body: none
   auth: inherit
 }

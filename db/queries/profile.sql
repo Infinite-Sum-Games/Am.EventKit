@@ -38,16 +38,17 @@ WHERE b.student_id = $1;
 
 -- name: GetMySoloEventTickets :many
 SELECT
-  e.id,
-  e.name,
+  e.id AS event_id,
+  e.name AS event_name,
   e.price,
   e.is_technical,
   e.event_mode,
+  e.event_type AS event_type,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'schedule_id', es.id,
-        'date', es.event_date,
+        'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
@@ -77,17 +78,18 @@ GROUP BY
 
 -- name: GetMyTeamEventTickets :many
 SELECT
-  e.id,
-  e.name,
+  e.id AS event_id,
+  e.name AS event_name,
   e.price,
   e.is_technical,
   e.event_mode,
   t.team_name,
+  e.event_type AS event_type,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'schedule_id', es.id,
-        'date', es.event_date,
+        'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue

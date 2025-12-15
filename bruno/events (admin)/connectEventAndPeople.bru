@@ -1,11 +1,11 @@
 meta {
-  name: UnmarkCheckOut
+  name: connectEventAndPeople
   type: http
-  seq: 5
+  seq: 13
 }
 
-delete {
-  url: 
+post {
+  url: {{baseUrl}}/events/admin/people
   body: none
   auth: inherit
 }

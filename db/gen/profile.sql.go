@@ -138,16 +138,17 @@ func (q *Queries) GetAllTransactionsOfUserQuery(ctx context.Context, db DBTX, st
 
 const getMySoloEventTickets = `-- name: GetMySoloEventTickets :many
 SELECT
-  e.id,
-  e.name,
+  e.id AS event_id,
+  e.name AS event_name,
   e.price,
   e.is_technical,
   e.event_mode,
+  e.event_type AS event_type,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'schedule_id', es.id,
-        'date', es.event_date,
+        'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
@@ -182,11 +183,12 @@ type GetMySoloEventTicketsParams struct {
 }
 
 type GetMySoloEventTicketsRow struct {
-	ID          uuid.UUID      `json:"id"`
-	Name        string         `json:"name"`
+	EventID     uuid.UUID      `json:"event_id"`
+	EventName   string         `json:"event_name"`
 	Price       pgtype.Numeric `json:"price"`
 	IsTechnical pgtype.Bool    `json:"is_technical"`
 	EventMode   EventModeEnum  `json:"event_mode"`
+	EventType   EventTypeEnum  `json:"event_type"`
 	Schedules   interface{}    `json:"schedules"`
 }
 
@@ -200,11 +202,12 @@ func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, arg GetMyS
 	for rows.Next() {
 		var i GetMySoloEventTicketsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
+			&i.EventID,
+			&i.EventName,
 			&i.Price,
 			&i.IsTechnical,
 			&i.EventMode,
+			&i.EventType,
 			&i.Schedules,
 		); err != nil {
 			return nil, err
@@ -219,17 +222,18 @@ func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, arg GetMyS
 
 const getMyTeamEventTickets = `-- name: GetMyTeamEventTickets :many
 SELECT
-  e.id,
-  e.name,
+  e.id AS event_id,
+  e.name AS event_name,
   e.price,
   e.is_technical,
   e.event_mode,
   t.team_name,
+  e.event_type AS event_type,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'schedule_id', es.id,
-        'date', es.event_date,
+        'event_date', es.event_date,
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
@@ -267,12 +271,13 @@ type GetMyTeamEventTicketsParams struct {
 }
 
 type GetMyTeamEventTicketsRow struct {
-	ID          uuid.UUID      `json:"id"`
-	Name        string         `json:"name"`
+	EventID     uuid.UUID      `json:"event_id"`
+	EventName   string         `json:"event_name"`
 	Price       pgtype.Numeric `json:"price"`
 	IsTechnical pgtype.Bool    `json:"is_technical"`
 	EventMode   EventModeEnum  `json:"event_mode"`
 	TeamName    pgtype.Text    `json:"team_name"`
+	EventType   EventTypeEnum  `json:"event_type"`
 	Schedules   interface{}    `json:"schedules"`
 }
 
@@ -286,12 +291,13 @@ func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, arg GetMyT
 	for rows.Next() {
 		var i GetMyTeamEventTicketsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
+			&i.EventID,
+			&i.EventName,
 			&i.Price,
 			&i.IsTechnical,
 			&i.EventMode,
 			&i.TeamName,
+			&i.EventType,
 			&i.Schedules,
 		); err != nil {
 			return nil, err

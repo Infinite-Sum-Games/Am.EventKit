@@ -46,9 +46,10 @@ func FetchUserSession(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User session obtained successfully",
-		"name":    result.Name,
-		"email":   result.Email,
+		"message":    "User session obtained successfully",
+		"name":       result.Name,
+		"email":      result.Email,
+		"student_id": result.ID.String(),
 	})
 	pkg.Log.SuccessCtx(c)
 }
