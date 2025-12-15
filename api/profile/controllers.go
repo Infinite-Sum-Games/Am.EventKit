@@ -169,13 +169,7 @@ func GetTickets(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	email, ok1 := pkg.GrabEmail(c, "EVENT-AUTH")
-	userIDStr, ok2 := pkg.GrabUserId(c, "EVENT-AUTH")
-	if !ok1 || !ok2 {
-		return
-	}
-
-	studentID, ok := pkg.GrabUuid(c, userIDStr, "EVENT-AUTH", "student")
+	email, ok := pkg.GrabEmail(c, "EVENT-AUTH")
 	if !ok {
 		return
 	}
@@ -188,10 +182,7 @@ func GetTickets(c *gin.Context) {
 
 	q := db.New()
 
-	soloEvents, err := q.GetMySoloEventTickets(ctx, conn, db.GetMySoloEventTicketsParams{
-		ID:    studentID,
-		Email: email,
-	})
+	soloEvents, err := q.GetMySoloEventTickets(ctx, conn, email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
