@@ -17,6 +17,65 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
+func GetAllAdminEvents(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	events, err := q.GetAllAdminEventsQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to get all events in admin", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Fetched all events for admin",
+		"events":  events,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GetAdminEventsById(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	eventId, ok := pkg.GrabUuid(c, c.Param("eventId"), "ADMIN-EVENT", "Event")
+	if !ok {
+		return
+	}
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	result, err := q.GetAdminEventByEventIdQuery(ctx, conn, eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Fetch event by event id for admin",
+		"event":   result,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
 func NewEvent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

@@ -1,3 +1,29 @@
+-- name: GetAllAdminEventsQuery :many
+SELECT
+  id,
+  cover_image_url as poster_url,
+  name,
+  blurb,
+  event_type,
+  event_status,
+  price,
+  is_per_head,
+  is_group,
+  is_technical,
+  seats_filled,
+  total_seats,
+  updated_at
+FROM
+  event;
+
+-- name: GetAdminEventByEventIdQuery :one
+SELECT
+  id
+FROM
+  event e
+WHERE
+  id = $1;
+
 -- name: NewUntitledEventQuery :one
 INSERT INTO event (
   name,

@@ -507,6 +507,90 @@ func (q *Queries) EditEventScheduleQuery(ctx context.Context, db DBTX, arg EditE
 	return i, err
 }
 
+const getAdminEventByEventIdQuery = `-- name: GetAdminEventByEventIdQuery :one
+SELECT
+  id
+FROM
+  event e
+WHERE
+  id = $1
+`
+
+func (q *Queries) GetAdminEventByEventIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, getAdminEventByEventIdQuery, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getAllAdminEventsQuery = `-- name: GetAllAdminEventsQuery :many
+SELECT
+  id,
+  cover_image_url as poster_url,
+  name,
+  blurb,
+  event_type,
+  event_status,
+  price,
+  is_per_head,
+  is_group,
+  is_technical,
+  seats_filled,
+  total_seats,
+  updated_at
+FROM
+  event
+`
+
+type GetAllAdminEventsQueryRow struct {
+	ID          uuid.UUID        `json:"id"`
+	PosterUrl   pgtype.Text      `json:"poster_url"`
+	Name        string           `json:"name"`
+	Blurb       string           `json:"blurb"`
+	EventType   EventTypeEnum    `json:"event_type"`
+	EventStatus EventStatusEnum  `json:"event_status"`
+	Price       pgtype.Numeric   `json:"price"`
+	IsPerHead   bool             `json:"is_per_head"`
+	IsGroup     bool             `json:"is_group"`
+	IsTechnical pgtype.Bool      `json:"is_technical"`
+	SeatsFilled int32            `json:"seats_filled"`
+	TotalSeats  int32            `json:"total_seats"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) GetAllAdminEventsQuery(ctx context.Context, db DBTX) ([]GetAllAdminEventsQueryRow, error) {
+	rows, err := db.Query(ctx, getAllAdminEventsQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllAdminEventsQueryRow
+	for rows.Next() {
+		var i GetAllAdminEventsQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PosterUrl,
+			&i.Name,
+			&i.Blurb,
+			&i.EventType,
+			&i.EventStatus,
+			&i.Price,
+			&i.IsPerHead,
+			&i.IsGroup,
+			&i.IsTechnical,
+			&i.SeatsFilled,
+			&i.TotalSeats,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markEventAsCompletedQuery = `-- name: MarkEventAsCompletedQuery :one
 UPDATE event
 SET
