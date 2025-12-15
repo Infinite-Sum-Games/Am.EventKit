@@ -766,6 +766,13 @@ func AddEventSchedule(c *gin.Context) {
 		},
 		Venue: req.Venue,
 	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to add event schedule query", err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Successfully added event schedules",
