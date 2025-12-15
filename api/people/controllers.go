@@ -41,7 +41,7 @@ func FetchAllPeople(c *gin.Context) {
 }
 
 func AddNewPerson(c *gin.Context) {
-	req, ok := pkg.ValidateRequest[models.CreateNewPersonWithEventRequest](c)
+	req, ok := pkg.ValidateRequest[models.CreateNewPerson](c)
 	if !ok {
 		return
 	}

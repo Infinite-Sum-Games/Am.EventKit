@@ -5,18 +5,16 @@ import (
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"github.com/google/uuid"
 )
 
-type CreateNewPersonWithEventRequest struct {
-	Name        string    `json:"name"`
-	PhoneNumber string    `json:"phone_number"`
-	Profession  *string   `json:"profession"`
-	Email       *string   `json:"email"`
-	EventID     uuid.UUID `json:"event_id"`
+type CreateNewPerson struct {
+	Name        string  `json:"name"`
+	PhoneNumber string  `json:"phone_number"`
+	Profession  *string `json:"profession"`
+	Email       *string `json:"email"`
 }
 
-func (p CreateNewPersonWithEventRequest) Validate() error {
+func (p CreateNewPerson) Validate() error {
 	return v.ValidateStruct(&p,
 		v.Field(&p.Name, v.Required, v.Length(2, 100)),
 		v.Field(&p.PhoneNumber, v.Required,
@@ -28,7 +26,6 @@ func (p CreateNewPersonWithEventRequest) Validate() error {
 			v.Length(5, 200),
 			is.Email,
 		)),
-		v.Field(&p.EventID, v.Required),
 	)
 }
 
