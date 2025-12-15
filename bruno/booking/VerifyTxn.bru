@@ -1,0 +1,30 @@
+meta {
+  name: VerifyTxn
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/events/verify
+  body: json
+  auth: inherit
+}
+
+headers {
+  X-Csrf-Token: v4.public.eyJhdWQiOiJldmVudC5ib29rX2V2ZW50IiwiZXhwIjoiMjAyNS0xMi0xNlQwMzowNjoyOSswNTozMCIsImlhdCI6IjIwMjUtMTItMTZUMDI6NTY6MjkrMDU6MzAiLCJpc3MiOiJBbm9raGEtMjU6IEFVVEgtU0VSVklDRSIsImp0aSI6ImV2ZW50LmJvb2tAYW1yaXRhLmVkdSIsIm5iZiI6IjIwMjUtMTItMTZUMDI6NTY6MjkrMDU6MzAiLCJzdWIiOiJjc3JmX3Rva2VuIn33ADYxtWIEMD0MeWO8CmajCpemJLm3924oOyXXLy4YpA_GDFHvNm8fDYDUiv4UpS5DhKgB14ePb0DCJEWdgyEG
+}
+
+body:json {
+  // Use this body ONLY when registering for TEAM events.
+  // For SOLO events, do NOT send a request body.
+  
+  {
+    "txn_id": "TXN-20251215T214237-aa24-521c-ee0b"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
