@@ -72,7 +72,7 @@ SELECT
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'id', t.id,
         'name', t.name,
-        'abbreviation', t.abbr
+        'abbreviation', t.abbreviation
     )) FILTER (WHERE t.id IS NOT NULL),
   '[]'::jsonb
   ) AS tags
@@ -81,6 +81,7 @@ FROM event e
 
 LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
+LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON e.id = m.event_id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
