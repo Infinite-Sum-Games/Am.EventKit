@@ -10,6 +10,7 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	messagequeue "github.com/Thanus-Kumaar/anokha-2025-backend/message-queue"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -222,15 +223,53 @@ func BookEvent(c *gin.Context) {
 		}
 	}
 
-	var metadataJson []byte
-	if len(specialTags) != 0 {
-		metadataJson, err = pkg.BuildSpecialTags(specialTags, students)
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "", err) // Empty message as the BuilSpecialTags sends proper errors
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later.",
-			})
-			return
+	// Switch case for special tags metadata
+	metadataJson := []byte(`{}`)
+	for _, tag := range specialTags {
+		switch tag {
+		case "!woc":
+			// Create and send payload to message queue
+			payload, err := messagequeue.CreateWoCPayload(leaderEmail, studentMap[emailToId[leaderEmail]].Name)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create WOC payload", err)
+				break
+			}
+			// updating the metadata to include queue name and payload
+			meta := pkg.NewJSONB()
+			meta.Add("woc_payload", string(payload))
+			metadataJson, err = meta.Bytes()
+		case "!hackathon":
+			// Create and send payload to message queue
+			teamMembers, err := messagequeue.BuildHackathonTeamMembers(students, leaderEmail)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create team details payload", err)
+				break
+			}
+
+			leader := studentMap[emailToId[leaderEmail]]
+			problemStmt := ""
+			if req.ProblemStmt != nil {
+				problemStmt = *req.ProblemStmt
+			}
+			payloadBytes, err := messagequeue.CreateHackathonPayload(
+				messagequeue.HackathonPayload{
+					TeamName:          req.TeamName,
+					LeaderName:        leader.Name,
+					LeaderEmail:       leaderEmail,
+					LeaderPhoneNumber: leader.PhoneNumber,
+					LeaderCollegeName: leader.CollegeName,
+					ProblemStatement:  problemStmt,
+					TeamMembers:       teamMembers,
+				},
+			)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create Hackathon payload", err)
+				break
+			}
+
+			meta := pkg.NewJSONB()
+			meta.Add("hackathon_payload", string(payloadBytes))
+			metadataJson, err = meta.Bytes()
 		}
 	}
 
