@@ -14,7 +14,6 @@ type CreateNewPersonWithEventRequest struct {
 	Profession  *string   `json:"profession"`
 	Email       *string   `json:"email"`
 	EventID     uuid.UUID `json:"event_id"`
-	EventDay    []int32   `json:"event_day"`
 }
 
 func (p CreateNewPersonWithEventRequest) Validate() error {
@@ -30,7 +29,6 @@ func (p CreateNewPersonWithEventRequest) Validate() error {
 			is.Email,
 		)),
 		v.Field(&p.EventID, v.Required),
-		v.Field(&p.EventDay, v.Required, v.Length(1, 3)),
 	)
 }
 
