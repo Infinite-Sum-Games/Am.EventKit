@@ -200,10 +200,7 @@ func GetTickets(c *gin.Context) {
 		return
 	}
 
-	teamEvents, err := q.GetMyTeamEventTickets(ctx, conn, db.GetMyTeamEventTicketsParams{
-		ID:    studentID,
-		Email: email,
-	})
+	teamEvents, err := q.GetMyTeamEventTickets(ctx, conn, email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",

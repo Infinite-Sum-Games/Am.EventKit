@@ -249,17 +249,12 @@ LEFT JOIN student s ON tm.student_id = s.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 
 WHERE
-  s.id = $1
-  AND s.email = $2
+  s.email = $1
   AND b.txn_status = 'SUCCESS'
 GROUP BY
-  e.id
+  e.id,
+  t.team_name
 `
-
-type GetMyTeamEventTicketsParams struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-}
 
 type GetMyTeamEventTicketsRow struct {
 	EventID     uuid.UUID      `json:"event_id"`
@@ -272,8 +267,8 @@ type GetMyTeamEventTicketsRow struct {
 	Schedules   interface{}    `json:"schedules"`
 }
 
-func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, arg GetMyTeamEventTicketsParams) ([]GetMyTeamEventTicketsRow, error) {
-	rows, err := db.Query(ctx, getMyTeamEventTickets, arg.ID, arg.Email)
+func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, email string) ([]GetMyTeamEventTicketsRow, error) {
+	rows, err := db.Query(ctx, getMyTeamEventTickets, email)
 	if err != nil {
 		return nil, err
 	}
