@@ -11,6 +11,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
+	messagequeue "github.com/Thanus-Kumaar/anokha-2025-backend/message-queue"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -219,22 +220,47 @@ func VerifyTransaction(c *gin.Context) {
 	if gatewayStatus == models.PaymentSuccess {
 		// If there is metadata, read and publish
 		if len(booking.Metadata) > 0 {
-			var payload pkg.WocPayload
-			if err := json.Unmarshal(booking.Metadata, &payload); err != nil {
-				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to decode metadata JSON", err)
+			var metadataMap map[string]any
+			if err := json.Unmarshal(booking.Metadata, &metadataMap); err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to unmarshal booking metadata", err)
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"message": "Oops! Something happened. Please try again later",
 				})
 				return
 			}
 
-			if payload.Queue == "" {
-				pkg.Log.WarnCtx(c, "[VERIFY-WARN]: Metadata has no queue name")
-			} else {
-				// --------------------------------------------
-				// TODO: Publish metadata to RabbitMQ
-				// --------------------------------------------
-				pkg.Log.InfoCtx(c, "[VERIFY-INFO]: Metadata published to queue "+payload.Queue)
+			// Hackathon payload
+			if raw, ok := metadataMap["hackathon_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: hackathon_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueHackathonRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish hackathon payload", err)
+					return
+				}
+				// WOC payload
+			} else if raw, ok := metadataMap["woc_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: woc_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueWocRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish WOC payload", err)
+					return
+				}
 			}
 		}
 
