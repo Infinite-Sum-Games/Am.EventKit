@@ -83,7 +83,7 @@ LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
-LEFT JOIN tags t ON e.id = m.event_id
+LEFT JOIN tags t ON t.id = etm.tag_id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
 

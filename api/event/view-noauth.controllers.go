@@ -76,7 +76,6 @@ func FetchEventById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Event fetched successfully",
 		"event":   event,
-		"is_full": event.SeatsFilled == event.TotalSeats,
 	})
 	pkg.Log.SuccessCtx(c)
 }
