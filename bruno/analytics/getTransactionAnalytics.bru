@@ -1,0 +1,54 @@
+meta {
+  name: GetTransactionAnalytics
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/analytics/transactions
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # Transaction Analytics
+
+  Returns:
+  - Successful transactions
+  - Failed transactions
+  - Pending transactions
+  - Total transactions
+
+  ## 200 OK
+  ```json
+  {
+    "message": "Successfully fetched participants analytics",
+    "transaction_summary": {
+      "success": 0,
+      "failed": 0,
+      "pending": 0,
+      "total": 0
+    }
+  }
+  ```
+
+  ## 401 Unauthorized
+  Missing auth or refresh token
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later"
+  }
+  ```
+}

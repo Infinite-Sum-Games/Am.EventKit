@@ -1,0 +1,53 @@
+meta {
+  name: GetPeopleAnalytics
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/analytics/people
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  # People Registration Analytics
+
+  Shows:
+  - Internal vs external website registrations
+  - Total website registrations
+
+  ## 200 OK
+  ```json
+  {
+    "message": "Successfully fetched people analytics",
+    "people_registration_summary": {
+      "website_registration_split": {
+        "internal": 0,
+        "external": 0
+      },
+      "total_website_registrations": 0
+    }
+  }
+  ```
+
+  ## 401 Unauthorized
+  Missing auth or refresh token
+  ```json
+  {
+    "message": "Access denied."
+  }
+  ```
+
+  ## 500 Internal Server Error
+  ```json
+  {
+    "message": "Oops! Something happened. Please try again later"
+  }
+  ```
+}

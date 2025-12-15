@@ -1,3 +1,26 @@
+-- name: SeedBookingsQuery :exec
+INSERT INTO bookings(
+  txn_id ,
+  student_id,
+  event_id,
+  registration_fee,
+  product_info,
+  seats_released,
+  txn_status
+) VALUES($1, $2, $3, $4, $5, $6, $7);
+
+-- name: ViewBookingsSeedQuery :many
+SELECT 
+  id, 
+  txn_id, 
+  student_id, 
+  event_id, 
+  registration_fee, 
+  product_info, 
+  seats_released, 
+  txn_status
+FROM bookings;
+
 -- name: SeedAdminQuery :exec
 INSERT INTO admin(
   name, 
@@ -97,9 +120,13 @@ SELECT * FROM admin;
 
 -- name: ViewStudentSeedQuery :many
 SELECT
-  COUNT(*)
+  id, 
+  name, 
+  email, 
+  phone_number, 
+  is_amrita_student, 
+  amrita_roll_number
 FROM student;
-  
 
 -- name: ViewEventSeedQuery :many
 SELECT 
