@@ -792,7 +792,7 @@ func AddEventSchedule(c *gin.Context) {
 			Valid: true,
 		},
 		EndTime: pgtype.Timestamp{
-			Time:  req.StartTime,
+			Time:  req.EndTime,
 			Valid: true,
 		},
 		Venue: req.Venue,
