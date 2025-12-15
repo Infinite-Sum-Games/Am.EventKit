@@ -49,15 +49,14 @@ func AddNewPerson(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	tx, err := cmd.DBPool.Begin(ctx)
-	if pkg.HandleDbTxnErr(c, err, "PEOPLE") {
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "PEOPLE") {
 		return
 	}
-	defer pkg.RollbackTx(c, tx, ctx, "PEOPLE")
+	defer conn.Release()
 
 	q := db.New()
-
-	people, err := q.AddNewPersonQuery(ctx, tx, db.AddNewPersonQueryParams{
+	people, err := q.AddNewPersonQuery(ctx, conn, db.AddNewPersonQueryParams{
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
 		Profession:  pkg.ToPgTextPtr(req.Profession),
@@ -71,29 +70,12 @@ func AddNewPerson(c *gin.Context) {
 		return
 	}
 
-	personToEventMapping, err := q.MapPersonToEventQuery(ctx, tx,
-		db.MapPersonToEventQueryParams{
-			PersonID: people.ID,
-			EventID:  req.EventID,
-			EventDay: req.EventDay,
-		})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[PEOPLE-ERROR]: Failed to map person to event", err)
-		return
-	}
-
-	err = tx.Commit(ctx)
-	if pkg.HandleDbTxnCommitErr(c, err, "PEOPLE") {
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"message":                 "Person added successfully",
-		"person_details":          people,
-		"person_to_event_mapping": personToEventMapping,
+		"message":      "Person added successfully",
+		"name":         people.Name,
+		"phone_number": people.PhoneNumber,
+		"profession":   people.Profession,
+		"email":        people.Email,
 	})
 	pkg.Log.SuccessCtx(c)
 }
