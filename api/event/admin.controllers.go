@@ -806,12 +806,12 @@ func AddEventSchedule(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Successfully added event schedules",
-		"schedule_id": result.ID.String(),
-		"event_date":  result.EventDate,
-		"start_time":  result.StartTime,
-		"end_time":    result.EndTime,
-		"venue":       result.Venue,
+		"message":    "Successfully added event schedules",
+		"id":         result.ID.String(),
+		"event_date": result.EventDate,
+		"start_time": result.StartTime,
+		"end_time":   result.EndTime,
+		"venue":      result.Venue,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -869,13 +869,13 @@ func EditEventSchedule(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Successfully updated event schedule",
-		"schedule_id": scheduleId,
-		"event_date":  result.EventDate,
-		"start_time":  result.StartTime,
-		"end_time":    result.EndTime,
-		"venue":       result.Venue,
-		"updated_at":  result.UpdatedAt,
+		"message":    "Successfully updated event schedule",
+		"id":         scheduleId,
+		"event_date": result.EventDate,
+		"start_time": result.StartTime,
+		"end_time":   result.EndTime,
+		"venue":      result.Venue,
+		"updated_at": result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }
