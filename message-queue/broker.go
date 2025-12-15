@@ -17,6 +17,7 @@ const (
 
 var allQueues = []string{
 	QueueWocRegistrations,
+	QueueHackathonRegistrations,
 }
 
 var Rabbit *MsgBroker
