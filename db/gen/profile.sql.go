@@ -237,32 +237,23 @@ SELECT
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
-    )) FILTER (WHERE e.id IS NOT NULL),
+    )) FILTER (WHERE es.id IS NOT NULL),
     '[]'::jsonb
   ) AS schedules
 
 FROM event e
-LEFT JOIN teams t 
-  ON e.id = t.event_id
-LEFT JOIN team_members tm 
-  ON t.id = tm.team_id
-LEFT JOIN bookings b 
-  ON t.booking_id = b.id
-LEFT JOIN student s 
-  ON tm.student_id = s.id
-LEFT JOIN event_schedule es 
-  ON e.id = es.event_id
+LEFT JOIN teams t ON e.id = t.event_id
+LEFT JOIN team_members tm ON t.id = tm.team_id
+LEFT JOIN bookings b ON t.booking_id = b.id
+LEFT JOIN student s ON tm.student_id = s.id
+LEFT JOIN event_schedule es ON e.id = es.event_id
+
 WHERE
   s.id = $1
   AND s.email = $2
   AND b.txn_status = 'SUCCESS'
 GROUP BY
-  e.id,
-  e.name,
-  e.price,
-  e.is_technical,
-  e.event_mode,
-  t.team_name
+  e.id
 `
 
 type GetMyTeamEventTicketsParams struct {
