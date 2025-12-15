@@ -114,7 +114,6 @@ func EditOrganizer(c *gin.Context) {
 		ID:            orgID,
 		Name:          req.Name,
 		Email:         req.Email,
-		Password:      req.Password,
 		OrgType:       db.OrganizerTypeEnum(req.OrgType),
 		StudentHead:   req.StudentHead,
 		StudentCoHead: pkg.ToPgText(req.StudentCoHead),

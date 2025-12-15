@@ -16,8 +16,7 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled
+    (e.seats_filled = e.total_seats) AS is_full
 
 FROM event e
 
@@ -35,14 +34,13 @@ SELECT
     e.description AS event_description,
     e.cover_image_url,
     e.price,
+    (e.seats_filled = e.total_seats) AS is_full,
     e.is_per_head,
     e.rules,
     e.event_type,
     e.is_group,
     e.max_teamsize,
     e.min_teamsize,
-    e.total_seats,
-    e.seats_filled,
     e.event_status,
     e.event_mode,
     e.is_technical,
@@ -111,8 +109,6 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled,
 
     /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
@@ -144,8 +140,7 @@ SELECT
     e.is_group,
     e.max_teamsize,
     e.min_teamsize,
-    e.total_seats,
-    e.seats_filled,
+    (e.seats_filled = e.total_seats) AS is_full,
     e.event_status,
     e.event_mode,
     e.is_technical,
@@ -215,6 +210,7 @@ SELECT
     e.is_group,
     e.event_type,
     e.is_technical,
+    (e.seats_filled = e.total_seats) AS is_full,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
@@ -222,8 +218,6 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled,
 
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred

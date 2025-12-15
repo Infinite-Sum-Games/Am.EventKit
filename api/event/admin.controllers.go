@@ -65,13 +65,41 @@ func GetAdminEventsById(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: ", err)
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to fetch specific event", err)
 		return
 	}
 
+	isOffline := result.EventMode == db.EventModeEnumOFFLINE
+	isActive := result.EventStatus == db.EventStatusEnumACTIVE
+	isCompleted := result.EventStatus == db.EventStatusEnumCOMPLETED
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Fetch event by event id for admin",
-		"event":   result,
+		"message":         "Fetch event by event id for admin",
+		"id":              result.ID.String(),
+		"name":            result.Name,
+		"blurb":           result.Blurb,
+		"description":     result.Description,
+		"rules":           result.Rules,
+		"event_type":      result.EventType,
+		"event_status":    result.EventStatus,
+		"poster_url":      result.PosterUrl.String,
+		"is_group":        result.IsGroup,
+		"min_teamsize":    result.MinTeamsize.Int32,
+		"max_teamsize":    result.MaxTeamsize.Int32,
+		"is_offline":      isOffline,
+		"is_published":    isActive || isCompleted,
+		"is_completed":    isCompleted,
+		"price":           result.Price.Int,
+		"is_per_head":     result.IsPerHead,
+		"is_technical":    result.IsTechnical,
+		"seats_filled":    result.SeatsFilled,
+		"total_seats":     result.TotalSeats,
+		"attendance_mode": result.AttendanceMode,
+		"schedules":       result.Schedules,
+		"organizers":      result.Organizers,
+		"people":          result.People,
+		"tags":            result.Tags,
+		"updated_at":      result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
 }

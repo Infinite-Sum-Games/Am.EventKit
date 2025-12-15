@@ -26,15 +26,14 @@ VALUES (
 -- name: UpdateOrganizerByIDQuery :execrows
 UPDATE organizer
 SET
-  name = $2,
-  email = $3,
-  password = $4,
-  org_type = $5,
-  student_head = $6,
-  student_co_head = $7,
-  faculty_head = $8
+  name = $1,
+  email = $2,
+  org_type = $3,
+  student_head = $4,
+  student_co_head = $5,
+  faculty_head = $6
 WHERE
-  id = $1;
+  id = $7;
 
 -- name: DeleteOrganizerByIDQuery :execrows
 DELETE FROM organizer
