@@ -11,7 +11,7 @@ SELECT
     e.is_technical,
 
     COALESCE(
-      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
+      array_agg(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     e.price AS event_price,
@@ -193,40 +193,4 @@ LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
 WHERE e.id = $1
-GROUP BY e.id;
-
--- name: GetAllEventsByUserQuery :many
-SELECT
-    e.id AS event_id,
-    e.cover_image_url AS event_image_url,
-    e.name AS event_name,
-    e.event_status,
-    e.blurb AS event_description,
-    MIN(es.event_date) AS event_date,
-    e.is_group,
-    e.event_type,
-    e.is_technical,
-    (e.seats_filled = e.total_seats) AS is_full,
-
-    COALESCE(
-      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
-    ) AS tags,
-
-    e.price AS event_price,
-
-    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
-    (COUNT(DISTINCT f.id) > 0) AS is_starred
-
-FROM event e
-
-LEFT JOIN event_schedule es ON e.id = es.event_id
-LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
-LEFT JOIN tags t ON etm.tag_id = t.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
-LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1 
-LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
-WHERE
-  b.id IS NOT NULL
-  OR tm.id IS NOT NULL
 GROUP BY e.id;
