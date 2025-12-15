@@ -152,22 +152,25 @@ SELECT
         'start_time', es.start_time,
         'end_time', es.end_time,
         'venue', es.venue
-    )) FILTER (WHERE e.id IS NOT NULL),
+    )) FILTER (WHERE es.id IS NOT NULL),
     '[]'::jsonb
-  ) AS schedules
+  ) AS schedules,
+
+  COALESCE(
+    array_agg(DISTINCT tag.abbreviation) FILTER (WHERE tag.id IS NOT NULL)
+  ) AS tags
 
 FROM event e
-LEFT JOIN solo_event_participant sep 
-  ON e.id = sep.event_id
-LEFT JOIN bookings b 
-  ON sep.booking_id = b.id
-LEFT JOIN student s 
-  ON sep.student_id = s.id
-LEFT JOIN event_schedule es
-  ON e.id = es.event_id
+  
+LEFT JOIN solo_event_participant sep ON e.id = sep.event_id
+LEFT JOIN bookings b ON sep.booking_id = b.id
+LEFT JOIN student s ON sep.student_id = s.id
+LEFT JOIN event_schedule es ON e.id = es.event_id
+LEFT JOIN event_tag_mapping etm ON etm.event_id = e.id
+LEFT JOIN tags tag ON etm.tag_id = tag.id
+
 WHERE
   s.email = $1
-  AND s.id = $2
   AND b.txn_status = 'SUCCESS'
 GROUP BY
   e.id,
@@ -177,11 +180,6 @@ GROUP BY
   e.event_mode
 `
 
-type GetMySoloEventTicketsParams struct {
-	Email string    `json:"email"`
-	ID    uuid.UUID `json:"id"`
-}
-
 type GetMySoloEventTicketsRow struct {
 	EventID     uuid.UUID      `json:"event_id"`
 	EventName   string         `json:"event_name"`
@@ -190,10 +188,11 @@ type GetMySoloEventTicketsRow struct {
 	EventMode   EventModeEnum  `json:"event_mode"`
 	EventType   EventTypeEnum  `json:"event_type"`
 	Schedules   interface{}    `json:"schedules"`
+	Tags        interface{}    `json:"tags"`
 }
 
-func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, arg GetMySoloEventTicketsParams) ([]GetMySoloEventTicketsRow, error) {
-	rows, err := db.Query(ctx, getMySoloEventTickets, arg.Email, arg.ID)
+func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, email string) ([]GetMySoloEventTicketsRow, error) {
+	rows, err := db.Query(ctx, getMySoloEventTickets, email)
 	if err != nil {
 		return nil, err
 	}
@@ -209,6 +208,7 @@ func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, arg GetMyS
 			&i.EventMode,
 			&i.EventType,
 			&i.Schedules,
+			&i.Tags,
 		); err != nil {
 			return nil, err
 		}
