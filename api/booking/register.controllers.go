@@ -309,6 +309,7 @@ func BookEvent(c *gin.Context) {
 			return
 		}
 
+		// req.TeamMembers contains only details of team members, not leader
 		for _, team_members := range req.TeamMembers {
 			id := emailToId[team_members.StudentEmail]
 			details := studentMap[id]
@@ -326,6 +327,22 @@ func BookEvent(c *gin.Context) {
 				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to create team member", err)
 				return
 			}
+		}
+
+		// Adding leader details into the table
+		_, err = q.CreateTeamMember(ctx, tx, db.CreateTeamMemberParams{
+			TeamID:       teamID,
+			StudentID:    leaderId,
+			StudentRole:  "Leader",
+			StudentName:  leaderStrcut.Name,
+			StudentEmail: leaderStrcut.Email,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to create leader team member", err)
+			return
 		}
 	}
 
