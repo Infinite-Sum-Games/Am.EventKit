@@ -29,7 +29,7 @@ func EventRoutes(r *gin.RouterGroup) {
 	r.DELETE("/admin/tag", mw.Auth, mw.CheckAdmin, DisonnectEventAndTags)
 	r.POST("/admin/people", mw.Auth, mw.CheckAdmin, ConnectEventAndPeople)
 	r.DELETE("/admin/people", mw.Auth, mw.CheckAdmin, DisconnectEventAndPeople)
-	r.POST("/admin/schedule", mw.Auth, mw.CheckAdmin, AddEventSchedule)
+	r.POST("/admin/schedule/:eventId", mw.Auth, mw.CheckAdmin, AddEventSchedule)
 	r.PUT("/admin/schedule/:scheduleId", mw.Auth, mw.CheckAdmin, EditEventSchedule)
 	r.DELETE("/admin/schedule/:scheduleId", mw.Auth, mw.CheckAdmin, DeleteEventSchedule)
 	r.POST("/admin/publish/:eventId", mw.Auth, mw.CheckAdmin, PublishEvent)
