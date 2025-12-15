@@ -784,12 +784,15 @@ func AddEventSchedule(c *gin.Context) {
 	result, err := q.AddEventScheduleQuery(ctx, conn, db.AddEventScheduleQueryParams{
 		EventID: eventId,
 		EventDate: pgtype.Date{
+			Time:  req.EventDate,
 			Valid: true,
 		},
 		StartTime: pgtype.Timestamp{
+			Time:  req.StartTime,
 			Valid: true,
 		},
 		EndTime: pgtype.Timestamp{
+			Time:  req.StartTime,
 			Valid: true,
 		},
 		Venue: req.Venue,
