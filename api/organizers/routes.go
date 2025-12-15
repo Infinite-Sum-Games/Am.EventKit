@@ -6,8 +6,8 @@ import (
 )
 
 func OrganizerRoutes(r *gin.RouterGroup) {
-	r.GET("/", GetAllOrganizers)
+	r.GET("/", mw.Auth, mw.CheckAdmin, GetAllOrganizers)
 	r.POST("/", mw.Auth, mw.CheckAdmin, CreateOrganizer)
-	r.PUT("/:organizerId", EditOrganizer)
+	r.PUT("/:organizerId", mw.Auth, mw.CheckAdmin, EditOrganizer)
 	r.DELETE("/:organizerId", mw.Auth, mw.CheckAdmin, DeleteOrganizer)
 }
