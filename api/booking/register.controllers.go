@@ -223,6 +223,13 @@ func BookEvent(c *gin.Context) {
 		}
 	}
 
+	// Log special tags
+	if len(specialTags) > 0 {
+		pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: Special tags fetched for event %s: %v", eventId, specialTags))
+	} else {
+		pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: No special tags for event %s", eventId))
+	}
+
 	// Switch case for special tags metadata
 	metadataJson := []byte(`{}`)
 	for _, tag := range specialTags {
@@ -237,6 +244,8 @@ func BookEvent(c *gin.Context) {
 				})
 				return
 			}
+			pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: WOC payload constructed for %s", leaderEmail))
+
 			// updating the metadata to include queue name and payload
 			meta := pkg.NewJSONB()
 			meta.Add("woc_payload", string(payload))
@@ -258,6 +267,7 @@ func BookEvent(c *gin.Context) {
 				})
 				return
 			}
+			pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Hackathon team members constructed successfully")
 
 			leader := studentMap[emailToId[leaderEmail]]
 			problemStmt := ""
@@ -282,6 +292,7 @@ func BookEvent(c *gin.Context) {
 				})
 				return
 			}
+			pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Hackathon payload constructed successfully")
 
 			meta := pkg.NewJSONB()
 			meta.Add("hackathon_payload", string(payloadBytes))
@@ -295,6 +306,7 @@ func BookEvent(c *gin.Context) {
 			}
 		}
 	}
+	pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Final metadata: "+string(metadataJson))
 
 	var ids []uuid.UUID
 	for _, s := range students {
