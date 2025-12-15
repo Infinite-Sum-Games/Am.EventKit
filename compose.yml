@@ -16,7 +16,7 @@ services:
     networks:
       - app_network
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/18/data
 
   drizzle-gate:
     image: ghcr.io/drizzle-team/gateway:latest
