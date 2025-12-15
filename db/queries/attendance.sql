@@ -158,3 +158,23 @@ RETURNING
     check_in,
     check_out;
 
+-- name: GetSchedulesByEventID :many
+SELECT id FROM event_schedule WHERE event_id = $1;
+
+-- name: CreateSoloEventParticipant :one
+INSERT INTO solo_event_participant (
+  student_id, 
+  event_id, 
+  event_schedule_id, 
+  booking_id,
+  student_name,
+  student_email
+) VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id;
+
+-- name: CreateTeamAttendance :one
+INSERT INTO team_events_attendance (
+  student_id, 
+  event_schedule_id
+) VALUES ($1, $2)
+RETURNING id;

@@ -288,6 +288,37 @@ func (q *Queries) GetTeamIDByBooking(ctx context.Context, db DBTX, bookingID uui
 	return id, err
 }
 
+const getTeamMembersByTeamID = `-- name: GetTeamMembersByTeamID :many
+SELECT id, team_id, student_id, student_role, student_name, student_email FROM team_members WHERE team_id = $1
+`
+
+func (q *Queries) GetTeamMembersByTeamID(ctx context.Context, db DBTX, teamID uuid.UUID) ([]TeamMember, error) {
+	rows, err := db.Query(ctx, getTeamMembersByTeamID, teamID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TeamMember
+	for rows.Next() {
+		var i TeamMember
+		if err := rows.Scan(
+			&i.ID,
+			&i.TeamID,
+			&i.StudentID,
+			&i.StudentRole,
+			&i.StudentName,
+			&i.StudentEmail,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateBookingStatus = `-- name: UpdateBookingStatus :exec
 UPDATE bookings
 SET txn_status = $2

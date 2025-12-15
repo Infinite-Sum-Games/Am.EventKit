@@ -59,6 +59,61 @@ func (q *Queries) CheckStudentRegisteredForEvent(ctx context.Context, db DBTX, a
 	return i, err
 }
 
+const createSoloEventParticipant = `-- name: CreateSoloEventParticipant :one
+INSERT INTO solo_event_participant (
+  student_id, 
+  event_id, 
+  event_schedule_id, 
+  booking_id,
+  student_name,
+  student_email
+) VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id
+`
+
+type CreateSoloEventParticipantParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventID         uuid.UUID `json:"event_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+	BookingID       uuid.UUID `json:"booking_id"`
+	StudentName     string    `json:"student_name"`
+	StudentEmail    string    `json:"student_email"`
+}
+
+func (q *Queries) CreateSoloEventParticipant(ctx context.Context, db DBTX, arg CreateSoloEventParticipantParams) (int32, error) {
+	row := db.QueryRow(ctx, createSoloEventParticipant,
+		arg.StudentID,
+		arg.EventID,
+		arg.EventScheduleID,
+		arg.BookingID,
+		arg.StudentName,
+		arg.StudentEmail,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createTeamAttendance = `-- name: CreateTeamAttendance :one
+INSERT INTO team_events_attendance (
+  student_id, 
+  event_schedule_id
+) VALUES ($1, $2)
+RETURNING id
+`
+
+type CreateTeamAttendanceParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) CreateTeamAttendance(ctx context.Context, db DBTX, arg CreateTeamAttendanceParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, createTeamAttendance, arg.StudentID, arg.EventScheduleID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getAttendanceRecord = `-- name: GetAttendanceRecord :one
 SELECT
     id,
@@ -260,6 +315,30 @@ func (q *Queries) GetScheduleById(ctx context.Context, db DBTX, id uuid.UUID) (E
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getSchedulesByEventID = `-- name: GetSchedulesByEventID :many
+SELECT id FROM event_schedule WHERE event_id = $1
+`
+
+func (q *Queries) GetSchedulesByEventID(ctx context.Context, db DBTX, eventID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := db.Query(ctx, getSchedulesByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getStudentByEmail = `-- name: GetStudentByEmail :one
