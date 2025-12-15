@@ -323,12 +323,25 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
+	// Adding metadata for team if needed
+	meta := pkg.NewJSONB()
+	meta.Add("problem_stmt", req.ProblemStmt)
+	metadata, err := meta.Bytes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to create metadata for team", err)
+		return
+	}
+
 	if isGroupEvent {
 		teamID, err := q.CreateTeam(ctx, tx, db.CreateTeamParams{
 			TeamName:   req.TeamName,
 			EventID:    eventId,
 			LeaderName: leaderStrcut.Name,
 			BookingID:  bookingID,
+			Metadata:   metadata,
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
