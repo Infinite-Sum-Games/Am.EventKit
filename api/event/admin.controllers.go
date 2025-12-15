@@ -81,7 +81,7 @@ func GetAdminEventsById(c *gin.Context) {
 		"description":     result.Description,
 		"rules":           result.Rules,
 		"event_type":      result.EventType,
-		"event_status":       result.EventStatus,
+		"event_status":    result.EventStatus,
 		"poster_url":      result.PosterUrl.String,
 		"is_group":        result.IsGroup,
 		"min_teamsize":    result.MinTeamsize.Int32,
