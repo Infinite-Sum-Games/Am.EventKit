@@ -109,6 +109,7 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
+    (e.seats_filled = e.total_seats) AS is_full
 
     /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
