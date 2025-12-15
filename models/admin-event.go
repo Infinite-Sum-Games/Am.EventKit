@@ -104,7 +104,7 @@ func (r DisconnectEventAndPeopleRequest) Validate() error {
 }
 
 type AddEventScheduleRequest struct {
-	EventDate string    `json:"event_date"`
+	EventDate time.Time `json:"event_date"`
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"time_time"`
 	Venue     string    `json:"venue"`

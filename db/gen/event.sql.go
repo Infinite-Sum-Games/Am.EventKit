@@ -74,7 +74,7 @@ LEFT JOIN people p ON pem.person_id = p.id
 
 WHERE 
   e.id = $1
-  AND e.event_status = 'ACTIVE'
+  AND (e.event_status = 'ACTIVE' OR e.event_status = 'COMPLETED')
 GROUP BY e.id
 `
 
@@ -195,7 +195,9 @@ LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2 AND b.txn_status
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
-WHERE e.id = $1
+WHERE 
+  e.id = $1
+  AND (e.event_status = 'ACTIVE' OR e.event_status = 'COMPLETED')
 GROUP BY e.id
 `
 
@@ -285,6 +287,10 @@ LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 
+WHERE
+  e.event_status = 'ACTIVE' 
+  OR e.event_status = 'COMPLETED'
+
 GROUP BY e.id
 `
 
@@ -369,6 +375,10 @@ LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
+
+WHERE
+  e.event_status = 'ACTIVE' 
+  OR e.event_status = 'COMPLETED'
 
 GROUP BY e.id
 `
