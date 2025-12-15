@@ -26,8 +26,7 @@ SELECT
     (e.seats_filled = e.total_seats) AS is_full,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
-        '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     e.price AS event_price,
@@ -263,11 +262,7 @@ SELECT
     ) AS schedules,
 
     COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_name', t.name,
-        'tag_abbreviation', t.abbreviation
-      )) FILTER (WHERE t.id IS NOT NULL),
-      '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     COALESCE(
@@ -372,8 +367,7 @@ SELECT
     e.is_technical,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
-        '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     e.price AS event_price,
@@ -454,6 +448,7 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
+    (e.seats_filled = e.total_seats) AS is_full,
 
     /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
@@ -489,6 +484,7 @@ type GetEventsWithAuthQueryRow struct {
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
 	EventPrice       pgtype.Numeric  `json:"event_price"`
+	IsFull           bool            `json:"is_full"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
 }
@@ -514,6 +510,7 @@ func (q *Queries) GetEventsWithAuthQuery(ctx context.Context, db DBTX, arg GetEv
 			&i.IsTechnical,
 			&i.Tags,
 			&i.EventPrice,
+			&i.IsFull,
 			&i.IsRegistered,
 			&i.IsStarred,
 		); err != nil {

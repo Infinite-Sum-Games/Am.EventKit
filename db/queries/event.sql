@@ -11,8 +11,7 @@ SELECT
     e.is_technical,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
-        '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     e.price AS event_price,
@@ -109,7 +108,7 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    (e.seats_filled = e.total_seats) AS is_full
+    (e.seats_filled = e.total_seats) AS is_full,
 
     /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
@@ -166,11 +165,7 @@ SELECT
     ) AS schedules,
 
     COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_name', t.name,
-        'tag_abbreviation', t.abbreviation
-      )) FILTER (WHERE t.id IS NOT NULL),
-      '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     COALESCE(
@@ -214,8 +209,7 @@ SELECT
     (e.seats_filled = e.total_seats) AS is_full,
 
     COALESCE(
-        JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
-        '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     e.price AS event_price,
