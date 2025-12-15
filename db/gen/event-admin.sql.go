@@ -555,7 +555,7 @@ SELECT
         'id', p.id,
         'name', p.name,
         'profession', p.profession
-    )) FILTER (WHERE o.id IS NOT NULL),
+    )) FILTER (WHERE p.id IS NOT NULL),
   '[]'::jsonb
   ) AS people,
 
