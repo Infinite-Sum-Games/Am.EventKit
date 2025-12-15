@@ -58,8 +58,9 @@ INSERT INTO teams (
   team_name,
   event_id,
   leader_name,
-  booking_id
-) VALUES ($1, $2, $3, $4)
+  booking_id,
+  metadata
+) VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
@@ -68,6 +69,7 @@ type CreateTeamParams struct {
 	EventID    uuid.UUID `json:"event_id"`
 	LeaderName string    `json:"leader_name"`
 	BookingID  uuid.UUID `json:"booking_id"`
+	Metadata   []byte    `json:"metadata"`
 }
 
 func (q *Queries) CreateTeam(ctx context.Context, db DBTX, arg CreateTeamParams) (uuid.UUID, error) {
@@ -76,6 +78,7 @@ func (q *Queries) CreateTeam(ctx context.Context, db DBTX, arg CreateTeamParams)
 		arg.EventID,
 		arg.LeaderName,
 		arg.BookingID,
+		arg.Metadata,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)

@@ -16,8 +16,9 @@ INSERT INTO teams (
   team_name,
   event_id,
   leader_name,
-  booking_id
-) VALUES ($1, $2, $3, $4)
+  booking_id,
+  metadata
+) VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
 -- name: CreateTeamMember :one
