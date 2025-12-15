@@ -23,6 +23,7 @@ SELECT
     e.is_group,
     e.event_type,
     e.is_technical,
+    (e.seats_filled = e.total_seats) AS is_full,
 
     COALESCE(
         JSONB_AGG(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL),
@@ -64,6 +65,7 @@ type GetAllEventsByUserQueryRow struct {
 	IsGroup          bool            `json:"is_group"`
 	EventType        EventTypeEnum   `json:"event_type"`
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
+	IsFull           bool            `json:"is_full"`
 	Tags             interface{}     `json:"tags"`
 	EventPrice       pgtype.Numeric  `json:"event_price"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
@@ -89,6 +91,7 @@ func (q *Queries) GetAllEventsByUserQuery(ctx context.Context, db DBTX, arg GetA
 			&i.IsGroup,
 			&i.EventType,
 			&i.IsTechnical,
+			&i.IsFull,
 			&i.Tags,
 			&i.EventPrice,
 			&i.IsRegistered,
@@ -112,6 +115,7 @@ SELECT
     e.description AS event_description,
     e.cover_image_url,
     e.price,
+    (e.seats_filled = e.total_seats) AS is_full,
     e.is_per_head,
     e.rules,
     e.event_type,
@@ -176,6 +180,7 @@ type GetEventByIdQueryRow struct {
 	EventDescription string          `json:"event_description"`
 	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
 	Price            pgtype.Numeric  `json:"price"`
+	IsFull           bool            `json:"is_full"`
 	IsPerHead        bool            `json:"is_per_head"`
 	Rules            string          `json:"rules"`
 	EventType        EventTypeEnum   `json:"event_type"`
@@ -201,6 +206,7 @@ func (q *Queries) GetEventByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 		&i.EventDescription,
 		&i.CoverImageUrl,
 		&i.Price,
+		&i.IsFull,
 		&i.IsPerHead,
 		&i.Rules,
 		&i.EventType,
@@ -232,8 +238,7 @@ SELECT
     e.is_group,
     e.max_teamsize,
     e.min_teamsize,
-    e.total_seats,
-    e.seats_filled,
+    (e.seats_filled = e.total_seats) AS is_full,
     e.event_status,
     e.event_mode,
     e.is_technical,
@@ -312,8 +317,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	IsGroup          bool            `json:"is_group"`
 	MaxTeamsize      pgtype.Int4     `json:"max_teamsize"`
 	MinTeamsize      pgtype.Int4     `json:"min_teamsize"`
-	TotalSeats       int32           `json:"total_seats"`
-	SeatsFilled      int32           `json:"seats_filled"`
+	IsFull           bool            `json:"is_full"`
 	EventStatus      EventStatusEnum `json:"event_status"`
 	EventMode        EventModeEnum   `json:"event_mode"`
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
@@ -341,8 +345,7 @@ func (q *Queries) GetEventByIdWithAuthQuery(ctx context.Context, db DBTX, arg Ge
 		&i.IsGroup,
 		&i.MaxTeamsize,
 		&i.MinTeamsize,
-		&i.TotalSeats,
-		&i.SeatsFilled,
+		&i.IsFull,
 		&i.EventStatus,
 		&i.EventMode,
 		&i.IsTechnical,
@@ -373,7 +376,8 @@ SELECT
         '[]'::jsonb
     ) AS tags,
 
-    e.price AS event_price
+    e.price AS event_price,
+    (e.seats_filled = e.total_seats) AS is_full
 
 FROM event e
 
@@ -396,6 +400,7 @@ type GetEventsQueryRow struct {
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
 	EventPrice       pgtype.Numeric  `json:"event_price"`
+	IsFull           bool            `json:"is_full"`
 }
 
 func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQueryRow, error) {
@@ -419,6 +424,7 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 			&i.IsTechnical,
 			&i.Tags,
 			&i.EventPrice,
+			&i.IsFull,
 		); err != nil {
 			return nil, err
 		}
