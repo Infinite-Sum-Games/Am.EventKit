@@ -98,7 +98,7 @@ func EditOrganizer(c *gin.Context) {
 		return
 	}
 
-	req, ok := pkg.ValidateRequest[models.CreateOrganizerRequest](c)
+	req, ok := pkg.ValidateRequest[models.EditOrganizerRequest](c)
 	if !ok {
 		return
 	}
