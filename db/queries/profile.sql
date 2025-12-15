@@ -95,14 +95,21 @@ SELECT
         'venue', es.venue
     )) FILTER (WHERE es.id IS NOT NULL),
     '[]'::jsonb
-  ) AS schedules
+  ) AS schedules,
+
+  COALESCE(
+    array_agg(DISTINCT tag.abbreviation) FILTER (WHERE tag.id IS NOT NULL)
+  ) AS tags
 
 FROM event e
+
 LEFT JOIN teams t ON e.id = t.event_id
 LEFT JOIN team_members tm ON t.id = tm.team_id
 LEFT JOIN bookings b ON t.booking_id = b.id
 LEFT JOIN student s ON tm.student_id = s.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
+LEFT JOIN event_tag_mapping etm ON etm.event_id = t.event_id
+LEFT JOIN tags tag ON etm.tag_id = tag.id
 
 WHERE
   s.email = $1
