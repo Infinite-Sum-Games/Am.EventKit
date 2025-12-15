@@ -116,38 +116,35 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 const updateOrganizerByIDQuery = `-- name: UpdateOrganizerByIDQuery :execrows
 UPDATE organizer
 SET
-  name = $2,
-  email = $3,
-  password = $4,
-  org_type = $5,
-  student_head = $6,
-  student_co_head = $7,
-  faculty_head = $8
+  name = $1,
+  email = $2,
+  org_type = $3,
+  student_head = $4,
+  student_co_head = $5,
+  faculty_head = $6
 WHERE
-  id = $1
+  id = $7
 `
 
 type UpdateOrganizerByIDQueryParams struct {
-	ID            uuid.UUID         `json:"id"`
 	Name          string            `json:"name"`
 	Email         string            `json:"email"`
-	Password      string            `json:"password"`
 	OrgType       OrganizerTypeEnum `json:"org_type"`
 	StudentHead   string            `json:"student_head"`
 	StudentCoHead pgtype.Text       `json:"student_co_head"`
 	FacultyHead   string            `json:"faculty_head"`
+	ID            uuid.UUID         `json:"id"`
 }
 
 func (q *Queries) UpdateOrganizerByIDQuery(ctx context.Context, db DBTX, arg UpdateOrganizerByIDQueryParams) (int64, error) {
 	result, err := db.Exec(ctx, updateOrganizerByIDQuery,
-		arg.ID,
 		arg.Name,
 		arg.Email,
-		arg.Password,
 		arg.OrgType,
 		arg.StudentHead,
 		arg.StudentCoHead,
 		arg.FacultyHead,
+		arg.ID,
 	)
 	if err != nil {
 		return 0, err
