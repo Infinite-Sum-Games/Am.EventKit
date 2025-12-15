@@ -105,8 +105,8 @@ LEFT JOIN student s ON tm.student_id = s.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
 
 WHERE
-  s.id = $1
-  AND s.email = $2
+  s.email = $1
   AND b.txn_status = 'SUCCESS'
 GROUP BY
-  e.id;
+  e.id,
+  t.team_name;
