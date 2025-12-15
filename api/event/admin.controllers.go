@@ -840,12 +840,15 @@ func EditEventSchedule(c *gin.Context) {
 	result, err := q.EditEventScheduleQuery(ctx, conn, db.EditEventScheduleQueryParams{
 		ID: scheduleId,
 		EventDate: pgtype.Date{
+			Time:  req.EventDate,
 			Valid: true,
 		},
 		StartTime: pgtype.Timestamp{
+			Time:  req.StartTime,
 			Valid: true,
 		},
 		EndTime: pgtype.Timestamp{
+			Time:  req.EndTime,
 			Valid: true,
 		},
 		Venue: req.Venue,

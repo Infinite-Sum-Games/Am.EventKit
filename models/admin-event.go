@@ -115,9 +115,10 @@ func (r AddEventScheduleRequest) Validate() error {
 }
 
 type EditEventScheduleRequest struct {
-	Round    string    `json:"round"`
-	Datetime time.Time `json:"datetime"`
-	Venue    string    `json:"venue"`
+	EventDate time.Time `json:"event_date"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"time_time"`
+	Venue     string    `json:"venue"`
 }
 
 func (r EditEventScheduleRequest) Validate() error {
