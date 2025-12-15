@@ -375,7 +375,7 @@ func BookEvent(c *gin.Context) {
 		_, err = q.CreateTeamMember(ctx, tx, db.CreateTeamMemberParams{
 			TeamID:       teamID,
 			StudentID:    leaderId,
-			StudentRole:  "Leader",
+			StudentRole:  "leader",
 			StudentName:  leaderStrcut.Name,
 			StudentEmail: leaderStrcut.Email,
 		})
