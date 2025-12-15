@@ -11,11 +11,13 @@ import (
 
 // Add in queue names here and update the allQueues array
 const (
-	QueueWocRegistrations = "woc-2025-paid-registrations"
+	QueueHackathonRegistrations = "ai-hackathon-registrations"
+	QueueWocRegistrations       = "woc-registrations"
 )
 
 var allQueues = []string{
 	QueueWocRegistrations,
+	QueueHackathonRegistrations,
 }
 
 var Rabbit *MsgBroker

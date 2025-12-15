@@ -20,8 +20,9 @@ INSERT INTO bookings (
   registration_fee,
   txn_status,
   product_info,
-  seats_released
-) VALUES ($1, $2, $3, $4, $5, $6, $7)
+  seats_released,
+  metadata
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
@@ -33,6 +34,7 @@ type CreateBookingParams struct {
 	TxnStatus       string         `json:"txn_status"`
 	ProductInfo     string         `json:"product_info"`
 	SeatsReleased   int32          `json:"seats_released"`
+	Metadata        []byte         `json:"metadata"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingParams) (uuid.UUID, error) {
@@ -44,6 +46,7 @@ func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingP
 		arg.TxnStatus,
 		arg.ProductInfo,
 		arg.SeatsReleased,
+		arg.Metadata,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -55,8 +58,9 @@ INSERT INTO teams (
   team_name,
   event_id,
   leader_name,
-  booking_id
-) VALUES ($1, $2, $3, $4)
+  booking_id,
+  metadata
+) VALUES ($1, $2, $3, $4, $5)
 RETURNING id
 `
 
@@ -65,6 +69,7 @@ type CreateTeamParams struct {
 	EventID    uuid.UUID `json:"event_id"`
 	LeaderName string    `json:"leader_name"`
 	BookingID  uuid.UUID `json:"booking_id"`
+	Metadata   []byte    `json:"metadata"`
 }
 
 func (q *Queries) CreateTeam(ctx context.Context, db DBTX, arg CreateTeamParams) (uuid.UUID, error) {
@@ -73,6 +78,7 @@ func (q *Queries) CreateTeam(ctx context.Context, db DBTX, arg CreateTeamParams)
 		arg.EventID,
 		arg.LeaderName,
 		arg.BookingID,
+		arg.Metadata,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -233,19 +239,26 @@ func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) 
 
 const getEventForBooking = `-- name: GetEventForBooking :one
 SELECT
-  id,
-  price,
-  is_group,
-  is_per_head,
-  max_teamsize,
-  min_teamsize,
-  total_seats,
-  seats_filled,
-  event_status
-FROM 
-  event
-WHERE 
-  id = $1
+  e.id,
+  e.price,
+  e.is_group,
+  e.is_per_head,
+  e.max_teamsize,
+  e.min_teamsize,
+  e.total_seats,
+  e.seats_filled,
+  e.event_status,
+  COALESCE(
+    to_jsonb(ARRAY_AGG(t.abbreviation) FILTER (WHERE t.abbreviation LIKE '!%')),
+    '[]'::jsonb
+  ) AS special_tags
+FROM event e
+LEFT JOIN event_tag_mapping etm
+  ON e.id = etm.event_id
+LEFT JOIN tags t
+  ON t.id = etm.tag_id
+WHERE e.id = $1
+GROUP BY e.id
 `
 
 type GetEventForBookingRow struct {
@@ -258,6 +271,7 @@ type GetEventForBookingRow struct {
 	TotalSeats  int32           `json:"total_seats"`
 	SeatsFilled int32           `json:"seats_filled"`
 	EventStatus EventStatusEnum `json:"event_status"`
+	SpecialTags interface{}     `json:"special_tags"`
 }
 
 func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID) (GetEventForBookingRow, error) {
@@ -273,6 +287,7 @@ func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID)
 		&i.TotalSeats,
 		&i.SeatsFilled,
 		&i.EventStatus,
+		&i.SpecialTags,
 	)
 	return i, err
 }

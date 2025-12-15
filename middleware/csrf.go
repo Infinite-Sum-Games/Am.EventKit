@@ -45,10 +45,7 @@ func VerifyCsrf(c *gin.Context) {
 		pkg.Log.ErrorCtx(
 			c,
 			"[CSRF-ERROR]: Mismatching CSRF tokens",
-			fmt.Errorf("ERR: CSRF tokens' do not match. Cookie: %s, Header: %s",
-				csrfFromCookie,
-				csrfFromHeader,
-			))
+			fmt.Errorf("ERR: CSRF tokens' do not match"))
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Access denied.",
 		})

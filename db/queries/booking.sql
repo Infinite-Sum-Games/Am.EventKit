@@ -6,8 +6,9 @@ INSERT INTO bookings (
   registration_fee,
   txn_status,
   product_info,
-  seats_released
-) VALUES ($1, $2, $3, $4, $5, $6, $7)
+  seats_released,
+  metadata
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id;
 
 -- name: CreateTeam :one
@@ -15,8 +16,9 @@ INSERT INTO teams (
   team_name,
   event_id,
   leader_name,
-  booking_id
-) VALUES ($1, $2, $3, $4)
+  booking_id,
+  metadata
+) VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
 -- name: CreateTeamMember :one
@@ -31,19 +33,27 @@ RETURNING id;
 
 -- name: GetEventForBooking :one
 SELECT
-  id,
-  price,
-  is_group,
-  is_per_head,
-  max_teamsize,
-  min_teamsize,
-  total_seats,
-  seats_filled,
-  event_status
-FROM 
-  event
-WHERE 
-  id = $1;
+  e.id,
+  e.price,
+  e.is_group,
+  e.is_per_head,
+  e.max_teamsize,
+  e.min_teamsize,
+  e.total_seats,
+  e.seats_filled,
+  e.event_status,
+  COALESCE(
+    to_jsonb(ARRAY_AGG(t.abbreviation) FILTER (WHERE t.abbreviation LIKE '!%')),
+    '[]'::jsonb
+  ) AS special_tags
+FROM event e
+LEFT JOIN event_tag_mapping etm
+  ON e.id = etm.event_id
+LEFT JOIN tags t
+  ON t.id = etm.tag_id
+WHERE e.id = $1
+GROUP BY e.id;
+
 
 -- name: GetAnyBookingByUsersAndEvent :many
 (

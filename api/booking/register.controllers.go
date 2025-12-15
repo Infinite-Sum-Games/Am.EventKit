@@ -10,6 +10,7 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	messagequeue "github.com/Thanus-Kumaar/anokha-2025-backend/message-queue"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
@@ -206,6 +207,107 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
+	// Retriving the tag details of the event to check for specials
+	// Convert interface{} → []string
+	var specialTags []string
+	if event.SpecialTags != nil {
+		switch v := event.SpecialTags.(type) {
+		case []any:
+			for _, raw := range v {
+				if s, ok := raw.(string); ok {
+					specialTags = append(specialTags, s)
+				}
+			}
+		case []string:
+			specialTags = v
+		}
+	}
+
+	// Log special tags
+	if len(specialTags) > 0 {
+		pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: Special tags fetched for event %s: %v", eventId, specialTags))
+	} else {
+		pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: No special tags for event %s", eventId))
+	}
+
+	// Switch case for special tags metadata
+	metadataJson := []byte(`{}`)
+	for _, tag := range specialTags {
+		switch tag {
+		case "!woc":
+			// Create and send payload to message queue
+			payload, err := messagequeue.CreateWoCPayload(leaderEmail, studentMap[emailToId[leaderEmail]].Name)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create WOC payload", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later.",
+				})
+				return
+			}
+			pkg.Log.InfoCtx(c, fmt.Sprintf("[BOOKING-INFO]: WOC payload constructed for %s", leaderEmail))
+
+			// updating the metadata to include queue name and payload
+			meta := pkg.NewJSONB()
+			meta.Add("woc_payload", string(payload))
+			metadataJson, err = meta.Bytes()
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create WOC metadata", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later.",
+				})
+				return
+			}
+		case "!hackathon":
+			// Create and send payload to message queue
+			teamMembers, err := messagequeue.BuildHackathonTeamMembers(students, leaderEmail)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create team details payload", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later.",
+				})
+				return
+			}
+			pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Hackathon team members constructed successfully")
+
+			leader := studentMap[emailToId[leaderEmail]]
+			problemStmt := ""
+			if req.ProblemStmt != nil {
+				problemStmt = *req.ProblemStmt
+			}
+			payloadBytes, err := messagequeue.CreateHackathonPayload(
+				messagequeue.HackathonPayload{
+					TeamName:          req.TeamName,
+					LeaderName:        leader.Name,
+					LeaderEmail:       leaderEmail,
+					LeaderPhoneNumber: leader.PhoneNumber,
+					LeaderCollegeName: leader.CollegeName,
+					ProblemStatement:  problemStmt,
+					TeamMembers:       teamMembers,
+				},
+			)
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create Hackathon payload", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later.",
+				})
+				return
+			}
+			pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Hackathon payload constructed successfully")
+
+			meta := pkg.NewJSONB()
+			meta.Add("hackathon_payload", string(payloadBytes))
+			metadataJson, err = meta.Bytes()
+			if err != nil {
+				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create Hackathon metadata", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later.",
+				})
+				return
+			}
+		}
+	}
+	pkg.Log.InfoCtx(c, "[BOOKING-INFO]: Final metadata: "+string(metadataJson))
+
 	var ids []uuid.UUID
 	for _, s := range students {
 		ids = append(ids, s.ID)
@@ -285,6 +387,7 @@ func BookEvent(c *gin.Context) {
 		TxnStatus:       models.PaymentPending,
 		ProductInfo:     prodInfo,
 		SeatsReleased:   int32(len(allMembers)),
+		Metadata:        metadataJson, // TODO: I need to set it as default data of the jsonb if not present
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -294,12 +397,25 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
+	// Adding metadata for team if needed
+	meta := pkg.NewJSONB()
+	meta.Add("problem_stmt", req.ProblemStmt)
+	metadata, err := meta.Bytes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Failed to create metadata for team", err)
+		return
+	}
+
 	if isGroupEvent {
 		teamID, err := q.CreateTeam(ctx, tx, db.CreateTeamParams{
 			TeamName:   req.TeamName,
 			EventID:    eventId,
 			LeaderName: leaderStrcut.Name,
 			BookingID:  bookingID,
+			Metadata:   metadata,
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -333,7 +449,7 @@ func BookEvent(c *gin.Context) {
 		_, err = q.CreateTeamMember(ctx, tx, db.CreateTeamMemberParams{
 			TeamID:       teamID,
 			StudentID:    leaderId,
-			StudentRole:  "Leader",
+			StudentRole:  "leader",
 			StudentName:  leaderStrcut.Name,
 			StudentEmail: leaderStrcut.Email,
 		})
@@ -383,5 +499,6 @@ func BookEvent(c *gin.Context) {
 		"userEmail":       leaderEmail,
 		"hash":            hashedData,
 	})
+	pkg.Log.SuccessCtx(c)
 
 }

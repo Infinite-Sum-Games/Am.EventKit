@@ -8,6 +8,7 @@ import (
 type TeamBookingRequest struct {
 	TeamName    string       `json:"team_name" binding:"required"`
 	TeamMembers []TeamMember `json:"team_members" binding:"required"`
+	ProblemStmt *string      `json:"ps,omitempty"`
 }
 
 type TeamMember struct {
@@ -35,6 +36,14 @@ func (e TeamBookingRequest) Validate() error {
 				}
 				return nil
 			})),
+		),
+		// asuming the only metadata we get is related to problem statement type
+		v.Field(
+			&e.ProblemStmt,
+			v.When(
+				e.ProblemStmt != nil,
+				v.In("agentic_ai", "generative_ai", "aiot"),
+			),
 		),
 	)
 }
