@@ -249,7 +249,7 @@ SELECT
   e.seats_filled,
   e.event_status,
   COALESCE(
-    to_jsonb(ARRAY_AGG(t.name) FILTER (WHERE t.name LIKE '!%')),
+    to_jsonb(ARRAY_AGG(t.abbreviation) FILTER (WHERE t.abbreviation LIKE '!%')),
     '[]'::jsonb
   ) AS special_tags
 FROM event e
