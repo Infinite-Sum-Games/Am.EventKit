@@ -487,5 +487,6 @@ func BookEvent(c *gin.Context) {
 		"userEmail":       leaderEmail,
 		"hash":            hashedData,
 	})
+	pkg.Log.SuccessCtx(c)
 
 }
