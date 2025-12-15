@@ -3,7 +3,9 @@ SELECT
     id,
     name,
     abbreviation
-FROM tags;
+FROM tags
+WHERE
+  abbreviation NOT LIKE '!%';
 
 -- name: CreateTagQuery :exec
 INSERT INTO tags (name, abbreviation)
