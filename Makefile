@@ -8,7 +8,6 @@ GO_BIN := $(shell go env GOPATH)/bin
 GOOSE_DRIVER := postgres
 GOOSE_DBSTRING := $(DB_URL)
 GOOSE_MIGRATION_DIR := ./db/migrations/
-GOOSE_ANALYTICS_MIGRATION_DIR := ./db/analytics_migrations/
 
 ifeq ($(OS),Windows_NT)
 	BIN_NAME := bin/anokha-backend.exe
@@ -37,7 +36,6 @@ run: build
 
 up:
 	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
-	@goose -dir $(GOOSE_ANALYTICS_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
 
 upone:
 	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up-by-one

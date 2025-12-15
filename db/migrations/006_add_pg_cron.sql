@@ -3,6 +3,7 @@
 
 SELECT cron.schedule(
     'refresh_analytics_every_30min',
+    -- '* * * * *',
     '*/30 * * * *',
 $$
 REFRESH MATERIALIZED VIEW CONCURRENTLY revenue_analytics;

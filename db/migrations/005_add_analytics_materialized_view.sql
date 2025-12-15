@@ -73,26 +73,19 @@ ON revenue_analytics(id);
 DROP MATERIALIZED VIEW IF EXISTS event_registration_analytics;
 
 CREATE MATERIALIZED VIEW event_registration_analytics AS
+WITH participants AS (
+    SELECT student_id FROM solo_event_participant
+    UNION
+    SELECT student_id FROM team_members
+)
 SELECT
     1 AS id,
 
     -- TOTAL EVENT REGISTRATIONS
-    (
-        WITH all_participants AS (
-            SELECT student_id FROM solo_event_participant
-            UNION
-            SELECT student_id FROM team_members
-        )
-        SELECT COUNT(*) FROM all_participants
-    ) AS total_event_registrations,
+    (SELECT COUNT(*) FROM participants) AS total_event_registrations,
 
     -- PARTICIPANTS VS NON-PARTICIPANTS
     (
-        WITH participants AS (
-            SELECT student_id FROM solo_event_participant
-            UNION
-            SELECT student_id FROM team_members
-        )
         SELECT jsonb_build_object(
             'participants', (SELECT COUNT(*) FROM participants),
             'non_participants', 

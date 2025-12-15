@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"os"
 	"strconv"
@@ -856,8 +857,6 @@ func SeedBookings(conn *pgx.Conn) error {
 		return err
 	}
 
-	pkg.Log.Info("Seeding bookings...")
-
 	for _, student := range students {
 		for _, event := range events {
 
@@ -898,7 +897,7 @@ func SeedBookings(conn *pgx.Conn) error {
 		}
 	}
 
-	pkg.Log.Info("Bookings seeded successfully.")
+	pkg.Log.Info(fmt.Sprintf("Successfully seeded %d bookings", len(students)))
 	return nil
 }
 

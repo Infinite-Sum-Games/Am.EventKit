@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -314,10 +315,10 @@ type Event struct {
 }
 
 type EventRegistrationAnalytic struct {
-	ID                      pgtype.Int4 `json:"id"`
-	TotalEventRegistrations pgtype.Int4 `json:"total_event_registrations"`
-	ParticipantSplit        []byte      `json:"participant_split"`
-	EventRegistrationStats  []byte      `json:"event_registration_stats"`
+	ID                      int32           `json:"id"`
+	TotalEventRegistrations int64           `json:"total_event_registrations"`
+	ParticipantSplit        json.RawMessage `json:"participant_split"`
+	EventRegistrationStats  json.RawMessage `json:"event_registration_stats"`
 }
 
 type EventSchedule struct {
@@ -374,9 +375,9 @@ type PasswordReset struct {
 }
 
 type PeopleRegistrationAnalytic struct {
-	ID                        pgtype.Int4 `json:"id"`
-	WebsiteRegistrationSplit  []byte      `json:"website_registration_split"`
-	TotalWebsiteRegistrations pgtype.Int4 `json:"total_website_registrations"`
+	ID                        int32           `json:"id"`
+	WebsiteRegistrationSplit  json.RawMessage `json:"website_registration_split"`
+	TotalWebsiteRegistrations int64           `json:"total_website_registrations"`
 }
 
 type PeopleToEventMapping struct {
@@ -395,11 +396,11 @@ type Person struct {
 }
 
 type RevenueAnalytic struct {
-	ID                  pgtype.Int4    `json:"id"`
-	TotalRevenue        pgtype.Numeric `json:"total_revenue"`
-	RevenuePerEvent     []byte         `json:"revenue_per_event"`
-	RevenuePerDate      []byte         `json:"revenue_per_date"`
-	RevenuePerOrganizer []byte         `json:"revenue_per_organizer"`
+	ID                  int32           `json:"id"`
+	TotalRevenue        interface{}     `json:"total_revenue"`
+	RevenuePerEvent     json.RawMessage `json:"revenue_per_event"`
+	RevenuePerDate      json.RawMessage `json:"revenue_per_date"`
+	RevenuePerOrganizer json.RawMessage `json:"revenue_per_organizer"`
 }
 
 type SoloEventParticipant struct {
@@ -477,6 +478,6 @@ type TeamMember struct {
 }
 
 type TransactionAnalytic struct {
-	ID                 pgtype.Int4 `json:"id"`
-	TransactionSummary []byte      `json:"transaction_summary"`
+	ID                 int32           `json:"id"`
+	TransactionSummary json.RawMessage `json:"transaction_summary"`
 }

@@ -5,7 +5,6 @@ sql:
     queries: "db/queries"
     schema: 
       - db/migrations
-      - db/sqlc_schema_stub
     gen:
       go:
         emit_methods_with_db_argument: true
