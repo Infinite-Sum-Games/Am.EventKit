@@ -15,9 +15,7 @@ SELECT
         '[]'::jsonb
     ) AS tags,
 
-    e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled
+    e.price AS event_price
 
 FROM event e
 
@@ -41,8 +39,6 @@ SELECT
     e.is_group,
     e.max_teamsize,
     e.min_teamsize,
-    e.total_seats,
-    e.seats_filled,
     e.event_status,
     e.event_mode,
     e.is_technical,
@@ -111,8 +107,6 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled,
 
     /* registration and favourite status for the given student */
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
@@ -222,8 +216,6 @@ SELECT
     ) AS tags,
 
     e.price AS event_price,
-    e.total_seats AS max_seats,
-    e.seats_filled,
 
     (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
     (COUNT(DISTINCT f.id) > 0) AS is_starred
