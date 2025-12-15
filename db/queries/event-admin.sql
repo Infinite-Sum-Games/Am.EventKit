@@ -18,11 +18,77 @@ FROM
 
 -- name: GetAdminEventByEventIdQuery :one
 SELECT
-  id
-FROM
-  event e
+  e.id,
+  e.name,
+  e.blurb,
+  e.cover_image_url as poster_url,
+  e.event_type,
+  e.event_mode,
+  e.event_status,
+  e.description,
+  e.attendance_mode,
+  e.is_group,
+  e.min_teamsize,
+  e.max_teamsize,
+  e.is_per_head,
+  e.price,
+  e.rules,
+  e.seats_filled,
+  e.total_seats,
+  e.is_technical,
+  e.updated_at,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', o.id,
+        'name', o.name,
+        'org_type', o.org_type
+    )) FILTER (WHERE o.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS organizers,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', es.id,
+        'event_date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue,
+        'updated_at', es.updated_at
+    )) FILTER (WHERE es.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS schedules,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', p.id,
+        'name', p.name,
+        'profession', p.profession
+    )) FILTER (WHERE o.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS people,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', t.id,
+        'name', t.name,
+        'abbreviation', t.abbr
+    )) FILTER (WHERE t.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS tags
+
+FROM event e
+
+LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
+LEFT JOIN organizer o ON m.organizer_id = o.id
+LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
+LEFT JOIN tags t ON e.id = m.event_id
+LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
+LEFT JOIN people p ON pem.person_id = p.id
+
 WHERE
-  id = $1;
+  e.id = $1
+GROUP BY e.id;
 
 -- name: NewUntitledEventQuery :one
 INSERT INTO event (

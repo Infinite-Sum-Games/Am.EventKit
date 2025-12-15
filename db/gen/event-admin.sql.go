@@ -509,17 +509,134 @@ func (q *Queries) EditEventScheduleQuery(ctx context.Context, db DBTX, arg EditE
 
 const getAdminEventByEventIdQuery = `-- name: GetAdminEventByEventIdQuery :one
 SELECT
-  id
-FROM
-  event e
+  e.id,
+  e.name,
+  e.blurb,
+  e.cover_image_url as poster_url,
+  e.event_type,
+  e.event_mode,
+  e.event_status,
+  e.description,
+  e.attendance_mode,
+  e.is_group,
+  e.min_teamsize,
+  e.max_teamsize,
+  e.is_per_head,
+  e.price,
+  e.rules,
+  e.seats_filled,
+  e.total_seats,
+  e.is_technical,
+  e.updated_at,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', o.id,
+        'name', o.name,
+        'org_type', o.org_type
+    )) FILTER (WHERE o.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS organizers,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', es.id,
+        'event_date', es.event_date,
+        'start_time', es.start_time,
+        'end_time', es.end_time,
+        'venue', es.venue,
+        'updated_at', es.updated_at
+    )) FILTER (WHERE es.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS schedules,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', p.id,
+        'name', p.name,
+        'profession', p.profession
+    )) FILTER (WHERE o.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS people,
+
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+        'id', t.id,
+        'name', t.name,
+        'abbreviation', t.abbr
+    )) FILTER (WHERE t.id IS NOT NULL),
+  '[]'::jsonb
+  ) AS tags
+
+FROM event e
+
+LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
+LEFT JOIN organizer o ON m.organizer_id = o.id
+LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
+LEFT JOIN tags t ON e.id = m.event_id
+LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
+LEFT JOIN people p ON pem.person_id = p.id
+
 WHERE
-  id = $1
+  e.id = $1
+GROUP BY e.id
 `
 
-func (q *Queries) GetAdminEventByEventIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+type GetAdminEventByEventIdQueryRow struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	Blurb          string             `json:"blurb"`
+	PosterUrl      pgtype.Text        `json:"poster_url"`
+	EventType      EventTypeEnum      `json:"event_type"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	Description    string             `json:"description"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	IsGroup        bool               `json:"is_group"`
+	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
+	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
+	IsPerHead      bool               `json:"is_per_head"`
+	Price          pgtype.Numeric     `json:"price"`
+	Rules          string             `json:"rules"`
+	SeatsFilled    int32              `json:"seats_filled"`
+	TotalSeats     int32              `json:"total_seats"`
+	IsTechnical    pgtype.Bool        `json:"is_technical"`
+	UpdatedAt      pgtype.Timestamp   `json:"updated_at"`
+	Organizers     interface{}        `json:"organizers"`
+	Schedules      interface{}        `json:"schedules"`
+	People         interface{}        `json:"people"`
+	Tags           interface{}        `json:"tags"`
+}
+
+func (q *Queries) GetAdminEventByEventIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetAdminEventByEventIdQueryRow, error) {
 	row := db.QueryRow(ctx, getAdminEventByEventIdQuery, id)
-	err := row.Scan(&id)
-	return id, err
+	var i GetAdminEventByEventIdQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Blurb,
+		&i.PosterUrl,
+		&i.EventType,
+		&i.EventMode,
+		&i.EventStatus,
+		&i.Description,
+		&i.AttendanceMode,
+		&i.IsGroup,
+		&i.MinTeamsize,
+		&i.MaxTeamsize,
+		&i.IsPerHead,
+		&i.Price,
+		&i.Rules,
+		&i.SeatsFilled,
+		&i.TotalSeats,
+		&i.IsTechnical,
+		&i.UpdatedAt,
+		&i.Organizers,
+		&i.Schedules,
+		&i.People,
+		&i.Tags,
+	)
+	return i, err
 }
 
 const getAllAdminEventsQuery = `-- name: GetAllAdminEventsQuery :many

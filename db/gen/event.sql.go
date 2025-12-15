@@ -150,11 +150,7 @@ SELECT
     ) AS schedules,
 
     COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_name', t.name,
-        'tag_abbreviation', t.abbreviation
-      )) FILTER (WHERE t.id IS NOT NULL),
-      '[]'::jsonb
+      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
     COALESCE(
