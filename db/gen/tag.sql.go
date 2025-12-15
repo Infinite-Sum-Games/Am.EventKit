@@ -41,24 +41,49 @@ func (q *Queries) DeleteTagByIDQuery(ctx context.Context, db DBTX, id uuid.UUID)
 
 const listTagsQuery = `-- name: ListTagsQuery :many
 SELECT
-    id,
-    name,
-    abbreviation
-FROM tags
+    t.id,
+    t.name,
+    t.abbreviation,
+    COALESCE(
+      jsonb_agg(json_build_object(
+          'id', e.id,
+          'name', e.name
+      )) FILTER (WHERE e.id IS NOT NULL),
+    '[]'::jsonb
+    ) AS events
+FROM tags AS t
+LEFT JOIN event_tag_mapping etm ON t.id = etm.tag_id
+LEFT JOIN event e ON e.id = etm.event_id
 WHERE
-  abbreviation NOT LIKE '!%'
+  t.abbreviation NOT LIKE '!%'
+GROUP BY
+  t.id, 
+  t.name, 
+  t.abbreviation
 `
 
-func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]Tag, error) {
+type ListTagsQueryRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Name         string      `json:"name"`
+	Abbreviation string      `json:"abbreviation"`
+	Events       interface{} `json:"events"`
+}
+
+func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]ListTagsQueryRow, error) {
 	rows, err := db.Query(ctx, listTagsQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Tag
+	var items []ListTagsQueryRow
 	for rows.Next() {
-		var i Tag
-		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
+		var i ListTagsQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Abbreviation,
+			&i.Events,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

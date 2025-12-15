@@ -416,7 +416,6 @@ func AddEventToggles(c *gin.Context) {
 	var eventMode = db.EventModeEnumONLINE
 	var attendanceMode = db.AttendanceModeEnumSOLO
 	var eventType = db.EventTypeEnumEVENT
-	var eventStatus = db.EventStatusEnumCLOSED
 
 	if req.IsOffline {
 		eventMode = db.EventModeEnumOFFLINE
@@ -427,14 +426,6 @@ func AddEventToggles(c *gin.Context) {
 	if req.EventType == "WORKSHOP" {
 		eventType = db.EventTypeEnumWORKSHOP
 	}
-	// Check for publishing before completed. Publishing means both
-	// ACTIVE state and COMPLETED state
-	if req.IsPublished {
-		eventStatus = db.EventStatusEnumACTIVE
-	}
-	if req.IsCompleted {
-		eventStatus = db.EventStatusEnumCOMPLETED
-	}
 
 	q := db.New()
 	result, err := q.AddEventTogglesQuery(ctx, conn, db.AddEventTogglesQueryParams{
@@ -443,7 +434,6 @@ func AddEventToggles(c *gin.Context) {
 		EventMode:      eventMode, // IsOffline or not
 		AttendanceMode: attendanceMode,
 		IsTechnical:    pgtype.Bool{Bool: req.IsTechnical, Valid: true},
-		EventStatus:    eventStatus, // PUBLISHED | COMPLETED | CLOSED
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
