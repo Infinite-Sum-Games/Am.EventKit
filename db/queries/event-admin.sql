@@ -196,10 +196,9 @@ SET
   event_mode = $2,
   attendance_mode = $3,
   is_technical = $4,
-  event_status = $5,
   updated_at = NOW()
 WHERE
-  id = $6
+  id = $5
 RETURNING
   event_type,
   is_group,

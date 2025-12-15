@@ -41,8 +41,6 @@ type AddEventTogglesRequest struct {
 	AttendanceMode string `json:"attendance_mode"`
 	IsOffline      bool   `json:"is_offline"`
 	IsTechnical    bool   `json:"is_technical"`
-	IsPublished    bool   `json:"is_published"`
-	IsCompleted    bool   `json:"is_completed"`
 }
 
 func (r AddEventTogglesRequest) Validate() error {

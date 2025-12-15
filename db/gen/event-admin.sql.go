@@ -223,10 +223,9 @@ SET
   event_mode = $2,
   attendance_mode = $3,
   is_technical = $4,
-  event_status = $5,
   updated_at = NOW()
 WHERE
-  id = $6
+  id = $5
 RETURNING
   event_type,
   is_group,
@@ -242,7 +241,6 @@ type AddEventTogglesQueryParams struct {
 	EventMode      EventModeEnum      `json:"event_mode"`
 	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
-	EventStatus    EventStatusEnum    `json:"event_status"`
 	ID             uuid.UUID          `json:"id"`
 }
 
@@ -262,7 +260,6 @@ func (q *Queries) AddEventTogglesQuery(ctx context.Context, db DBTX, arg AddEven
 		arg.EventMode,
 		arg.AttendanceMode,
 		arg.IsTechnical,
-		arg.EventStatus,
 		arg.ID,
 	)
 	var i AddEventTogglesQueryRow
