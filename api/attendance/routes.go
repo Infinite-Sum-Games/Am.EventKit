@@ -6,6 +6,7 @@ import (
 )
 
 func AttendanceRoutes(r *gin.RouterGroup) {
+	r.GET("/list/event/:organizerId", FetchEventsByOrganizer)
 	r.GET("/list/:eventId", mw.Auth, mw.CheckOrganizer, FetchEventParticipantList)
 	r.POST("/mark/:eventId/scan", mw.Auth, mw.CheckOrganizer, MarkOneTimeAttendance)
 	r.POST("/mark/:eventId/scan/check-in", mw.Auth, mw.CheckOrganizer, MarkCheckIn)
