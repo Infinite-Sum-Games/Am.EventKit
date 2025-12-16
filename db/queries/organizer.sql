@@ -38,3 +38,11 @@ WHERE
 -- name: DeleteOrganizerByIDQuery :execrows
 DELETE FROM organizer
 WHERE id = $1;
+
+-- name: ChangeOrganizerPasswordQuery :one
+UPDATE organizer
+SET 
+  password = $1
+WHERE
+  id = $2
+RETURNING id;

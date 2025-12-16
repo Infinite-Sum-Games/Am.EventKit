@@ -85,11 +85,13 @@ SET
   total_seats = $2,
   min_teamsize = $3,
   max_teamsize = $4,
+  is_per_head = $5,
   updated_at = NOW()
 WHERE
-  id = $5
+  id = $6
 RETURNING
   is_group,
+  is_per_head,
   total_seats,
   min_teamsize,
   max_teamsize,
@@ -101,11 +103,13 @@ type AddEventDimensionQueryParams struct {
 	TotalSeats  int32       `json:"total_seats"`
 	MinTeamsize pgtype.Int4 `json:"min_teamsize"`
 	MaxTeamsize pgtype.Int4 `json:"max_teamsize"`
+	IsPerHead   bool        `json:"is_per_head"`
 	ID          uuid.UUID   `json:"id"`
 }
 
 type AddEventDimensionQueryRow struct {
 	IsGroup     bool             `json:"is_group"`
+	IsPerHead   bool             `json:"is_per_head"`
 	TotalSeats  int32            `json:"total_seats"`
 	MinTeamsize pgtype.Int4      `json:"min_teamsize"`
 	MaxTeamsize pgtype.Int4      `json:"max_teamsize"`
@@ -118,11 +122,13 @@ func (q *Queries) AddEventDimensionQuery(ctx context.Context, db DBTX, arg AddEv
 		arg.TotalSeats,
 		arg.MinTeamsize,
 		arg.MaxTeamsize,
+		arg.IsPerHead,
 		arg.ID,
 	)
 	var i AddEventDimensionQueryRow
 	err := row.Scan(
 		&i.IsGroup,
+		&i.IsPerHead,
 		&i.TotalSeats,
 		&i.MinTeamsize,
 		&i.MaxTeamsize,
@@ -649,6 +655,8 @@ SELECT
   is_per_head,
   is_group,
   is_technical,
+  COALESCE(min_teamsize, 0) AS min_teamsize,
+  COALESCE(max_teamsize, 0) AS max_teamsize,
   seats_filled,
   total_seats,
   updated_at
@@ -667,6 +675,8 @@ type GetAllAdminEventsQueryRow struct {
 	IsPerHead   bool             `json:"is_per_head"`
 	IsGroup     bool             `json:"is_group"`
 	IsTechnical pgtype.Bool      `json:"is_technical"`
+	MinTeamsize int32            `json:"min_teamsize"`
+	MaxTeamsize int32            `json:"max_teamsize"`
 	SeatsFilled int32            `json:"seats_filled"`
 	TotalSeats  int32            `json:"total_seats"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
@@ -692,6 +702,8 @@ func (q *Queries) GetAllAdminEventsQuery(ctx context.Context, db DBTX) ([]GetAll
 			&i.IsPerHead,
 			&i.IsGroup,
 			&i.IsTechnical,
+			&i.MinTeamsize,
+			&i.MaxTeamsize,
 			&i.SeatsFilled,
 			&i.TotalSeats,
 			&i.UpdatedAt,

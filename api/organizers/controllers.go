@@ -10,6 +10,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetAllOrganizers(c *gin.Context) {
@@ -136,6 +137,62 @@ func EditOrganizer(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Organizer updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func ChangeOrganizerPassword(c *gin.Context) {
+	orgId, ok := pkg.GrabUuid(c, c.Param("organizerId"), "ORGANIZER", "Organizer")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.ChangeOrganizerPasswordRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ORGANIZER") {
+		return
+	}
+	defer conn.Release()
+
+	passwordHash, err := pkg.Hash(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.FatalCtx(c, "[ORGANIZER-FATAL]: Failed to hash password", err)
+		return
+	}
+
+	q := db.New()
+	_, err = q.ChangeOrganizerPasswordQuery(ctx, conn,
+		db.ChangeOrganizerPasswordQueryParams{
+			ID:       orgId,
+			Password: passwordHash,
+		})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Organizer not found",
+		})
+		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to update organizer password", err)
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ORGANIZER-ERROR]: Failed to update organizer password", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Organizer password updated successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }

@@ -30,6 +30,7 @@ type AddEventDimensionRequest struct {
 	MinTeamSize int  `json:"min_teamsize"`
 	MaxTeamSize int  `json:"max_teamsize"`
 	TotalSeats  int  `json:"total_seats"`
+	IsPerHead   bool `json:"is_per_head"`
 }
 
 func (r AddEventDimensionRequest) Validate() error {

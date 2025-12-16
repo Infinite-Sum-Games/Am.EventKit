@@ -31,18 +31,18 @@ func LoginAdmin(c *gin.Context) {
 
 	q := db.New()
 	result, err := q.LoginAdminQuery(ctx, tx, req.Email)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "User not found",
+		})
+		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Email does not exist")
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to fetch login details", err)
-		return
-	}
-	if err == pgx.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Email does not exist")
 		return
 	}
 
