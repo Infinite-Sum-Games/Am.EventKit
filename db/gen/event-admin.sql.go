@@ -31,7 +31,7 @@ RETURNING
   description,
   rules,
   price,
-  is_per_head
+  is_per_head,
   updated_at
 `
 
@@ -46,13 +46,14 @@ type AddEventDetailsQueryParams struct {
 }
 
 type AddEventDetailsQueryRow struct {
-	ID          uuid.UUID      `json:"id"`
-	Name        string         `json:"name"`
-	Blurb       string         `json:"blurb"`
-	Description string         `json:"description"`
-	Rules       string         `json:"rules"`
-	Price       pgtype.Numeric `json:"price"`
-	UpdatedAt   bool           `json:"updated_at"`
+	ID          uuid.UUID        `json:"id"`
+	Name        string           `json:"name"`
+	Blurb       string           `json:"blurb"`
+	Description string           `json:"description"`
+	Rules       string           `json:"rules"`
+	Price       pgtype.Numeric   `json:"price"`
+	IsPerHead   bool             `json:"is_per_head"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEventDetailsQueryParams) (AddEventDetailsQueryRow, error) {
@@ -73,6 +74,7 @@ func (q *Queries) AddEventDetailsQuery(ctx context.Context, db DBTX, arg AddEven
 		&i.Description,
 		&i.Rules,
 		&i.Price,
+		&i.IsPerHead,
 		&i.UpdatedAt,
 	)
 	return i, err

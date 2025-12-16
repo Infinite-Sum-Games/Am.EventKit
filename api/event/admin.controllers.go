@@ -99,7 +99,7 @@ func GetAdminEventsById(c *gin.Context) {
 		"organizers":      result.Organizers,
 		"people":          result.People,
 		"tags":            result.Tags,
-		"updated_at":      result.UpdatedAt,
+		"updated_at":      result.UpdatedAt.Time,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -234,6 +234,7 @@ func AddEventDetails(c *gin.Context) {
 		"description": result.Description,
 		"rules":       result.Rules,
 		"price":       result.Price,
+		"is_per_head": result.IsPerHead,
 		"updated_at":  result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)

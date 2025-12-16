@@ -8,21 +8,21 @@ import (
 )
 
 type AddEventDetailsRequest struct {
-	Name        string `json:"name"`
-	Blurb       string `json:"blurb"`
-	Description string `json:"description"`
-	Rules       string `json:"rules"`
-	Price       int    `json:"price"`
-	IsPerHead   bool   `json:"is_per_head"`
+	Name        string  `json:"name"`
+	Blurb       string  `json:"blurb"`
+	Description string  `json:"description"`
+	Rules       string  `json:"rules"`
+	Price       float32 `json:"price"`
+	IsPerHead   bool    `json:"is_per_head"`
 }
 
 func (r AddEventDetailsRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
-		v.Field(&r.Blurb, v.Required),
-		v.Field(&r.Description, v.Required),
+		v.Field(&r.Blurb),
+		v.Field(&r.Description),
 		v.Field(&r.Rules, v.Required),
-		v.Field(&r.Price, v.Required, v.Min(0)),
+		v.Field(&r.Price, v.Required, v.Min(0.0)),
 		v.Field(&r.IsPerHead, v.In(true, false)),
 	)
 }
