@@ -10,6 +10,8 @@ SELECT
   is_per_head,
   is_group,
   is_technical,
+  COALESCE(min_teamsize, 0) AS min_teamsize,
+  COALESCE(max_teamsize, 0) AS max_teamsize,
   seats_filled,
   total_seats,
   updated_at
@@ -179,11 +181,13 @@ SET
   total_seats = $2,
   min_teamsize = $3,
   max_teamsize = $4,
+  is_per_head = $5,
   updated_at = NOW()
 WHERE
-  id = $5
+  id = $6
 RETURNING
   is_group,
+  is_per_head,
   total_seats,
   min_teamsize,
   max_teamsize,

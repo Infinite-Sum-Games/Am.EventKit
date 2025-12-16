@@ -340,6 +340,7 @@ func AddEventDimension(c *gin.Context) {
 	if !req.IsGroup {
 		req.MinTeamSize = 1
 		req.MaxTeamSize = 1
+		req.IsPerHead = true
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -364,6 +365,7 @@ func AddEventDimension(c *gin.Context) {
 			Int32: int32(req.MaxTeamSize),
 			Valid: true,
 		},
+		IsPerHead: req.IsPerHead,
 	})
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -386,6 +388,7 @@ func AddEventDimension(c *gin.Context) {
 		"is_group":     result.IsGroup,
 		"min_teamsize": result.MinTeamsize.Int32,
 		"max_teamsize": result.MaxTeamsize.Int32,
+		"is_per_head":  result.IsPerHead,
 		"updated_at":   result.UpdatedAt,
 	})
 	pkg.Log.SuccessCtx(c)
