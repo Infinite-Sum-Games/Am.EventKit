@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"net/http"
 	"time"
 
@@ -89,7 +88,7 @@ func GetAdminEventsById(c *gin.Context) {
 		"is_offline":      isOffline,
 		"is_published":    isActive || isCompleted,
 		"is_completed":    isCompleted,
-		"price":           result.Price.Int,
+		"price":           result.Price,
 		"is_per_head":     result.IsPerHead,
 		"is_technical":    result.IsTechnical,
 		"seats_filled":    result.SeatsFilled,
@@ -120,14 +119,11 @@ func NewEvent(c *gin.Context) {
 			Name:        fmt.Sprintf("Untitled %s", ksuid.New().String()),
 			Blurb:       "",
 			Description: "",
-			Price: pgtype.Numeric{
-				Valid: true,
-				Int:   big.NewInt(int64(0)),
-			},
-			IsPerHead: true,
-			Rules:     "",
-			EventType: db.EventTypeEnumEVENT,
-			IsGroup:   false,
+			Price:       0,
+			IsPerHead:   true,
+			Rules:       "",
+			EventType:   db.EventTypeEnumEVENT,
+			IsGroup:     false,
 			MinTeamsize: pgtype.Int4{
 				Valid: true,
 				Int32: 1,
@@ -164,7 +160,7 @@ func NewEvent(c *gin.Context) {
 		"blurb":           result.Blurb,
 		"description":     result.Description,
 		"poster_url":      result.CoverImageUrl.String,
-		"price":           result.Price.Int,
+		"price":           result.Price,
 		"is_per_head":     result.IsPerHead,
 		"rules":           result.Rules,
 		"is_group":        result.IsGroup,
@@ -212,11 +208,8 @@ func AddEventDetails(c *gin.Context) {
 		Blurb:       req.Blurb,
 		Description: req.Description,
 		Rules:       req.Rules,
-		Price: pgtype.Numeric{
-			Int:   big.NewInt(int64(req.Price)),
-			Valid: true,
-		},
-		IsPerHead: req.IsPerHead,
+		Price:       req.Price,
+		IsPerHead:   req.IsPerHead,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
