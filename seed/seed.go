@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"os"
 	"strconv"
 	"time"
@@ -878,12 +877,11 @@ func SeedBookings(conn *pgx.Conn) error {
 				}
 
 				// B. Prepare Parameters
-				priceBigInt := big.NewInt(int64(event.Price))
 				params := db.SeedBookingsQueryParams{
 					TxnID:           "TXN-" + gofakeit.UUID(),
 					StudentID:       student.ID,
 					EventID:         event.ID,
-					RegistrationFee: pgtype.Numeric{Int: priceBigInt, Exp: 0, Valid: true},
+					RegistrationFee: int32(event.Price),
 					ProductInfo:     event.Name,
 					SeatsReleased:   seatsReleased,
 					TxnStatus:       txnStatus,
