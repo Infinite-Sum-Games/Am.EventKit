@@ -151,7 +151,7 @@ RETURNING
   description,
   rules,
   price,
-  is_per_head
+  is_per_head,
   updated_at;
 
 -- name: AddEventPosterQuery :one
