@@ -21,8 +21,7 @@ func (r AddEventDetailsRequest) Validate() error {
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
 		v.Field(&r.Blurb),
 		v.Field(&r.Description),
-		v.Field(&r.Rules, v.Required),
-		v.Field(&r.Price, v.Required, v.Min(0.0)),
+		v.Field(&r.Rules),
 		v.Field(&r.IsPerHead, v.In(true, false)),
 	)
 }
