@@ -121,7 +121,7 @@ type SeedEventQueryParams struct {
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
-	Price          pgtype.Numeric     `json:"price"`
+	Price          int32              `json:"price"`
 	IsPerHead      bool               `json:"is_per_head"`
 	Rules          string             `json:"rules"`
 	EventType      EventTypeEnum      `json:"event_type"`
@@ -506,7 +506,7 @@ type ViewEventSeedQueryRow struct {
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
-	Price          pgtype.Numeric     `json:"price"`
+	Price          int32              `json:"price"`
 	IsPerHead      bool               `json:"is_per_head"`
 	Rules          string             `json:"rules"`
 	EventType      EventTypeEnum      `json:"event_type"`

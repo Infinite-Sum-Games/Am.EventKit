@@ -84,7 +84,7 @@ type GetEventByIdQueryRow struct {
 	Blurb            string          `json:"blurb"`
 	EventDescription string          `json:"event_description"`
 	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
-	Price            pgtype.Numeric  `json:"price"`
+	Price            int32           `json:"price"`
 	IsFull           bool            `json:"is_full"`
 	IsPerHead        bool            `json:"is_per_head"`
 	Rules            string          `json:"rules"`
@@ -213,7 +213,7 @@ type GetEventByIdWithAuthQueryRow struct {
 	Blurb            string          `json:"blurb"`
 	EventDescription string          `json:"event_description"`
 	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
-	Price            pgtype.Numeric  `json:"price"`
+	Price            int32           `json:"price"`
 	IsPerHead        bool            `json:"is_per_head"`
 	Rules            string          `json:"rules"`
 	EventType        EventTypeEnum   `json:"event_type"`
@@ -305,7 +305,7 @@ type GetEventsQueryRow struct {
 	EventType        EventTypeEnum   `json:"event_type"`
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
-	EventPrice       pgtype.Numeric  `json:"event_price"`
+	EventPrice       int32           `json:"event_price"`
 	IsFull           bool            `json:"is_full"`
 }
 
@@ -399,7 +399,7 @@ type GetEventsWithAuthQueryRow struct {
 	EventType        EventTypeEnum   `json:"event_type"`
 	IsTechnical      pgtype.Bool     `json:"is_technical"`
 	Tags             interface{}     `json:"tags"`
-	EventPrice       pgtype.Numeric  `json:"event_price"`
+	EventPrice       int32           `json:"event_price"`
 	IsFull           bool            `json:"is_full"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`

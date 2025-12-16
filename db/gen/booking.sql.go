@@ -263,7 +263,7 @@ GROUP BY e.id
 
 type GetEventForBookingRow struct {
 	ID          uuid.UUID       `json:"id"`
-	Price       pgtype.Numeric  `json:"price"`
+	Price       int32           `json:"price"`
 	IsGroup     bool            `json:"is_group"`
 	IsPerHead   bool            `json:"is_per_head"`
 	MaxTeamsize pgtype.Int4     `json:"max_teamsize"`

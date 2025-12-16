@@ -181,14 +181,14 @@ GROUP BY
 `
 
 type GetMySoloEventTicketsRow struct {
-	EventID     uuid.UUID      `json:"event_id"`
-	EventName   string         `json:"event_name"`
-	Price       pgtype.Numeric `json:"price"`
-	IsTechnical pgtype.Bool    `json:"is_technical"`
-	EventMode   EventModeEnum  `json:"event_mode"`
-	EventType   EventTypeEnum  `json:"event_type"`
-	Schedules   interface{}    `json:"schedules"`
-	Tags        interface{}    `json:"tags"`
+	EventID     uuid.UUID     `json:"event_id"`
+	EventName   string        `json:"event_name"`
+	Price       int32         `json:"price"`
+	IsTechnical pgtype.Bool   `json:"is_technical"`
+	EventMode   EventModeEnum `json:"event_mode"`
+	EventType   EventTypeEnum `json:"event_type"`
+	Schedules   interface{}   `json:"schedules"`
+	Tags        interface{}   `json:"tags"`
 }
 
 func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, email string) ([]GetMySoloEventTicketsRow, error) {
@@ -264,15 +264,15 @@ GROUP BY
 `
 
 type GetMyTeamEventTicketsRow struct {
-	EventID     uuid.UUID      `json:"event_id"`
-	EventName   string         `json:"event_name"`
-	Price       pgtype.Numeric `json:"price"`
-	IsTechnical pgtype.Bool    `json:"is_technical"`
-	EventMode   EventModeEnum  `json:"event_mode"`
-	TeamName    pgtype.Text    `json:"team_name"`
-	EventType   EventTypeEnum  `json:"event_type"`
-	Schedules   interface{}    `json:"schedules"`
-	Tags        interface{}    `json:"tags"`
+	EventID     uuid.UUID     `json:"event_id"`
+	EventName   string        `json:"event_name"`
+	Price       int32         `json:"price"`
+	IsTechnical pgtype.Bool   `json:"is_technical"`
+	EventMode   EventModeEnum `json:"event_mode"`
+	TeamName    pgtype.Text   `json:"team_name"`
+	EventType   EventTypeEnum `json:"event_type"`
+	Schedules   interface{}   `json:"schedules"`
+	Tags        interface{}   `json:"tags"`
 }
 
 func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, email string) ([]GetMyTeamEventTicketsRow, error) {

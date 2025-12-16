@@ -36,13 +36,13 @@ RETURNING
 `
 
 type AddEventDetailsQueryParams struct {
-	Name        string         `json:"name"`
-	Blurb       string         `json:"blurb"`
-	Description string         `json:"description"`
-	Rules       string         `json:"rules"`
-	Price       pgtype.Numeric `json:"price"`
-	IsPerHead   bool           `json:"is_per_head"`
-	ID          uuid.UUID      `json:"id"`
+	Name        string    `json:"name"`
+	Blurb       string    `json:"blurb"`
+	Description string    `json:"description"`
+	Rules       string    `json:"rules"`
+	Price       int32     `json:"price"`
+	IsPerHead   bool      `json:"is_per_head"`
+	ID          uuid.UUID `json:"id"`
 }
 
 type AddEventDetailsQueryRow struct {
@@ -51,7 +51,7 @@ type AddEventDetailsQueryRow struct {
 	Blurb       string           `json:"blurb"`
 	Description string           `json:"description"`
 	Rules       string           `json:"rules"`
-	Price       pgtype.Numeric   `json:"price"`
+	Price       int32            `json:"price"`
 	IsPerHead   bool             `json:"is_per_head"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
 }
@@ -602,7 +602,7 @@ type GetAdminEventByEventIdQueryRow struct {
 	MinTeamsize    pgtype.Int4        `json:"min_teamsize"`
 	MaxTeamsize    pgtype.Int4        `json:"max_teamsize"`
 	IsPerHead      bool               `json:"is_per_head"`
-	Price          pgtype.Numeric     `json:"price"`
+	Price          int32              `json:"price"`
 	Rules          string             `json:"rules"`
 	SeatsFilled    int32              `json:"seats_filled"`
 	TotalSeats     int32              `json:"total_seats"`
@@ -673,7 +673,7 @@ type GetAllAdminEventsQueryRow struct {
 	Blurb       string           `json:"blurb"`
 	EventType   EventTypeEnum    `json:"event_type"`
 	EventStatus EventStatusEnum  `json:"event_status"`
-	Price       pgtype.Numeric   `json:"price"`
+	Price       int32            `json:"price"`
 	IsPerHead   bool             `json:"is_per_head"`
 	IsGroup     bool             `json:"is_group"`
 	IsTechnical pgtype.Bool      `json:"is_technical"`
@@ -788,7 +788,7 @@ type NewUntitledEventQueryParams struct {
 	Name           string             `json:"name"`
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
-	Price          pgtype.Numeric     `json:"price"`
+	Price          int32              `json:"price"`
 	IsPerHead      bool               `json:"is_per_head"`
 	Rules          string             `json:"rules"`
 	EventType      EventTypeEnum      `json:"event_type"`
@@ -808,7 +808,7 @@ type NewUntitledEventQueryRow struct {
 	Blurb          string             `json:"blurb"`
 	Description    string             `json:"description"`
 	CoverImageUrl  pgtype.Text        `json:"cover_image_url"`
-	Price          pgtype.Numeric     `json:"price"`
+	Price          int32              `json:"price"`
 	IsPerHead      bool               `json:"is_per_head"`
 	Rules          string             `json:"rules"`
 	IsGroup        bool               `json:"is_group"`
