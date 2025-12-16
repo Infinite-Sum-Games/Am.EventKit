@@ -104,7 +104,7 @@ type GetAllTransactionsOfUserQueryRow struct {
 	ID              uuid.UUID        `json:"id"`
 	TxnID           string           `json:"txn_id"`
 	EventName       pgtype.Text      `json:"event_name"`
-	RegistrationFee pgtype.Numeric   `json:"registration_fee"`
+	RegistrationFee int32            `json:"registration_fee"`
 	TxnStatus       string           `json:"txn_status"`
 	CreatedAt       pgtype.Timestamp `json:"created_at"`
 }

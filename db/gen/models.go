@@ -281,7 +281,7 @@ type Booking struct {
 	TxnID           string           `json:"txn_id"`
 	StudentID       uuid.UUID        `json:"student_id"`
 	EventID         uuid.UUID        `json:"event_id"`
-	RegistrationFee pgtype.Numeric   `json:"registration_fee"`
+	RegistrationFee int32            `json:"registration_fee"`
 	ProductInfo     string           `json:"product_info"`
 	SeatsReleased   int32            `json:"seats_released"`
 	TxnStatus       string           `json:"txn_status"`

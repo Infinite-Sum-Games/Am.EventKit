@@ -27,14 +27,14 @@ RETURNING id
 `
 
 type CreateBookingParams struct {
-	EventID         uuid.UUID      `json:"event_id"`
-	StudentID       uuid.UUID      `json:"student_id"`
-	TxnID           string         `json:"txn_id"`
-	RegistrationFee pgtype.Numeric `json:"registration_fee"`
-	TxnStatus       string         `json:"txn_status"`
-	ProductInfo     string         `json:"product_info"`
-	SeatsReleased   int32          `json:"seats_released"`
-	Metadata        []byte         `json:"metadata"`
+	EventID         uuid.UUID `json:"event_id"`
+	StudentID       uuid.UUID `json:"student_id"`
+	TxnID           string    `json:"txn_id"`
+	RegistrationFee int32     `json:"registration_fee"`
+	TxnStatus       string    `json:"txn_status"`
+	ProductInfo     string    `json:"product_info"`
+	SeatsReleased   int32     `json:"seats_released"`
+	Metadata        []byte    `json:"metadata"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingParams) (uuid.UUID, error) {
