@@ -49,8 +49,9 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	r.Use(pkg.Log.LogMiddleware)
 	r.Use(pkg.TagRequestWithId)
 	r.Use(mw.RecoveryPanics)
+	r.Use(mw.PrometheusMiddleware("anokha-26"))
 
-	r.GET("/test", mw.PrometheusMiddleware("test"), func(c *gin.Context) {
+	r.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Server is live ◪_◪",
 		})
