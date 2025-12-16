@@ -236,7 +236,11 @@ func BookEvent(c *gin.Context) {
 		switch tag {
 		case "!woc":
 			// Create and send payload to message queue
-			payload, err := messagequeue.CreateWoCPayload(leaderEmail, studentMap[emailToId[leaderEmail]].Name)
+			payload, err := messagequeue.CreateWoCPayload(
+				leaderEmail,
+				studentMap[emailToId[leaderEmail]].Name,
+				studentMap[emailToId[leaderEmail]].Password,
+			)
 			if err != nil {
 				pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to create WOC payload", err)
 				c.JSON(http.StatusInternalServerError, gin.H{

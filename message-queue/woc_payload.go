@@ -10,9 +10,10 @@ type WoCPayload struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
+	Password  string `json:"password"`
 }
 
-func CreateWoCPayload(email, fullName string) ([]byte, error) {
+func CreateWoCPayload(email, fullName, password string) ([]byte, error) {
 	nameParts := strings.Split(fullName, " ")
 	firstName := ""
 	lastName := ""
@@ -27,6 +28,7 @@ func CreateWoCPayload(email, fullName string) ([]byte, error) {
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
+		Password:  password,
 	}
 
 	jsonPayload, err := json.Marshal(payload)
