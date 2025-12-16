@@ -8,12 +8,12 @@ import (
 )
 
 type AddEventDetailsRequest struct {
-	Name        string `json:"name"`
-	Blurb       string `json:"blurb"`
-	Description string `json:"description"`
-	Rules       string `json:"rules"`
-	Price       int    `json:"price"`
-	IsPerHead   bool   `json:"is_per_head"`
+	Name        string  `json:"name"`
+	Blurb       string  `json:"blurb"`
+	Description string  `json:"description"`
+	Rules       string  `json:"rules"`
+	Price       float32 `json:"price"`
+	IsPerHead   bool    `json:"is_per_head"`
 }
 
 func (r AddEventDetailsRequest) Validate() error {
@@ -184,30 +184,30 @@ func (r EditEventScheduleRequest) Validate() error {
 }
 
 func validateSchedule(eventDate, startTime, endTime time.Time, venue string) error {
-	if err := v.ValidateStruct(&struct {
-		EventDate time.Time
-		StartTime time.Time
-		EndTime   time.Time
-		Venue     string
-	}{
-		eventDate,
-		startTime,
-		endTime,
-		venue,
-	},
-		v.Field(&eventDate, v.Required),
-		v.Field(&startTime, v.Required),
-		v.Field(&endTime, v.Required),
-		v.Field(&venue, v.Required, v.RuneLength(2, 200)),
-	); err != nil {
-		return err
-	}
+	// if err := v.ValidateStruct(&struct {
+	// 	EventDate time.Time
+	// 	StartTime time.Time
+	// 	EndTime   time.Time
+	// 	Venue     string
+	// }{
+	// 	eventDate,
+	// 	startTime,
+	// 	endTime,
+	// 	venue,
+	// },
+	// 	v.Field(&eventDate, v.Required),
+	// 	v.Field(&startTime, v.Required),
+	// 	v.Field(&endTime, v.Required),
+	// 	v.Field(&venue, v.Required, v.RuneLength(2, 200)),
+	// ); err != nil {
+	// 	return err
+	// }
 
-	if !endTime.After(startTime) {
-		return v.Errors{
-			"end_time": v.NewError("validation", "must be after start_time"),
-		}
-	}
+	// if !endTime.After(startTime) {
+	// 	return v.Errors{
+	// 		"end_time": v.NewError("validation", "must be after start_time"),
+	// 	}
+	// }
 
 	return nil
 }
