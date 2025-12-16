@@ -2,6 +2,9 @@ package models
 
 import (
 	"time"
+
+	v "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type AddEventDetailsRequest struct {
@@ -14,7 +17,14 @@ type AddEventDetailsRequest struct {
 }
 
 func (r AddEventDetailsRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
+		v.Field(&r.Blurb, v.Required, v.RuneLength(3, 500)),
+		v.Field(&r.Description, v.Required, v.RuneLength(3, 4000)),
+		v.Field(&r.Rules, v.Required, v.RuneLength(1, 4000)),
+		v.Field(&r.Price, v.Required, v.Min(0)),
+		v.Field(&r.IsPerHead, v.In(true, false)),
+	)
 }
 
 type AddEventPosterRequest struct {
@@ -22,7 +32,9 @@ type AddEventPosterRequest struct {
 }
 
 func (r AddEventPosterRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.PosterUrl, v.Required, is.URL),
+	)
 }
 
 type AddEventDimensionRequest struct {
@@ -34,6 +46,21 @@ type AddEventDimensionRequest struct {
 }
 
 func (r AddEventDimensionRequest) Validate() error {
+	if err := v.ValidateStruct(&r,
+		v.Field(&r.IsGroup, v.In(true, false)),
+		v.Field(&r.MinTeamSize, v.Min(0)),
+		v.Field(&r.MaxTeamSize, v.Min(0)),
+		v.Field(&r.TotalSeats, v.Required, v.Min(1)),
+	); err != nil {
+		return err
+	}
+
+	// Logical checks
+	if r.IsGroup && r.MinTeamSize > r.MaxTeamSize {
+		return v.Errors{
+			"min_teamsize": v.NewError("validation", "must be <= max_teamsize"),
+		}
+	}
 	return nil
 }
 
@@ -45,7 +72,12 @@ type AddEventTogglesRequest struct {
 }
 
 func (r AddEventTogglesRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventType, v.Required, v.In("EVENT", "WORKSHOP")),
+		v.Field(&r.AttendanceMode, v.Required, v.In("SOLO", "DUO")),
+		v.Field(&r.IsOffline, v.In(true, false)),
+		v.Field(&r.IsTechnical, v.In(true, false)),
+	)
 }
 
 type ConnectEventAndOrganizerRequest struct {
@@ -54,7 +86,10 @@ type ConnectEventAndOrganizerRequest struct {
 }
 
 func (r ConnectEventAndOrganizerRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.OrganizerId, v.Required, is.UUID),
+	)
 }
 
 type DisconnectEventAndOrganizerRequest struct {
@@ -63,7 +98,10 @@ type DisconnectEventAndOrganizerRequest struct {
 }
 
 func (r DisconnectEventAndOrganizerRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.OrganizerId, v.Required, is.UUID),
+	)
 }
 
 type ConnectEventAndTagsRequest struct {
@@ -72,7 +110,10 @@ type ConnectEventAndTagsRequest struct {
 }
 
 func (r ConnectEventAndTagsRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.TagId, v.Required, is.UUID),
+	)
 }
 
 type DisconnectEventAndTagsRequest struct {
@@ -81,7 +122,10 @@ type DisconnectEventAndTagsRequest struct {
 }
 
 func (r DisconnectEventAndTagsRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.TagId, v.Required, is.UUID),
+	)
 }
 
 type ConnectEventAndPeopleRequest struct {
@@ -90,7 +134,10 @@ type ConnectEventAndPeopleRequest struct {
 }
 
 func (r ConnectEventAndPeopleRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.PersonId, v.Required, is.UUID),
+	)
 }
 
 type DisconnectEventAndPeopleRequest struct {
@@ -99,7 +146,10 @@ type DisconnectEventAndPeopleRequest struct {
 }
 
 func (r DisconnectEventAndPeopleRequest) Validate() error {
-	return nil
+	return v.ValidateStruct(&r,
+		v.Field(&r.EventId, v.Required, is.UUID),
+		v.Field(&r.PersonId, v.Required, is.UUID),
+	)
 }
 
 type AddEventScheduleRequest struct {
@@ -110,7 +160,12 @@ type AddEventScheduleRequest struct {
 }
 
 func (r AddEventScheduleRequest) Validate() error {
-	return nil
+	return validateSchedule(
+		r.EventDate,
+		r.StartTime,
+		r.EndTime,
+		r.Venue,
+	)
 }
 
 type EditEventScheduleRequest struct {
@@ -121,5 +176,39 @@ type EditEventScheduleRequest struct {
 }
 
 func (r EditEventScheduleRequest) Validate() error {
+	return validateSchedule(
+		r.EventDate,
+		r.StartTime,
+		r.EndTime,
+		r.Venue,
+	)
+}
+
+func validateSchedule(eventDate, startTime, endTime time.Time, venue string) error {
+	if err := v.ValidateStruct(&struct {
+		EventDate time.Time
+		StartTime time.Time
+		EndTime   time.Time
+		Venue     string
+	}{
+		eventDate,
+		startTime,
+		endTime,
+		venue,
+	},
+		v.Field(&eventDate, v.Required),
+		v.Field(&startTime, v.Required),
+		v.Field(&endTime, v.Required),
+		v.Field(&venue, v.Required, v.RuneLength(2, 200)),
+	); err != nil {
+		return err
+	}
+
+	if !endTime.After(startTime) {
+		return v.Errors{
+			"end_time": v.NewError("validation", "must be after start_time"),
+		}
+	}
+
 	return nil
 }
