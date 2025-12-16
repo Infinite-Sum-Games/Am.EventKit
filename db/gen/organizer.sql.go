@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const changeOrganizerPasswordQuery = `-- name: ChangeOrganizerPasswordQuery :one
+UPDATE organizer
+SET 
+  password = $1
+WHERE
+  id = $2
+RETURNING id
+`
+
+type ChangeOrganizerPasswordQueryParams struct {
+	Password string    `json:"password"`
+	ID       uuid.UUID `json:"id"`
+}
+
+func (q *Queries) ChangeOrganizerPasswordQuery(ctx context.Context, db DBTX, arg ChangeOrganizerPasswordQueryParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, changeOrganizerPasswordQuery, arg.Password, arg.ID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createOrganizerQuery = `-- name: CreateOrganizerQuery :exec
 INSERT INTO organizer (
   name,

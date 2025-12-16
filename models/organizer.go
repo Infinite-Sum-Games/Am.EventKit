@@ -51,3 +51,13 @@ func (r EditOrganizerRequest) Validate() error {
 		v.Field(&r.StudentCoHead, v.When(r.StudentCoHead != "", v.RuneLength(3, 100))),
 	)
 }
+
+type ChangeOrganizerPasswordRequest struct {
+	Password string `json:"password"`
+}
+
+func (r ChangeOrganizerPasswordRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.Password, v.Required, v.RuneLength(3, 100)),
+	)
+}

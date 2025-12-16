@@ -9,5 +9,6 @@ func OrganizerRoutes(r *gin.RouterGroup) {
 	r.GET("/", mw.Auth, mw.CheckAdmin, GetAllOrganizers)
 	r.POST("/", mw.Auth, mw.CheckAdmin, CreateOrganizer)
 	r.PUT("/:organizerId", mw.Auth, mw.CheckAdmin, EditOrganizer)
+	r.PUT("/password/:organizerId", mw.Auth, mw.CheckAdmin, ChangeOrganizerPassword)
 	r.DELETE("/:organizerId", mw.Auth, mw.CheckAdmin, DeleteOrganizer)
 }
