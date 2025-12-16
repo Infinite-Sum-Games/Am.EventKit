@@ -487,7 +487,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			Name:           "Tech Workshop",
 			Blurb:          "A workshop on technology trends.",
 			Description:    "Learn about the latest tech innovations.",
-			Price:          pgtype.Numeric{Int: big.NewInt(100), Exp: 0, Valid: true},
+			Price:          int32(100),
 			IsPerHead:      true,
 			Rules:          "No late entries.",
 			EventType:      db.EventTypeEnum("WORKSHOP"),
@@ -503,7 +503,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			Name:           "Art Exhibition",
 			Blurb:          "An exhibition of student artwork.",
 			Description:    "Showcase your creativity.",
-			Price:          pgtype.Numeric{Int: big.NewInt(50), Exp: 0, Valid: true},
+			Price:          int32(50),
 			IsPerHead:      false,
 			Rules:          "Bring your own materials.",
 			EventType:      db.EventTypeEnum("EVENT"),
@@ -530,7 +530,7 @@ func SeedEvents(conn *pgx.Conn) error {
 			Name:           gofakeit.BeerName() + " " + strconv.Itoa(i+1),
 			Blurb:          gofakeit.Sentence(10),
 			Description:    gofakeit.Paragraph(3, 5, 10, " "),
-			Price:          pgtype.Numeric{Int: big.NewInt(int64(gofakeit.Int32())), Exp: 0, Valid: true},
+			Price:          gofakeit.Int32(),
 			IsPerHead:      gofakeit.Bool(),
 			Rules:          gofakeit.Sentence(5),
 			EventType:      db.EventTypeEnum(gofakeit.RandomString([]string{"EVENT", "WORKSHOP"})),
@@ -878,11 +878,12 @@ func SeedBookings(conn *pgx.Conn) error {
 				}
 
 				// B. Prepare Parameters
+				priceBigInt := big.NewInt(int64(event.Price))
 				params := db.SeedBookingsQueryParams{
 					TxnID:           "TXN-" + gofakeit.UUID(),
 					StudentID:       student.ID,
 					EventID:         event.ID,
-					RegistrationFee: event.Price,
+					RegistrationFee: pgtype.Numeric{Int: priceBigInt, Exp: 0, Valid: true},
 					ProductInfo:     event.Name,
 					SeatsReleased:   seatsReleased,
 					TxnStatus:       txnStatus,
