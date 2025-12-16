@@ -19,9 +19,9 @@ type AddEventDetailsRequest struct {
 func (r AddEventDetailsRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 200)),
-		v.Field(&r.Blurb, v.Required, v.RuneLength(3, 500)),
-		v.Field(&r.Description, v.Required, v.RuneLength(3, 4000)),
-		v.Field(&r.Rules, v.Required, v.RuneLength(1, 4000)),
+		v.Field(&r.Blurb, v.Required),
+		v.Field(&r.Description, v.Required),
+		v.Field(&r.Rules, v.Required),
 		v.Field(&r.Price, v.Required, v.Min(0)),
 		v.Field(&r.IsPerHead, v.In(true, false)),
 	)
