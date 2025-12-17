@@ -114,10 +114,10 @@ func InitLogger(env string) (*LoggerService, error) {
 				}
 				return fmt.Sprintf("time=%d", t.UnixMilli())
 			},
-			FormatLevel: func(i interface{}) string {
+			FormatLevel: func(i any) string {
 				return fmt.Sprintf("level=%s", i)
 			},
-			FormatMessage: func(i interface{}) string {
+			FormatMessage: func(i any) string {
 				return fmt.Sprintf("msg=%q", i) // Quoting the message automatically
 			},
 			NoColor: true,

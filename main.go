@@ -46,10 +46,11 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 
 	r := gin.New()
 	r.Use(cors.New(config)) // Setup CORS() first before other middlewares
+	r.Use(mw.MaintainanceMiddleware)
 	r.Use(pkg.Log.LogMiddleware)
 	r.Use(pkg.TagRequestWithId)
 	r.Use(mw.RecoveryPanics)
-	r.Use(mw.PrometheusMiddleware("anokha-26"))
+	// r.Use(mw.PrometheusMiddleware("anokha-26"))
 
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -141,6 +142,9 @@ func StartApp() {
 		return
 	}
 	pkg.Log.Info("[OK]: Message broker initialized successfully.")
+
+	// Setup LIVE flags
+	pkg.InitFlag()
 
 	// Initialize Mailer Service
 	mail.Mail, err = mail.NewMailerService("mail/mail-queue", 4)
