@@ -907,19 +907,32 @@ func PublishEvent(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "ADMIN-EVENT") {
+	txn, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "ADMIN-EVENT") {
 		return
 	}
-	defer conn.Release()
+	defer pkg.RollbackTx(c, txn, ctx, "BOOKING")
 
 	q := db.New()
-	result, err := q.PublishEventQuery(ctx, conn, eventId)
+	ScheduleIds, err := q.GetSchedulesByEventID(ctx, txn, eventId)
+	if len(ScheduleIds) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Cannot publish event without schedules. Please add schedules first.",
+		})
+		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to publish event due to no schedules", err)
+		return
+	}
+	result, err := q.PublishEventQuery(ctx, txn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[ADMIN-EVENT-ERROR]: Failed to publish event", err)
+		return
+	}
+
+	err = txn.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "ADMIN-EVENT") {
 		return
 	}
 
