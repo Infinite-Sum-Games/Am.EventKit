@@ -167,6 +167,43 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 >>>>>>> 10f991c (feat: add fetchEventsByOrganizerQuery):db/gen/attendance.sql.go
 }
 
+const fetchParticipantsByEventQuery = `-- name: FetchParticipantsByEventQuery :many
+SELECT
+  b.student_id AS student_id,
+  s.name AS student_name,
+  s.email AS student_email
+FROM bookings b
+INNER JOIN student s
+  ON b.student_id = s.id
+WHERE b.event_id = $1
+`
+
+type FetchParticipantsByEventQueryRow struct {
+	StudentID    uuid.UUID `json:"student_id"`
+	StudentName  string    `json:"student_name"`
+	StudentEmail string    `json:"student_email"`
+}
+
+func (q *Queries) FetchParticipantsByEventQuery(ctx context.Context, db DBTX, eventID uuid.UUID) ([]FetchParticipantsByEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsByEventQuery, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchParticipantsByEventQueryRow
+	for rows.Next() {
+		var i FetchParticipantsByEventQueryRow
+		if err := rows.Scan(&i.StudentID, &i.StudentName, &i.StudentEmail); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAttendanceRecord = `-- name: GetAttendanceRecord :one
 SELECT
     id,

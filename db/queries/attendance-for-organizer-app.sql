@@ -87,6 +87,16 @@ SELECT
     ON e.id = es.event_id
   WHERE event_to_organizer_mapping.organizer_id = $1;
 
+-- name: FetchParticipantsByEventQuery :many
+SELECT
+  b.student_id AS student_id,
+  s.name AS student_name,
+  s.email AS student_email
+FROM bookings b
+INNER JOIN student s
+  ON b.student_id = s.id
+WHERE b.event_id = $1;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,
