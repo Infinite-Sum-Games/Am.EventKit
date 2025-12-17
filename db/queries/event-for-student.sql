@@ -115,22 +115,25 @@ SELECT
     (e.seats_filled = e.total_seats) AS is_full,
 
     /* registration and favourite status for the given student */
-    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm.id) > 0) AS is_registered,
+    (
+      COUNT(DISTINCT b.id) > 0
+      OR COUNT(DISTINCT tb.id) > 0
+    ) AS is_registered,
+
     (COUNT(DISTINCT f.id) > 0) AS is_starred
 
 FROM event e
-
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
+LEFT JOIN bookings tb ON tb.id = te.booking_id AND tb.txn_status = 'SUCCESS'
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
 
 WHERE
-  e.event_status = 'ACTIVE' 
-  OR e.event_status = 'COMPLETED'
+  e.event_status IN ('ACTIVE', 'COMPLETED')
 
 GROUP BY e.id;
 
@@ -184,7 +187,11 @@ SELECT
       '[]'::jsonb
     ) AS people,
 
-    (COUNT(DISTINCT b.id) > 0 OR COUNT(DISTINCT tm_user.id) > 0) AS is_registered,
+    (
+      COUNT(DISTINCT b.id) > 0
+      OR COUNT(DISTINCT tb.id) > 0
+    ) AS is_registered,
+
     (COUNT(DISTINCT f.id) > 0) AS is_starred
 
 FROM event e
@@ -199,8 +206,9 @@ LEFT JOIN people p ON pem.person_id = p.id
 LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2 AND b.txn_status = 'SUCCESS'
 LEFT JOIN teams te ON te.event_id = e.id
 LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
+LEFT JOIN bookings tb ON tb.id = te.booking_id AND tb.txn_status = 'SUCCESS'
 LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
 WHERE 
-  e.id = $1
-  AND (e.event_status = 'ACTIVE' OR e.event_status = 'COMPLETED')
+    e.id = $1
+    AND e.event_status IN ('ACTIVE', 'COMPLETED')
 GROUP BY e.id;
