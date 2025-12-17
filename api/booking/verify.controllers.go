@@ -67,7 +67,7 @@ func VerifyTransaction(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 
-		// commiting transaction here
+		// TODO: This commit is not necessary, we can use one connection instead of a transaction here
 		err = tx.Commit(ctx)
 		pkg.HandleDbTxnCommitErr(c, err, "VERIFY")
 		if !ok {
@@ -192,6 +192,7 @@ func VerifyTransaction(c *gin.Context) {
 			})
 			return
 		}
+		// failure case
 		err = tx.Commit(ctx)
 		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
 			return
@@ -290,6 +291,7 @@ func VerifyTransaction(c *gin.Context) {
 			return
 		}
 
+		// success case
 		err = tx.Commit(ctx)
 		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
 			return
