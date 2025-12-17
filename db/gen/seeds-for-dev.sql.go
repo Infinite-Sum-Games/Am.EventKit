@@ -76,13 +76,13 @@ INSERT INTO bookings(
 `
 
 type SeedBookingsQueryParams struct {
-	TxnID           string         `json:"txn_id"`
-	StudentID       uuid.UUID      `json:"student_id"`
-	EventID         uuid.UUID      `json:"event_id"`
-	RegistrationFee pgtype.Numeric `json:"registration_fee"`
-	ProductInfo     string         `json:"product_info"`
-	SeatsReleased   int32          `json:"seats_released"`
-	TxnStatus       string         `json:"txn_status"`
+	TxnID           string    `json:"txn_id"`
+	StudentID       uuid.UUID `json:"student_id"`
+	EventID         uuid.UUID `json:"event_id"`
+	RegistrationFee int32     `json:"registration_fee"`
+	ProductInfo     string    `json:"product_info"`
+	SeatsReleased   int32     `json:"seats_released"`
+	TxnStatus       string    `json:"txn_status"`
 }
 
 func (q *Queries) SeedBookingsQuery(ctx context.Context, db DBTX, arg SeedBookingsQueryParams) error {
@@ -396,14 +396,14 @@ FROM bookings
 `
 
 type ViewBookingsSeedQueryRow struct {
-	ID              uuid.UUID      `json:"id"`
-	TxnID           string         `json:"txn_id"`
-	StudentID       uuid.UUID      `json:"student_id"`
-	EventID         uuid.UUID      `json:"event_id"`
-	RegistrationFee pgtype.Numeric `json:"registration_fee"`
-	ProductInfo     string         `json:"product_info"`
-	SeatsReleased   int32          `json:"seats_released"`
-	TxnStatus       string         `json:"txn_status"`
+	ID              uuid.UUID `json:"id"`
+	TxnID           string    `json:"txn_id"`
+	StudentID       uuid.UUID `json:"student_id"`
+	EventID         uuid.UUID `json:"event_id"`
+	RegistrationFee int32     `json:"registration_fee"`
+	ProductInfo     string    `json:"product_info"`
+	SeatsReleased   int32     `json:"seats_released"`
+	TxnStatus       string    `json:"txn_status"`
 }
 
 func (q *Queries) ViewBookingsSeedQuery(ctx context.Context, db DBTX) ([]ViewBookingsSeedQueryRow, error) {
