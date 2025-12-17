@@ -51,25 +51,53 @@ func getTemplate(emailType string, data any) (string, error) {
 	var rendered bytes.Buffer
 	switch emailType {
 	case "otp":
-		otpData, ok := data.(*OTPTemplateData)
-		if !ok {
-			return "", fmt.Errorf("invalid data type for 'otp' email template")
+		var otpData OTPTemplateData
+		ok := true
+		switch v := data.(type) {
+		case *OTPTemplateData:
+			otpData = *v
+		case OTPTemplateData:
+			otpData = v
+		default:
+			ok = false
 		}
-		err = tmpl.Execute(&rendered, *otpData)
+
+		if !ok {
+			return "", fmt.Errorf("invalid data type for 'otp' email template, got %T", data)
+		}
+		err = tmpl.Execute(&rendered, otpData)
 
 	case "welcome":
-		welcomeData, ok := data.(*WelcomeTemplateData)
-		if !ok {
-			return "", fmt.Errorf("invalid data type for 'welcome' email template")
+		var welcomeData WelcomeTemplateData
+		ok := true
+		switch v := data.(type) {
+		case *WelcomeTemplateData:
+			welcomeData = *v
+		case WelcomeTemplateData:
+			welcomeData = v
+		default:
+			ok = false
 		}
-		err = tmpl.Execute(&rendered, *welcomeData)
+		if !ok {
+			return "", fmt.Errorf("invalid data type for 'welcome' email template, got %T", data)
+		}
+		err = tmpl.Execute(&rendered, welcomeData)
 
 	case "event-reg":
-		eventData, ok := data.(*RegistrationData)
-		if !ok {
-			return "", fmt.Errorf("invalid data type for 'event-reg' email template")
+		var eventData RegistrationData
+		ok := true
+		switch v := data.(type) {
+		case *RegistrationData:
+			eventData = *v
+		case RegistrationData:
+			eventData = v
+		default:
+			ok = false
 		}
-		err = tmpl.Execute(&rendered, *eventData)
+		if !ok {
+			return "", fmt.Errorf("invalid data type for 'event-reg' email template, got %T", data)
+		}
+		err = tmpl.Execute(&rendered, eventData)
 	}
 
 	if err != nil {
