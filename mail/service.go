@@ -91,17 +91,13 @@ func (m *MailerService) worker(id int) {
 			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
-				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on first attempt, retrying once...", id), err)
-				// Retry thrice immediately
-				for i := range 3 {
-					err = sender.Send(req.To, req.Subject, req.Type, req.Data)
-					if err != nil {
-						pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email on %d attempt", id, i), err)
-					}
-				}
-				// After three failure, the email is never lost :)
+				// sender.Send has its own retry-with-backoff logic for transient errors.
+				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email after multiple retries, re-enqueueing...", id), err)
+
+				// For permanent errors (like bad templates), this will cause an infinite loop.
+				// A proper solution would inspect the error and move failing jobs to a dead-letter queue.
 				if err := m.Enqueue(req); err != nil {
-					pkg.Log.Error("[MAILER-ERROR]: Failed to re-endqueue unsent mail", err)
+					pkg.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
 				}
 			}
 			m.wg.Done()
