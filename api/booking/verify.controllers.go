@@ -37,18 +37,10 @@ func VerifyTransaction(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbTxnErr(c, err, "VERIFY") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "VERIFY")
 
 	q := db.New()
 
@@ -76,14 +68,11 @@ func VerifyTransaction(c *gin.Context) {
 		pkg.Log.SuccessCtx(c)
 
 		// commiting transaction here
-		if err := tx.Commit(ctx); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+		err = tx.Commit(ctx)
+		pkg.HandleDbTxnCommitErr(c, err, "VERIFY")
+		if !ok {
 			return
 		}
-		return
 	}
 
 	// TODO: Call the PayU verify API here.
@@ -203,13 +192,11 @@ func VerifyTransaction(c *gin.Context) {
 			})
 			return
 		}
-		if err := tx.Commit(ctx); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
 			return
 		}
+
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment failed",
@@ -303,11 +290,8 @@ func VerifyTransaction(c *gin.Context) {
 			return
 		}
 
-		if err := tx.Commit(ctx); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
 			return
 		}
 
