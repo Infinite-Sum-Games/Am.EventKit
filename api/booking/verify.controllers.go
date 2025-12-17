@@ -218,64 +218,6 @@ func VerifyTransaction(c *gin.Context) {
 		return
 	}
 	if gatewayStatus == models.PaymentSuccess {
-		// If there is metadata, read and publish
-		if len(booking.Metadata) > 0 {
-			var metadataMap map[string]any
-			if err := json.Unmarshal(booking.Metadata, &metadataMap); err != nil {
-				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to unmarshal booking metadata", err)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Oops! Something happened. Please try again later",
-				})
-				return
-			}
-
-			// Hackathon payload
-			if raw, ok := metadataMap["hackathon_payload"]; ok {
-				payloadStr, ok := raw.(string)
-				if !ok {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: hackathon_payload is not string", nil)
-					return
-				}
-
-				if err := messagequeue.Rabbit.Publish(
-					ctx,
-					messagequeue.QueueHackathonRegistrations,
-					[]byte(payloadStr),
-				); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish hackathon payload", err)
-					return
-				}
-				// WOC payload
-			} else if raw, ok := metadataMap["woc_payload"]; ok {
-				payloadStr, ok := raw.(string)
-				if !ok {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: woc_payload is not string", nil)
-					return
-				}
-
-				if err := messagequeue.Rabbit.Publish(
-					ctx,
-					messagequeue.QueueWocRegistrations,
-					[]byte(payloadStr),
-				); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish WOC payload", err)
-					return
-				}
-			}
-		}
-
-		err := q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: models.PaymentSuccess,
-			ID:        booking.ID,
-		})
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			return
-		}
-
 		// Getting the schedule ids of the selected event
 		schedules, err := q.GetSchedulesByEventID(ctx, tx, event.ID)
 		if err != nil {
@@ -349,12 +291,70 @@ func VerifyTransaction(c *gin.Context) {
 
 		}
 
+		err = q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
+			TxnStatus: models.PaymentSuccess,
+			ID:        booking.ID,
+		})
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			return
+		}
+
 		if err := tx.Commit(ctx); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
 			})
 			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
 			return
+		}
+
+		// If there is metadata, read and publish
+		if len(booking.Metadata) > 0 {
+			var metadataMap map[string]any
+			if err := json.Unmarshal(booking.Metadata, &metadataMap); err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to unmarshal booking metadata", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+
+			// Hackathon payload
+			if raw, ok := metadataMap["hackathon_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: hackathon_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueHackathonRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish hackathon payload", err)
+					return
+				}
+				// WOC payload
+			} else if raw, ok := metadataMap["woc_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: woc_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueWocRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish WOC payload", err)
+					return
+				}
+			}
 		}
 
 		var completeSchedules []models.EventScheduleInput
