@@ -152,7 +152,15 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
-	totalFee := event.Price * int32(len(allMembers))
+	totalFee := int32(0)
+	// Calculating total fee
+	if event.IsPerHead {
+		totalFee = event.Price * int32(len(allMembers))
+	} else {
+		totalFee = event.Price
+	}
+
+	// Adding GST
 	totalFeeWithGST := float64(totalFee) * 1.18
 	totalFee = int32(math.Ceil(totalFeeWithGST))
 
