@@ -51,7 +51,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
-        'org_abbreviation', LOWER(SUBSTRING(o.email FROM 1 FOR 3)),
+        'org_abbreviation', UPPER(SUBSTRING(o.email FROM 1 FOR (POSITION('@' IN o.email) - 1))),
         'org_type', o.org_type
       )) FILTER (WHERE o.id IS NOT NULL),
       '[]'::jsonb
@@ -156,7 +156,7 @@ SELECT
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
-        'org_abbreviation', LOWER(SUBSTRING(o.email FROM 1 FOR 3)),
+        'org_abbreviation', UPPER(SUBSTRING(o.email FROM 1 FOR (POSITION('@' IN o.email) - 1))),
         'org_type', o.org_type
       )) FILTER (WHERE o.id IS NOT NULL),
       '[]'::jsonb
