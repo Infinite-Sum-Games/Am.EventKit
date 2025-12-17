@@ -29,7 +29,7 @@ func VerifyTransaction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Request is malformed",
 		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid request body for verify transaction", err)
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Invalid request body for verify transaction", err)
 		return
 	}
 
