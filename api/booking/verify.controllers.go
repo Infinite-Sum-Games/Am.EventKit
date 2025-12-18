@@ -29,7 +29,7 @@ func VerifyTransaction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Request is malformed",
 		})
-		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Invalid request body for verify transaction", err)
+		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Invalid request body for verify transaction", err)
 		return
 	}
 
@@ -37,18 +37,10 @@ func VerifyTransaction(c *gin.Context) {
 	defer cancel()
 
 	tx, err := cmd.DBPool.Begin(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to acquire DB connection", err)
+	if pkg.HandleDbTxnErr(c, err, "VERIFY") {
 		return
 	}
-	defer func() {
-		if rbErr := tx.Rollback(ctx); rbErr != nil && rbErr != pgx.ErrTxClosed {
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to rollback", rbErr)
-		}
-	}()
+	defer pkg.RollbackTx(c, tx, ctx, "VERIFY")
 
 	q := db.New()
 
@@ -75,15 +67,12 @@ func VerifyTransaction(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 
-		// commiting transaction here
-		if err := tx.Commit(ctx); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+		// TODO: This commit is not necessary, we can use one connection instead of a transaction here
+		err = tx.Commit(ctx)
+		pkg.HandleDbTxnCommitErr(c, err, "VERIFY")
+		if !ok {
 			return
 		}
-		return
 	}
 
 	// TODO: Call the PayU verify API here.
@@ -203,13 +192,12 @@ func VerifyTransaction(c *gin.Context) {
 			})
 			return
 		}
-		if err := tx.Commit(ctx); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
+		// failure case
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
 			return
 		}
+
 		pkg.Log.SuccessCtx(c)
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Payment failed",
@@ -218,64 +206,6 @@ func VerifyTransaction(c *gin.Context) {
 		return
 	}
 	if gatewayStatus == models.PaymentSuccess {
-		// If there is metadata, read and publish
-		if len(booking.Metadata) > 0 {
-			var metadataMap map[string]any
-			if err := json.Unmarshal(booking.Metadata, &metadataMap); err != nil {
-				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to unmarshal booking metadata", err)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Oops! Something happened. Please try again later",
-				})
-				return
-			}
-
-			// Hackathon payload
-			if raw, ok := metadataMap["hackathon_payload"]; ok {
-				payloadStr, ok := raw.(string)
-				if !ok {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: hackathon_payload is not string", nil)
-					return
-				}
-
-				if err := messagequeue.Rabbit.Publish(
-					ctx,
-					messagequeue.QueueHackathonRegistrations,
-					[]byte(payloadStr),
-				); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish hackathon payload", err)
-					return
-				}
-				// WOC payload
-			} else if raw, ok := metadataMap["woc_payload"]; ok {
-				payloadStr, ok := raw.(string)
-				if !ok {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: woc_payload is not string", nil)
-					return
-				}
-
-				if err := messagequeue.Rabbit.Publish(
-					ctx,
-					messagequeue.QueueWocRegistrations,
-					[]byte(payloadStr),
-				); err != nil {
-					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish WOC payload", err)
-					return
-				}
-			}
-		}
-
-		err := q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
-			TxnStatus: models.PaymentSuccess,
-			ID:        booking.ID,
-		})
-		if err != nil {
-			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			return
-		}
-
 		// Getting the schedule ids of the selected event
 		schedules, err := q.GetSchedulesByEventID(ctx, tx, event.ID)
 		if err != nil {
@@ -349,12 +279,68 @@ func VerifyTransaction(c *gin.Context) {
 
 		}
 
-		if err := tx.Commit(ctx); err != nil {
+		err = q.UpdateBookingStatus(ctx, tx, db.UpdateBookingStatusParams{
+			TxnStatus: models.PaymentSuccess,
+			ID:        booking.ID,
+		})
+		if err != nil {
+			pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to update booking status", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later",
 			})
-			pkg.Log.FatalCtx(c, "[VERIFY-FATAL]: Failed to commit transaction", err)
 			return
+		}
+
+		// success case
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "VERIFY") {
+			return
+		}
+
+		// If there is metadata, read and publish
+		if len(booking.Metadata) > 0 {
+			var metadataMap map[string]any
+			if err := json.Unmarshal(booking.Metadata, &metadataMap); err != nil {
+				pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to unmarshal booking metadata", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Oops! Something happened. Please try again later",
+				})
+				return
+			}
+
+			// Hackathon payload
+			if raw, ok := metadataMap["hackathon_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: hackathon_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueHackathonRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish hackathon payload", err)
+					return
+				}
+				// WOC payload
+			} else if raw, ok := metadataMap["woc_payload"]; ok {
+				payloadStr, ok := raw.(string)
+				if !ok {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: woc_payload is not string", nil)
+					return
+				}
+
+				if err := messagequeue.Rabbit.Publish(
+					ctx,
+					messagequeue.QueueWocRegistrations,
+					[]byte(payloadStr),
+				); err != nil {
+					pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Failed to publish WOC payload", err)
+					return
+				}
+			}
 		}
 
 		var completeSchedules []models.EventScheduleInput

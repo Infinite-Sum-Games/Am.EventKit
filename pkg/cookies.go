@@ -8,12 +8,15 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
-// TODO: Have conditional rendering of None and Lax
 func SetAuthCookie(c *gin.Context, authTokenString string) {
-	c.SetSameSite(http.SameSiteNoneMode)
-	// c.SetSameSite(http.SameSiteLaxMode)
+	if viper.GetString("env") == "PRODUCTION" {
+		c.SetSameSite(http.SameSiteStrictMode)
+	} else {
+		c.SetSameSite(http.SameSiteNoneMode)
+	}
 	c.SetCookie(
 		"access_token",       // key
 		authTokenString,      // value
@@ -26,8 +29,11 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 }
 
 func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
-	c.SetSameSite(http.SameSiteNoneMode)
-	// c.SetSameSite(http.SameSiteLaxMode)
+	if viper.GetString("env") == "PRODUCTION" {
+		c.SetSameSite(http.SameSiteStrictMode)
+	} else {
+		c.SetSameSite(http.SameSiteNoneMode)
+	}
 	c.SetCookie(
 		"refresh_token",      // key
 		refreshTokenString,   // value
@@ -40,8 +46,11 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 }
 
 func SetTempCookie(c *gin.Context, tempTokenString string) {
-	c.SetSameSite(http.SameSiteNoneMode)
-	// c.SetSameSite(http.SameSiteLaxMode)
+	if viper.GetString("env") == "PRODUCTION" {
+		c.SetSameSite(http.SameSiteStrictMode)
+	} else {
+		c.SetSameSite(http.SameSiteNoneMode)
+	}
 	c.SetCookie(
 		"temp_token",         // key
 		tempTokenString,      // value
@@ -54,8 +63,11 @@ func SetTempCookie(c *gin.Context, tempTokenString string) {
 }
 
 func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
-	c.SetSameSite(http.SameSiteNoneMode)
-	// c.SetSameSite(http.SameSiteLaxMode)
+	if viper.GetString("env") == "PRODUCTION" {
+		c.SetSameSite(http.SameSiteStrictMode)
+	} else {
+		c.SetSameSite(http.SameSiteNoneMode)
+	}
 	c.SetCookie(
 		"csrf_token",         // key
 		csrfTokenString,      // value
@@ -71,7 +83,11 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 * Nullify cookies during LogOut and ForbiddenAccess situations
  */
 func NullifyCookies(c *gin.Context) {
-	c.SetSameSite(http.SameSiteNoneMode)
+	if viper.GetString("env") == "PRODUCTION" {
+		c.SetSameSite(http.SameSiteStrictMode)
+	} else {
+		c.SetSameSite(http.SameSiteNoneMode)
+	}
 
 	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
 	c.SetCookie("refresh_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
