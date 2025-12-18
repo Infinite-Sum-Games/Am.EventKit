@@ -137,6 +137,25 @@ SET check_in = NOW(),
 WHERE student_id = $1
   AND event_schedule_id = $2;
 
+-- name: UnMarkSoloCheckInQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: UnMarkSoloCheckOutQuery :execrows
+UPDATE solo_event_participant
+SET check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: UnMarkSoloBothQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NULL, 
+  check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,
