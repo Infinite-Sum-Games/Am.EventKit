@@ -76,7 +76,7 @@ WHERE
 GROUP BY
   e.id,
   e.name,
-  e.price,
+  b.registration_fee,
   e.is_technical,
   e.event_mode;
 
