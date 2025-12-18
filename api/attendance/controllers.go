@@ -86,7 +86,7 @@ func FetchParticipantsByEvent(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func MarkCheckInOutBoth(c *gin.Context) {
+func MarkSoloCheckInOutBoth(c *gin.Context) {
 	key := c.Param("key")
 	studentIdStr := c.Param("studentId")
 	scheduleIdStr := c.Param("scheduleId")
