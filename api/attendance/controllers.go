@@ -49,9 +49,39 @@ func FetchEventsByOrganizer(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func FetchEventParticipantList(c *gin.Context) {
+func FetchParticipantsByEvent(c *gin.Context) {
+
+	eventIdStr := c.Param("eventId")
+
+	eventId, ok := pkg.GrabUuid(c, eventIdStr, "ATTENDANCE", "eventId")
+
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ATTENDANCE") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	participants, err := q.FetchParticipantsByEventQuery(ctx, conn, eventId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to fetch events by organizer ID", err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Participants list fetched successfully",
+		"message":      "Participants list fetched successfully",
+		"participants": participants,
 	})
 	pkg.Log.SuccessCtx(c)
 }
