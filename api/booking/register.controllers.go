@@ -364,7 +364,7 @@ func BookEvent(c *gin.Context) {
 		RegistrationFee: totalFee,
 		TxnStatus:       models.PaymentPending,
 		ProductInfo:     prodInfo,
-		SeatsReleased:   int32(len(allMembers)),
+		SeatsReleased:   1,
 		Metadata:        metadataJson, // TODO: I need to set it as default data of the jsonb if not present
 	})
 	if err != nil {
@@ -443,7 +443,7 @@ func BookEvent(c *gin.Context) {
 	}
 
 	err = q.UpdateEventSeats(ctx, tx, db.UpdateEventSeatsParams{
-		SeatsFilled: int32(len(allMembers)),
+		SeatsFilled: 1,
 		ID:          eventId,
 	})
 	if err != nil {
