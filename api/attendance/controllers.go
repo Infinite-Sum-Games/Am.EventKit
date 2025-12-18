@@ -112,7 +112,8 @@ func MarkSoloCheckInOutBoth(c *gin.Context) {
 
 	q := db.New()
 
-	if key == "IN" {
+	switch key {
+	case "IN":
 		rowsAffected, err := q.MarkSoloCheckInQuery(ctx, conn, db.MarkSoloCheckInQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -137,7 +138,8 @@ func MarkSoloCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else if key == "OUT" {
+
+	case "OUT":
 		rowsAffected, err := q.MarkSoloCheckOutQuery(ctx, conn, db.MarkSoloCheckOutQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -162,7 +164,8 @@ func MarkSoloCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else if key == "BOTH" {
+
+	case "BOTH":
 		rowsAffected, err := q.MarkSoloBothQuery(ctx, conn, db.MarkSoloBothQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -186,7 +189,8 @@ func MarkSoloCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else {
+
+	default:
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid key provided. Use 'IN', 'OUT', or 'BOTH'.",
 		})
@@ -221,7 +225,8 @@ func MarkTeamCheckInOutBoth(c *gin.Context) {
 
 	q := db.New()
 
-	if key == "IN" {
+	switch key {
+	case "IN":
 		rowAffected, err := q.MarkTeamCheckInQuery(ctx, conn, db.MarkTeamCheckInQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -246,7 +251,8 @@ func MarkTeamCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else if key == "OUT" {
+
+	case "OUT":
 		rowAffected, err := q.MarkTeamCheckOutQuery(ctx, conn, db.MarkTeamCheckOutQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -271,7 +277,8 @@ func MarkTeamCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else if key == "BOTH" {
+
+	case "BOTH":
 		rowAffected, err := q.MarkTeamBothQuery(ctx, conn, db.MarkTeamBothQueryParams{
 			StudentID:       studentId,
 			EventScheduleID: scheduleId,
@@ -295,13 +302,18 @@ func MarkTeamCheckInOutBoth(c *gin.Context) {
 		})
 		pkg.Log.SuccessCtx(c)
 		return
-	} else {
+
+	default:
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid key provided. Use 'IN', 'OUT', or 'BOTH'.",
 		})
 		pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Invalid key provided", nil)
 		return
 	}
+}
+
+func UnMarkSoloCheckInOutBoth(c *gin.Context) {
+
 }
 
 func FetchEventDetailsByDateAndOrganizer(c *gin.Context) {
