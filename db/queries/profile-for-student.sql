@@ -44,6 +44,7 @@ SELECT
   e.is_technical,
   e.event_mode,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -88,6 +89,7 @@ SELECT
   e.event_mode,
   t.team_name,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(

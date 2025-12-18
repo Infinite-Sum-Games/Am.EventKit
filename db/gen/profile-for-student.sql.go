@@ -144,6 +144,7 @@ SELECT
   e.is_technical,
   e.event_mode,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -187,6 +188,7 @@ type GetMySoloEventTicketsRow struct {
 	IsTechnical pgtype.Bool   `json:"is_technical"`
 	EventMode   EventModeEnum `json:"event_mode"`
 	EventType   EventTypeEnum `json:"event_type"`
+	IsPerHead   bool          `json:"is_per_head"`
 	Schedules   interface{}   `json:"schedules"`
 	Tags        interface{}   `json:"tags"`
 }
@@ -207,6 +209,7 @@ func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, email stri
 			&i.IsTechnical,
 			&i.EventMode,
 			&i.EventType,
+			&i.IsPerHead,
 			&i.Schedules,
 			&i.Tags,
 		); err != nil {
@@ -229,6 +232,7 @@ SELECT
   e.event_mode,
   t.team_name,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -271,6 +275,7 @@ type GetMyTeamEventTicketsRow struct {
 	EventMode   EventModeEnum `json:"event_mode"`
 	TeamName    pgtype.Text   `json:"team_name"`
 	EventType   EventTypeEnum `json:"event_type"`
+	IsPerHead   bool          `json:"is_per_head"`
 	Schedules   interface{}   `json:"schedules"`
 	Tags        interface{}   `json:"tags"`
 }
@@ -292,6 +297,7 @@ func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, email stri
 			&i.EventMode,
 			&i.TeamName,
 			&i.EventType,
+			&i.IsPerHead,
 			&i.Schedules,
 			&i.Tags,
 		); err != nil {
