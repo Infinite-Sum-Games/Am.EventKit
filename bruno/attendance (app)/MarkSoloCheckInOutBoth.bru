@@ -1,0 +1,16 @@
+meta {
+  name: MarkSoloCheckInOutBoth
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/attendance/solo/IN/mark/b52dc5b1-b0f1-4211-9b95-827da5f11621/deb3576f-e24a-4a01-b1cc-01cd2b4b7c1e
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
