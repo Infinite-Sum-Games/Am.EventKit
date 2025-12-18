@@ -156,6 +156,25 @@ SET check_in = NULL,
 WHERE student_id = $1
   AND event_schedule_id = $2;
 
+-- name: UnMarkTeamCheckInQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: UnMarkTeamCheckOutQuery :execrows
+UPDATE team_events_attendance
+SET check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: UnMarkTeamBothQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL, 
+  check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,

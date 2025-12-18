@@ -677,6 +677,67 @@ func (q *Queries) UnMarkSoloCheckOutQuery(ctx context.Context, db DBTX, arg UnMa
 	return result.RowsAffected(), nil
 }
 
+const unMarkTeamBothQuery = `-- name: UnMarkTeamBothQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL, 
+  check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamBothQuery(ctx context.Context, db DBTX, arg UnMarkTeamBothQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamBothQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkTeamCheckInQuery = `-- name: UnMarkTeamCheckInQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamCheckInQuery(ctx context.Context, db DBTX, arg UnMarkTeamCheckInQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkTeamCheckOutQuery = `-- name: UnMarkTeamCheckOutQuery :execrows
+UPDATE team_events_attendance
+SET check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamCheckOutQuery(ctx context.Context, db DBTX, arg UnMarkTeamCheckOutQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateCheckOut = `-- name: UpdateCheckOut :one
 UPDATE solo_event_participant
 SET check_out = NOW()
