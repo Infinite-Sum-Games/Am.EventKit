@@ -3,15 +3,13 @@ package pkg
 import (
 	"time"
 
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/segmentio/ksuid"
 )
 
 func ToPgText(value string) pgtype.Text {
@@ -76,18 +74,7 @@ func ToPgNumericFromFloat(f float64) (pgtype.Numeric, error) {
 	}, nil
 }
 
-func GenerateTxnID(studentID uuid.UUID, eventID uuid.UUID) string {
-	// Shorten UUIDs to 4 chars for readability
-	shortStudent := studentID.String()[:4]
-	shortEvent := eventID.String()[:4]
-
-	// Add a timestamp
-	timestamp := time.Now().UTC().Format("20060102T150405")
-
-	// Small random suffix to avoid collisions
-	randomBytes := make([]byte, 2)
-	_, _ = rand.Read(randomBytes)
-	randomHex := hex.EncodeToString(randomBytes)
-
-	return fmt.Sprintf("TXNANK-%s-%s-%s-%s", timestamp, shortStudent, shortEvent, randomHex)
+func GenerateTxnID() string {
+	txnID := "TXN-ANK26-" + ksuid.New().String()
+	return txnID
 }
