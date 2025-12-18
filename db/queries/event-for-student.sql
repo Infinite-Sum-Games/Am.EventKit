@@ -114,26 +114,40 @@ SELECT
     e.price AS event_price,
     (e.seats_filled = e.total_seats) AS is_full,
 
-    /* registration and favourite status for the given student */
+    /* ---------- REGISTRATION STATUS ---------- */
     (
-      COUNT(DISTINCT b.id) > 0
-      OR COUNT(DISTINCT tb.id) > 0
+      EXISTS (
+        SELECT 1
+        FROM bookings b
+        WHERE b.event_id = e.id
+          AND b.student_id = $1
+          AND b.txn_status = 'SUCCESS'
+      )
+      OR EXISTS (
+        SELECT 1
+        FROM teams t1
+        JOIN team_members tm1 ON tm1.team_id = t1.id
+        JOIN bookings b2 ON b2.id = t1.booking_id
+        WHERE t1.event_id = e.id
+          AND tm1.student_id = $1
+          AND b2.txn_status = 'SUCCESS'
+      )
     ) AS is_registered,
 
-    (COUNT(DISTINCT f.id) > 0) AS is_starred
+    /* ---------- FAVOURITE STATUS ---------- */
+    EXISTS (
+      SELECT 1
+      FROM favourites f
+      WHERE f.event_id = e.id
+        AND f.email = $2
+    ) AS is_starred
 
 FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $1 AND b.txn_status = 'SUCCESS'
-LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm ON tm.team_id = te.id AND tm.student_id = $1
-LEFT JOIN bookings tb ON tb.id = te.booking_id AND tb.txn_status = 'SUCCESS'
-LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $2
 
-WHERE
-  e.event_status IN ('ACTIVE', 'COMPLETED')
+WHERE e.event_status IN ('ACTIVE', 'COMPLETED')
 
 GROUP BY e.id;
 
@@ -156,6 +170,7 @@ SELECT
     e.event_mode,
     e.is_technical,
 
+    /* ---------- ORGANIZERS ---------- */
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'organizer_name', o.name,
@@ -165,6 +180,7 @@ SELECT
       '[]'::jsonb
     ) AS organizers,
 
+    /* ---------- SCHEDULES ---------- */
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'event_date', es.event_date,
@@ -175,10 +191,14 @@ SELECT
       '[]'::jsonb
     ) AS schedules,
 
+    /* ---------- TAGS ---------- */
     COALESCE(
-      array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL)
+      ARRAY_AGG(DISTINCT t.name)
+      FILTER (WHERE t.id IS NOT NULL),
+      '{}'
     ) AS tags,
 
+    /* ---------- PEOPLE ---------- */
     COALESCE(
       JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
         'person_name', p.name,
@@ -187,15 +207,35 @@ SELECT
       '[]'::jsonb
     ) AS people,
 
+    /* ---------- REGISTRATION STATUS ---------- */
     (
-      COUNT(DISTINCT b.id) > 0
-      OR COUNT(DISTINCT tb.id) > 0
+      EXISTS (
+        SELECT 1
+        FROM bookings b
+        WHERE b.event_id = e.id
+          AND b.student_id = $2
+          AND b.txn_status = 'SUCCESS'
+      )
+      OR EXISTS (
+        SELECT 1
+        FROM teams t1
+        JOIN team_members tm1 ON tm1.team_id = t1.id
+        JOIN bookings b2 ON b2.id = t1.booking_id
+        WHERE t1.event_id = e.id
+          AND tm1.student_id = $2
+          AND b2.txn_status = 'SUCCESS'
+      )
     ) AS is_registered,
 
-    (COUNT(DISTINCT f.id) > 0) AS is_starred
+    /* ---------- FAVOURITE STATUS ---------- */
+    EXISTS (
+      SELECT 1
+      FROM favourites f
+      WHERE f.event_id = e.id
+        AND f.email = $3
+    ) AS is_starred
 
 FROM event e
-
 LEFT JOIN event_to_organizer_mapping m ON e.id = m.event_id
 LEFT JOIN organizer o ON m.organizer_id = o.id
 LEFT JOIN event_schedule es ON e.id = es.event_id
@@ -203,12 +243,8 @@ LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
 LEFT JOIN people_to_event_mapping pem ON e.id = pem.event_id
 LEFT JOIN people p ON pem.person_id = p.id
-LEFT JOIN bookings b ON e.id = b.event_id AND b.student_id = $2 AND b.txn_status = 'SUCCESS'
-LEFT JOIN teams te ON te.event_id = e.id
-LEFT JOIN team_members tm_user ON tm_user.team_id = te.id AND tm_user.student_id = $2
-LEFT JOIN bookings tb ON tb.id = te.booking_id AND tb.txn_status = 'SUCCESS'
-LEFT JOIN favourites f ON e.id = f.event_id AND f.email = $3
-WHERE 
-    e.id = $1
-    AND e.event_status IN ('ACTIVE', 'COMPLETED')
+
+WHERE e.id = $1
+  AND e.event_status IN ('ACTIVE', 'COMPLETED')
+
 GROUP BY e.id;
