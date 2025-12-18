@@ -140,7 +140,7 @@ const getMySoloEventTickets = `-- name: GetMySoloEventTickets :many
 SELECT
   e.id AS event_id,
   e.name AS event_name,
-  e.price,
+  b.registration_fee AS price,
   e.is_technical,
   e.event_mode,
   e.event_type AS event_type,
@@ -184,7 +184,7 @@ GROUP BY
 type GetMySoloEventTicketsRow struct {
 	EventID     uuid.UUID     `json:"event_id"`
 	EventName   string        `json:"event_name"`
-	Price       int32         `json:"price"`
+	Price       pgtype.Int4   `json:"price"`
 	IsTechnical pgtype.Bool   `json:"is_technical"`
 	EventMode   EventModeEnum `json:"event_mode"`
 	EventType   EventTypeEnum `json:"event_type"`
@@ -227,7 +227,7 @@ const getMyTeamEventTickets = `-- name: GetMyTeamEventTickets :many
 SELECT
   e.id AS event_id,
   e.name AS event_name,
-  e.price,
+  b.registration_fee AS price,
   e.is_technical,
   e.event_mode,
   t.team_name,
@@ -270,7 +270,7 @@ GROUP BY
 type GetMyTeamEventTicketsRow struct {
 	EventID     uuid.UUID     `json:"event_id"`
 	EventName   string        `json:"event_name"`
-	Price       int32         `json:"price"`
+	Price       pgtype.Int4   `json:"price"`
 	IsTechnical pgtype.Bool   `json:"is_technical"`
 	EventMode   EventModeEnum `json:"event_mode"`
 	TeamName    pgtype.Text   `json:"team_name"`
