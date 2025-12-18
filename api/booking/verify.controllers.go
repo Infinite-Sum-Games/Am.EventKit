@@ -23,13 +23,8 @@ func VerifyTransaction(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req models.VerifyTransactionRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Request is malformed",
-		})
-		pkg.Log.ErrorCtx(c, "[VERIFY-ERROR]: Invalid request body for verify transaction", err)
+	req, ok := pkg.ValidateRequest[models.VerifyTransactionRequest](c)
+	if !ok {
 		return
 	}
 
