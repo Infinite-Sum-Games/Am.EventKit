@@ -88,7 +88,7 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
-	var req models.TeamBookingRequest
+	var req *models.TeamBookingRequest
 	isGroupEvent := event.IsGroup
 
 	// TODO: string{leaderEmail} is written asuming that frontend doesnt
@@ -98,17 +98,8 @@ func BookEvent(c *gin.Context) {
 	hasDuplicates := false
 
 	if isGroupEvent {
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Team details are not proper", err)
-			return
-		}
-		if err := req.Validate(); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Request is malformed",
-			})
+		req, ok = pkg.ValidateRequest[models.TeamBookingRequest](c)
+		if !ok {
 			return
 		}
 		// Creating the group list
@@ -386,7 +377,9 @@ func BookEvent(c *gin.Context) {
 
 	// Adding metadata for team if needed
 	meta := pkg.NewJSONB()
-	meta.Add("problem_stmt", req.ProblemStmt)
+	if req != nil {
+		meta.Add("problem_stmt", req.ProblemStmt)
+	}
 	metadata, err := meta.Bytes()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

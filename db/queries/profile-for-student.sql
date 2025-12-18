@@ -40,10 +40,11 @@ WHERE b.student_id = $1;
 SELECT
   e.id AS event_id,
   e.name AS event_name,
-  e.price,
+  b.registration_fee AS price,
   e.is_technical,
   e.event_mode,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
@@ -83,11 +84,12 @@ GROUP BY
 SELECT
   e.id AS event_id,
   e.name AS event_name,
-  e.price,
+  b.registration_fee AS price,
   e.is_technical,
   e.event_mode,
   t.team_name,
   e.event_type AS event_type,
+  e.is_per_head AS is_per_head,
 
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(

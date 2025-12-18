@@ -89,5 +89,5 @@ func GenerateTxnID(studentID uuid.UUID, eventID uuid.UUID) string {
 	_, _ = rand.Read(randomBytes)
 	randomHex := hex.EncodeToString(randomBytes)
 
-	return fmt.Sprintf("TXN-%s-%s-%s-%s", timestamp, shortStudent, shortEvent, randomHex)
+	return fmt.Sprintf("TXN-ANK-%s-%s-%s-%s", timestamp, shortStudent, shortEvent, randomHex)
 }
