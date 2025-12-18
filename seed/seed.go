@@ -900,6 +900,76 @@ func SeedBookings(conn *pgx.Conn) error {
 	return nil
 }
 
+func SeedSoloEventParticipant(conn *pgx.Conn) error {
+	ctx := context.Background()
+	q := db.New()
+
+	// 1. Check if solo event participants already exist
+	participants, _ := q.ViewSoloEventParticipantQuery(ctx, conn)
+	if len(participants) > 0 {
+		pkg.Log.Info("Solo event participants already seeded, skipping...")
+		return nil
+	}
+
+	// 2.Fetch students
+	students, err := q.ViewStudentSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing students: %v\n", err)
+		return err
+	}
+
+	// 3.Fetch events
+	events, err := q.ViewEventSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing events: %v\n", err)
+		return err
+	}
+
+	// 4.Fetch event_schedule
+	eventSchedule, err := q.ViewEventScheduleSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing event schedules: %v\n", err)
+		return err
+	}
+
+	// 5. Fetch bookings
+	bookings, err := q.ViewBookingsSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing bookings: %v\n", err)
+		return err
+	}
+
+	for _, student := range students {
+		for _, event := range events {
+			for _, booking := range bookings {
+				if booking.StudentID == student.ID && booking.EventID == event.ID {
+					for _, schedule := range eventSchedule {
+						if schedule.EventID == event.ID {
+							params := db.SeedSoloEventParticipantQueryParams{
+								StudentID:       student.ID,
+								EventID:         event.ID,
+								EventScheduleID: schedule.ID,
+								BookingID:       booking.ID,
+								StudentName:     student.Name,
+								StudentEmail:    student.Email,
+							}
+
+							err := q.SeedSoloEventParticipantQuery(ctx, conn, params)
+							if err != nil {
+								pkg.Log.Error("Failed to seed solo event participant", err)
+								return err
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	pkg.Log.Info(fmt.Sprintf("Successfully seeded %d solo event participants", len(students)))
+	return nil
+}
+
 func seed() {
 	conn, err := initDB()
 	if err != nil {
@@ -959,6 +1029,11 @@ func seed() {
 	}
 
 	if err := SeedBookings(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SeedSoloEventParticipant(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}

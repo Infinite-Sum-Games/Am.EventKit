@@ -105,7 +105,7 @@ WHERE student_id = $1
 RETURNING
   id;
 
-  --name: MarkSoloCheckOutQuery :one
+-- name: MarkSoloCheckOutQuery :one
 UPDATE solo_event_participant
 SET check_out = NOW()
 WHERE student_id = $1
@@ -113,7 +113,7 @@ WHERE student_id = $1
 RETURNING
   id;
 
---name: MarkSoloBothQuery :one
+-- name: MarkSoloBothQuery :one
 UPDATE solo_event_participant
 SET check_in = NOW(), 
   check_out = NOW()

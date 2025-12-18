@@ -314,6 +314,38 @@ func (q *Queries) SeedPeopleToEventMappingQuery(ctx context.Context, db DBTX, ar
 	return err
 }
 
+const seedSoloEventParticipantQuery = `-- name: SeedSoloEventParticipantQuery :exec
+INSERT INTO solo_event_participant(
+  student_id,
+  event_id,
+  event_schedule_id,
+  booking_id,
+  student_name,
+  student_email
+) VALUES($1, $2, $3, $4, $5, $6)
+`
+
+type SeedSoloEventParticipantQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventID         uuid.UUID `json:"event_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+	BookingID       uuid.UUID `json:"booking_id"`
+	StudentName     string    `json:"student_name"`
+	StudentEmail    string    `json:"student_email"`
+}
+
+func (q *Queries) SeedSoloEventParticipantQuery(ctx context.Context, db DBTX, arg SeedSoloEventParticipantQueryParams) error {
+	_, err := db.Exec(ctx, seedSoloEventParticipantQuery,
+		arg.StudentID,
+		arg.EventID,
+		arg.EventScheduleID,
+		arg.BookingID,
+		arg.StudentName,
+		arg.StudentEmail,
+	)
+	return err
+}
+
 const seedTagsQuery = `-- name: SeedTagsQuery :exec
 INSERT INTO tags(
   name, 
@@ -719,6 +751,56 @@ func (q *Queries) ViewPeopleToEventMappingSeedQuery(ctx context.Context, db DBTX
 	for rows.Next() {
 		var i ViewPeopleToEventMappingSeedQueryRow
 		if err := rows.Scan(&i.ID, &i.EventID, &i.PersonID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const viewSoloEventParticipantQuery = `-- name: ViewSoloEventParticipantQuery :many
+SELECT 
+  id,
+  student_id,
+  event_id,
+  event_schedule_id,
+  booking_id,
+  student_name,
+  student_email
+  FROM solo_event_participant
+`
+
+type ViewSoloEventParticipantQueryRow struct {
+	ID              int32     `json:"id"`
+	StudentID       uuid.UUID `json:"student_id"`
+	EventID         uuid.UUID `json:"event_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+	BookingID       uuid.UUID `json:"booking_id"`
+	StudentName     string    `json:"student_name"`
+	StudentEmail    string    `json:"student_email"`
+}
+
+func (q *Queries) ViewSoloEventParticipantQuery(ctx context.Context, db DBTX) ([]ViewSoloEventParticipantQueryRow, error) {
+	rows, err := db.Query(ctx, viewSoloEventParticipantQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ViewSoloEventParticipantQueryRow
+	for rows.Next() {
+		var i ViewSoloEventParticipantQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StudentID,
+			&i.EventID,
+			&i.EventScheduleID,
+			&i.BookingID,
+			&i.StudentName,
+			&i.StudentEmail,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -59,7 +59,6 @@ func (q *Queries) CheckStudentRegisteredForEvent(ctx context.Context, db DBTX, a
 	return i, err
 }
 
-<<<<<<< HEAD:db/gen/attendance-for-organizer-app.sql.go
 const createSoloEventParticipant = `-- name: CreateSoloEventParticipant :one
 INSERT INTO solo_event_participant (
   student_id, 
@@ -113,7 +112,8 @@ func (q *Queries) CreateTeamAttendance(ctx context.Context, db DBTX, arg CreateT
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
-=======
+}
+
 const fetchEventsByOrganizerQuery = `-- name: FetchEventsByOrganizerQuery :many
 SELECT 
   e.id AS event_id,
@@ -164,7 +164,6 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 		return nil, err
 	}
 	return items, nil
->>>>>>> 10f991c (feat: add fetchEventsByOrganizerQuery):db/gen/attendance.sql.go
 }
 
 const fetchParticipantsByEventQuery = `-- name: FetchParticipantsByEventQuery :many
@@ -549,6 +548,70 @@ func (q *Queries) InsertCheckIn(ctx context.Context, db DBTX, arg InsertCheckInP
 		&i.CheckOut,
 	)
 	return i, err
+}
+
+const markSoloBothQuery = `-- name: MarkSoloBothQuery :one
+UPDATE solo_event_participant
+SET check_in = NOW(), 
+  check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id
+`
+
+type MarkSoloBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloBothQuery(ctx context.Context, db DBTX, arg MarkSoloBothQueryParams) (int32, error) {
+	row := db.QueryRow(ctx, markSoloBothQuery, arg.StudentID, arg.EventScheduleID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const markSoloCheckInQuery = `-- name: MarkSoloCheckInQuery :one
+UPDATE solo_event_participant
+SET check_in = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id
+`
+
+type MarkSoloCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloCheckInQuery(ctx context.Context, db DBTX, arg MarkSoloCheckInQueryParams) (int32, error) {
+	row := db.QueryRow(ctx, markSoloCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const markSoloCheckOutQuery = `-- name: MarkSoloCheckOutQuery :one
+UPDATE solo_event_participant
+SET check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id
+`
+
+type MarkSoloCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloCheckOutQuery(ctx context.Context, db DBTX, arg MarkSoloCheckOutQueryParams) (int32, error) {
+	row := db.QueryRow(ctx, markSoloCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const updateCheckOut = `-- name: UpdateCheckOut :one
