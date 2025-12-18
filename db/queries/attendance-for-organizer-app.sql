@@ -72,6 +72,21 @@ WHERE email = $1;
 SELECT * FROM student
 WHERE email = ANY($1::text[]);
 
+-- name: FetchEventsByOrganizerQuery :many
+SELECT 
+  e.id AS event_id,
+  e.name AS event_name,
+  es.id AS event_schedule_id,
+  es.event_date AS event_date,
+  es.start_time AS start_time,
+  es.end_time AS end_time
+  FROM event_to_organizer_mapping 
+  INNER JOIN event e 
+    ON event_to_organizer_mapping.event_id = e.id
+  INNER JOIN event_schedule es
+    ON e.id = es.event_id
+  WHERE event_to_organizer_mapping.organizer_id = $1;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,

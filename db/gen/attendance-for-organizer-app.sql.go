@@ -59,6 +59,7 @@ func (q *Queries) CheckStudentRegisteredForEvent(ctx context.Context, db DBTX, a
 	return i, err
 }
 
+<<<<<<< HEAD:db/gen/attendance-for-organizer-app.sql.go
 const createSoloEventParticipant = `-- name: CreateSoloEventParticipant :one
 INSERT INTO solo_event_participant (
   student_id, 
@@ -112,6 +113,58 @@ func (q *Queries) CreateTeamAttendance(ctx context.Context, db DBTX, arg CreateT
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+=======
+const fetchEventsByOrganizerQuery = `-- name: FetchEventsByOrganizerQuery :many
+SELECT 
+  e.id AS event_id,
+  e.name AS event_name,
+  es.id AS event_schedule_id,
+  es.event_date AS event_date,
+  es.start_time AS start_time,
+  es.end_time AS end_time
+  FROM event_to_organizer_mapping 
+  INNER JOIN event e 
+    ON event_to_organizer_mapping.event_id = e.id
+  INNER JOIN event_schedule es
+    ON e.id = es.event_id
+  WHERE event_to_organizer_mapping.organizer_id = $1
+`
+
+type FetchEventsByOrganizerQueryRow struct {
+	EventID         uuid.UUID        `json:"event_id"`
+	EventName       string           `json:"event_name"`
+	EventScheduleID uuid.UUID        `json:"event_schedule_id"`
+	EventDate       pgtype.Date      `json:"event_date"`
+	StartTime       pgtype.Timestamp `json:"start_time"`
+	EndTime         pgtype.Timestamp `json:"end_time"`
+}
+
+func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, organizerID uuid.UUID) ([]FetchEventsByOrganizerQueryRow, error) {
+	rows, err := db.Query(ctx, fetchEventsByOrganizerQuery, organizerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchEventsByOrganizerQueryRow
+	for rows.Next() {
+		var i FetchEventsByOrganizerQueryRow
+		if err := rows.Scan(
+			&i.EventID,
+			&i.EventName,
+			&i.EventScheduleID,
+			&i.EventDate,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+>>>>>>> 10f991c (feat: add fetchEventsByOrganizerQuery):db/gen/attendance.sql.go
 }
 
 const getAttendanceRecord = `-- name: GetAttendanceRecord :one
