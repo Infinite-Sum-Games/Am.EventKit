@@ -116,6 +116,25 @@ SET check_in = NOW(),
 WHERE student_id = $1
   AND event_schedule_id = $2;
 
+-- name: MarkTeamCheckInQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: MarkTeamCheckOutQuery :execrows
+UPDATE team_events_attendance
+SET check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
+-- name: MarkTeamBothQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NOW(), 
+  check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,
