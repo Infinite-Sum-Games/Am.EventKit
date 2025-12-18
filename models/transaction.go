@@ -14,7 +14,7 @@ func (s VerifyTransactionRequest) Validate() error {
 	return v.ValidateStruct(&s,
 		v.Field(&s.TxnID,
 			v.Required,
-			v.Match(regexp.MustCompile(`^TXN-ANK-`)).
+			v.Match(regexp.MustCompile(`^TXN-ANK26`)).
 				Error("txn_id is not valid")))
 }
 
