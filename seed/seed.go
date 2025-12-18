@@ -970,6 +970,57 @@ func SeedSoloEventParticipant(conn *pgx.Conn) error {
 	return nil
 }
 
+func SeedTeamEventsAttendance(conn *pgx.Conn) error {
+	ctx := context.Background()
+	q := db.New()
+
+	// 1. Check if team event attendance already exist
+	attendances, _ := q.ViewTeamEventsAttendanceQuery(ctx, conn)
+	if len(attendances) > 0 {
+		pkg.Log.Info("Team event attendances already seeded, skipping...")
+		return nil
+	}
+
+	// 2. Fetch students
+	students, err := q.ViewStudentSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing students: %v\n", err)
+		return err
+	}
+
+	// 3. Fetch events schedules
+	eventSchedules, err := q.ViewEventScheduleSeedQuery(ctx, conn)
+	if err != nil {
+		pkg.Log.Error("Error listing event schedules: %v\n", err)
+		return err
+	}
+
+	for _, student := range students {
+		for _, schedule := range eventSchedules {
+
+			// to avoid a dense matrix where everyone attends everything.
+			randomNumber := gofakeit.Float32Range(0, 1)
+
+			if randomNumber < 0.3 {
+
+				params := db.SeedTeamEventsAttendanceQueryParams{
+					StudentID:       student.ID,
+					EventScheduleID: schedule.ID,
+				}
+
+				err := q.SeedTeamEventsAttendanceQuery(ctx, conn, params)
+				if err != nil {
+					pkg.Log.Error("Failed to seed team event attendance", err)
+					return err
+				}
+			}
+		}
+	}
+
+	pkg.Log.Info(fmt.Sprintf("Successfully seeded %d team event attendances", len(students)))
+	return nil
+}
+
 func seed() {
 	conn, err := initDB()
 	if err != nil {
@@ -1034,6 +1085,11 @@ func seed() {
 	}
 
 	if err := SeedSoloEventParticipant(conn); err != nil {
+		pkg.Log.Error("Seeding failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := SeedTeamEventsAttendance(conn); err != nil {
 		pkg.Log.Error("Seeding failed: %v\n", err)
 		os.Exit(1)
 	}

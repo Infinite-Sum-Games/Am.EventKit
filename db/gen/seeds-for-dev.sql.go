@@ -363,6 +363,23 @@ func (q *Queries) SeedTagsQuery(ctx context.Context, db DBTX, arg SeedTagsQueryP
 	return err
 }
 
+const seedTeamEventsAttendanceQuery = `-- name: SeedTeamEventsAttendanceQuery :exec
+INSERT INTO team_events_attendance(
+  student_id,
+  event_schedule_id
+) VALUES($1, $2)
+`
+
+type SeedTeamEventsAttendanceQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) SeedTeamEventsAttendanceQuery(ctx context.Context, db DBTX, arg SeedTeamEventsAttendanceQueryParams) error {
+	_, err := db.Exec(ctx, seedTeamEventsAttendanceQuery, arg.StudentID, arg.EventScheduleID)
+	return err
+}
+
 const truncateAllTablesQuery = `-- name: TruncateAllTablesQuery :exec
 TRUNCATE TABLE 
   student,
@@ -876,6 +893,42 @@ func (q *Queries) ViewTagSeedQuery(ctx context.Context, db DBTX) ([]Tag, error) 
 	for rows.Next() {
 		var i Tag
 		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const viewTeamEventsAttendanceQuery = `-- name: ViewTeamEventsAttendanceQuery :many
+SELECT 
+  id,
+  student_id,
+  event_schedule_id,
+  check_in,
+  check_out
+FROM team_events_attendance
+`
+
+func (q *Queries) ViewTeamEventsAttendanceQuery(ctx context.Context, db DBTX) ([]TeamEventsAttendance, error) {
+	rows, err := db.Query(ctx, viewTeamEventsAttendanceQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TeamEventsAttendance
+	for rows.Next() {
+		var i TeamEventsAttendance
+		if err := rows.Scan(
+			&i.ID,
+			&i.StudentID,
+			&i.EventScheduleID,
+			&i.CheckIn,
+			&i.CheckOut,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

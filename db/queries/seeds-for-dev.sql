@@ -1,3 +1,18 @@
+-- name: SeedTeamEventsAttendanceQuery :exec
+INSERT INTO team_events_attendance(
+  student_id,
+  event_schedule_id
+) VALUES($1, $2);
+
+-- name: ViewTeamEventsAttendanceQuery :many
+SELECT 
+  id,
+  student_id,
+  event_schedule_id,
+  check_in,
+  check_out
+FROM team_events_attendance;
+
 -- name: SeedSoloEventParticipantQuery :exec
 INSERT INTO solo_event_participant(
   student_id,
