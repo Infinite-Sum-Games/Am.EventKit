@@ -121,4 +121,8 @@ WHERE
   AND b.txn_status = 'SUCCESS'
 GROUP BY
   e.id,
+  e.name,
+  b.registration_fee,
+  e.is_technical,
+  e.event_mode,
   t.team_name;
