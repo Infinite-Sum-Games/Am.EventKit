@@ -426,6 +426,119 @@ func UnMarkSoloCheckInOutBoth(c *gin.Context) {
 	}
 }
 
+func UnMarkTeamCheckInOutBoth(c *gin.Context) {
+	key := c.Param("key")
+	studentIdStr := c.Param("studentId")
+	scheduleIdStr := c.Param("scheduleId")
+
+	studentId, ok := pkg.GrabUuid(c, studentIdStr, "ATTENDANCE", "studentId")
+	if !ok {
+		return
+	}
+
+	scheduleId, ok := pkg.GrabUuid(c, scheduleIdStr, "ATTENDANCE", "scheduleId")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ATTENDANCE") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	switch key {
+	case "IN":
+		rowAffected, err := q.UnMarkTeamCheckInQuery(ctx, conn, db.UnMarkTeamCheckInQueryParams{
+			StudentID:       studentId,
+			EventScheduleID: scheduleId,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to unmark student check-in", err)
+			return
+		}
+		if rowAffected == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Student Check-in could not be unmarked. Possible reasons: not checked in or invalid student/schedule ID",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Student Check-in could not be unmarked", nil)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Student Check-in unmarked successfully",
+		})
+		pkg.Log.SuccessCtx(c)
+		return
+
+	case "OUT":
+		rowAffected, err := q.UnMarkTeamCheckOutQuery(ctx, conn, db.UnMarkTeamCheckOutQueryParams{
+			StudentID:       studentId,
+			EventScheduleID: scheduleId,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to unmark student check-out", err)
+			return
+		}
+		if rowAffected == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Student Check-out could not be unmarked. Possible reasons: not checked out or invalid student/schedule ID",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Student Check-out could not be unmarked", nil)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Student Check-out unmarked successfully",
+		})
+		pkg.Log.SuccessCtx(c)
+		return
+
+	case "BOTH":
+		rowAffected, err := q.UnMarkTeamBothQuery(ctx, conn, db.UnMarkTeamBothQueryParams{
+			StudentID:       studentId,
+			EventScheduleID: scheduleId,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to unmark student check-in and check-out", err)
+			return
+		}
+		if rowAffected == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Student Check-in and Check-out could not be unmarked. Possible reasons: not checked in/out or invalid student/schedule ID",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Student Check-in and Check-out could not be unmarked", nil)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Student Check-in and Check-out unmarked successfully",
+		})
+		pkg.Log.SuccessCtx(c)
+		return
+
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid key provided. Use 'IN', 'OUT', or 'BOTH'.",
+		})
+		pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Invalid key provided", nil)
+		return
+	}
+}
+
 func FetchEventDetailsByDateAndOrganizer(c *gin.Context) {
 	// dateStr := c.Query("date")
 	// organizer := c.Query("organizer")

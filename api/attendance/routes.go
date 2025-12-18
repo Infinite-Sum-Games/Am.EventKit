@@ -10,6 +10,7 @@ func AttendanceRoutes(r *gin.RouterGroup) {
 	r.POST("/solo/mark/:key/:studentId/:scheduleId", MarkSoloCheckInOutBoth)
 	r.POST("/team/mark/:key/:studentId/:scheduleId", MarkTeamCheckInOutBoth)
 	r.DELETE("/solo/unMark/:key/:studentId/:scheduleId", UnMarkSoloCheckInOutBoth)
+	r.DELETE("/team/unMark/:key/:studentId/:scheduleId", UnMarkTeamCheckInOutBoth)
 	// r.GET("/list/:eventId", mw.Auth, mw.CheckOrganizer, FetchEventParticipantList)
 	// r.POST("/mark/:eventId/scan", mw.Auth, mw.CheckOrganizer, MarkOneTimeAttendance)
 	// r.POST("/mark/:eventId/scan/check-in", mw.Auth, mw.CheckOrganizer, MarkCheckIn)
