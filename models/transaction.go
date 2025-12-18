@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	v "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type VerifyTransactionRequest struct {
@@ -11,7 +11,10 @@ type VerifyTransactionRequest struct {
 
 func (s VerifyTransactionRequest) Validate() error {
 	return v.ValidateStruct(&s,
-		v.Field(&s.TxnID, v.Required, is.UUID))
+		v.Field(&s.TxnID,
+			v.Required,
+			v.Match(pkg.Txn_regex).
+				Error("txn_id is not valid")))
 }
 
 const (

@@ -349,7 +349,7 @@ func BookEvent(c *gin.Context) {
 		return
 	}
 
-	txnId := pkg.GenerateTxnID(leaderId, eventId)
+	txnId := pkg.GenerateTxnID()
 	prodInfo := fmt.Sprintf(
 		"ERI-%s-%s-%d-%d",
 		leaderId.String(),
