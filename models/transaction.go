@@ -1,8 +1,7 @@
 package models
 
 import (
-	"regexp"
-
+	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	v "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -14,7 +13,7 @@ func (s VerifyTransactionRequest) Validate() error {
 	return v.ValidateStruct(&s,
 		v.Field(&s.TxnID,
 			v.Required,
-			v.Match(regexp.MustCompile(`^TXN-ANK26`)).
+			v.Match(pkg.Txn_regex).
 				Error("txn_id is not valid")))
 }
 

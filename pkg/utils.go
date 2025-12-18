@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"regexp"
 	"time"
 
 	"fmt"
@@ -11,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/segmentio/ksuid"
 )
+
+var Txn_regex = regexp.MustCompile(`^TXN-ANK26`)
 
 func ToPgText(value string) pgtype.Text {
 	if value == "" {
