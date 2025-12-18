@@ -1,6 +1,8 @@
 package models
 
 import (
+	"regexp"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -10,7 +12,10 @@ type VerifyTransactionRequest struct {
 
 func (s VerifyTransactionRequest) Validate() error {
 	return v.ValidateStruct(&s,
-		v.Field(&s.TxnID, v.Required))
+		v.Field(&s.TxnID,
+			v.Required,
+			v.Match(regexp.MustCompile(`^TXN-ANK-`)).
+				Error("txn_id is not valid")))
 }
 
 const (
