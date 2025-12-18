@@ -86,6 +86,10 @@ func FetchParticipantsByEvent(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
+func MarkCheckInOutBoth(c *gin.Context) {
+
+}
+
 func FetchEventDetailsByDateAndOrganizer(c *gin.Context) {
 	// dateStr := c.Query("date")
 	// organizer := c.Query("organizer")

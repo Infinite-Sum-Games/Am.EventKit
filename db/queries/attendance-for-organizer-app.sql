@@ -97,6 +97,31 @@ INNER JOIN student s
   ON b.student_id = s.id
 WHERE b.event_id = $1;
 
+-- name: MarkSoloCheckInQuery :one
+UPDATE solo_event_participant
+SET check_in = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id;
+
+  --name: MarkSoloCheckOutQuery :one
+UPDATE solo_event_participant
+SET check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id;
+
+--name: MarkSoloBothQuery :one
+UPDATE solo_event_participant
+SET check_in = NOW(), 
+  check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+RETURNING
+  id;
+
 -- name: CheckStudentRegisteredForEvent :one
 SELECT 
     id,
