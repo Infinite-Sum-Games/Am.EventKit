@@ -107,7 +107,8 @@ WHERE student_id = $1
 UPDATE solo_event_participant
 SET check_out = NOW()
 WHERE student_id = $1
-  AND event_schedule_id = $2;
+  AND event_schedule_id = $2
+  AND check_in IS NOT NULL;
 
 -- name: MarkSoloBothQuery :execrows
 UPDATE solo_event_participant
@@ -126,7 +127,8 @@ WHERE student_id = $1
 UPDATE team_events_attendance
 SET check_out = NOW()
 WHERE student_id = $1
-  AND event_schedule_id = $2;
+  AND event_schedule_id = $2
+  AND check_in IS NOT NULL;
 
 -- name: MarkTeamBothQuery :execrows
 UPDATE team_events_attendance
