@@ -966,7 +966,7 @@ func SeedSoloEventParticipant(conn *pgx.Conn) error {
 		}
 	}
 
-	pkg.Log.Info(fmt.Sprintf("Successfully seeded %d solo event participants", len(students)))
+	pkg.Log.Info(fmt.Sprint("Successfully seeded solo event participants"))
 	return nil
 }
 
@@ -1017,7 +1017,7 @@ func SeedTeamEventsAttendance(conn *pgx.Conn) error {
 		}
 	}
 
-	pkg.Log.Info(fmt.Sprintf("Successfully seeded %d team event attendances", len(students)))
+	pkg.Log.Info(fmt.Sprint("Successfully seeded team event attendances"))
 	return nil
 }
 
