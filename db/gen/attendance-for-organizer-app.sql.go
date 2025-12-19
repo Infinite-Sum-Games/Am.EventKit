@@ -225,6 +225,65 @@ func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX
 	return items, nil
 }
 
+const fetchParticipantsByTeamEventQuery = `-- name: FetchParticipantsByTeamEventQuery :many
+SELECT
+  b.student_id AS student_id,
+  s.name AS student_name,
+  s.email AS student_email,
+  tea.id AS attendance_id,
+  tea.check_in AS check_in,
+  tea.check_out AS check_out
+FROM bookings b
+INNER JOIN student s
+  ON b.student_id = s.id
+INNER JOIN team_events_attendance tea
+  ON b.student_id = tea.student_id
+  AND tea.event_schedule_id = $1
+WHERE b.event_id = $2
+  AND b.txn_status = 'SUCCESS'
+`
+
+type FetchParticipantsByTeamEventQueryParams struct {
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+	EventID         uuid.UUID `json:"event_id"`
+}
+
+type FetchParticipantsByTeamEventQueryRow struct {
+	StudentID    uuid.UUID        `json:"student_id"`
+	StudentName  string           `json:"student_name"`
+	StudentEmail string           `json:"student_email"`
+	AttendanceID uuid.UUID        `json:"attendance_id"`
+	CheckIn      pgtype.Timestamp `json:"check_in"`
+	CheckOut     pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX, arg FetchParticipantsByTeamEventQueryParams) ([]FetchParticipantsByTeamEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsByTeamEventQuery, arg.EventScheduleID, arg.EventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchParticipantsByTeamEventQueryRow
+	for rows.Next() {
+		var i FetchParticipantsByTeamEventQueryRow
+		if err := rows.Scan(
+			&i.StudentID,
+			&i.StudentName,
+			&i.StudentEmail,
+			&i.AttendanceID,
+			&i.CheckIn,
+			&i.CheckOut,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAttendanceRecord = `-- name: GetAttendanceRecord :one
 SELECT
     id,

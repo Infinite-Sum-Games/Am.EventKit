@@ -104,6 +104,23 @@ INNER JOIN solo_event_participant sep
 WHERE b.event_id = $2
   AND b.txn_status = 'SUCCESS';
 
+-- name: FetchParticipantsByTeamEventQuery :many
+SELECT
+  b.student_id AS student_id,
+  s.name AS student_name,
+  s.email AS student_email,
+  tea.id AS attendance_id,
+  tea.check_in AS check_in,
+  tea.check_out AS check_out
+FROM bookings b
+INNER JOIN student s
+  ON b.student_id = s.id
+INNER JOIN team_events_attendance tea
+  ON b.student_id = tea.student_id
+  AND tea.event_schedule_id = $1
+WHERE b.event_id = $2
+  AND b.txn_status = 'SUCCESS';
+
 -- name: MarkSoloCheckInQuery :execrows
 UPDATE solo_event_participant
 SET check_in = NOW()
