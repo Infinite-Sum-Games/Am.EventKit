@@ -1,17 +1,18 @@
 meta {
   name: FetchParticipantList
   type: http
-  seq: 7
+  seq: 1
 }
 
 get {
-  url: {{baseUrl}}/attendance/list/:eventId
+  url: {{baseUrl}}/attendance/list/:eventId/:sceduleId
   body: none
   auth: inherit
 }
 
 params:path {
-  eventId: 
+  sceduleId: f7095914-4cd5-4634-95c8-a4b09b846e82
+  eventId: dc2d4efc-df27-49a8-a1b7-9c9780212f67
 }
 
 settings {
