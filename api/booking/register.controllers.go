@@ -135,7 +135,7 @@ func BookEvent(c *gin.Context) {
 	}
 
 	// Check for seats
-	if event.SeatsFilled+int32(len(allMembers)) > event.TotalSeats {
+	if event.SeatsFilled+1 > event.TotalSeats {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Not enough seats available.",
 		})
