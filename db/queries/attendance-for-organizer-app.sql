@@ -89,37 +89,27 @@ SELECT
 
 -- name: FetchParticipantsBySoloEventQuery :many
 SELECT
-  b.student_id AS student_id,
-  s.name AS student_name,
-  s.email AS student_email,
   sep.id AS attendance_id,
+  sep.student_id AS student_id,
+  sep.student_name AS student_name,
+  sep.student_email AS student_email,
   sep.check_in AS check_in,
   sep.check_out AS check_out
-FROM bookings b
-INNER JOIN student s
-  ON b.student_id = s.id
-INNER JOIN solo_event_participant sep
-  ON b.student_id = sep.student_id
-  AND sep.event_schedule_id = $1
-WHERE b.event_id = $2
-  AND b.txn_status = 'SUCCESS';
+FROM solo_event_participant sep
+WHERE sep.event_schedule_id = $1;
 
 -- name: FetchParticipantsByTeamEventQuery :many
 SELECT
-  b.student_id AS student_id,
+  tea.id AS attendance_id,
+  tea.student_id AS student_id,
   s.name AS student_name,
   s.email AS student_email,
-  tea.id AS attendance_id,
   tea.check_in AS check_in,
   tea.check_out AS check_out
-FROM bookings b
+FROM team_events_attendance tea
 INNER JOIN student s
-  ON b.student_id = s.id
-INNER JOIN team_events_attendance tea
-  ON b.student_id = tea.student_id
-  AND tea.event_schedule_id = $1
-WHERE b.event_id = $2
-  AND b.txn_status = 'SUCCESS';
+  ON tea.student_id = s.id
+WHERE tea.event_schedule_id = $1;
 
 -- name: MarkSoloCheckInQuery :execrows
 UPDATE solo_event_participant

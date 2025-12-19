@@ -168,38 +168,27 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 
 const fetchParticipantsBySoloEventQuery = `-- name: FetchParticipantsBySoloEventQuery :many
 SELECT
-  b.student_id AS student_id,
-  s.name AS student_name,
-  s.email AS student_email,
   sep.id AS attendance_id,
+  sep.student_id AS student_id,
+  sep.student_name AS student_name,
+  sep.student_email AS student_email,
   sep.check_in AS check_in,
   sep.check_out AS check_out
-FROM bookings b
-INNER JOIN student s
-  ON b.student_id = s.id
-INNER JOIN solo_event_participant sep
-  ON b.student_id = sep.student_id
-  AND sep.event_schedule_id = $1
-WHERE b.event_id = $2
-  AND b.txn_status = 'SUCCESS'
+FROM solo_event_participant sep
+WHERE sep.event_schedule_id = $1
 `
 
-type FetchParticipantsBySoloEventQueryParams struct {
-	EventScheduleID uuid.UUID `json:"event_schedule_id"`
-	EventID         uuid.UUID `json:"event_id"`
-}
-
 type FetchParticipantsBySoloEventQueryRow struct {
+	AttendanceID int32            `json:"attendance_id"`
 	StudentID    uuid.UUID        `json:"student_id"`
 	StudentName  string           `json:"student_name"`
 	StudentEmail string           `json:"student_email"`
-	AttendanceID int32            `json:"attendance_id"`
 	CheckIn      pgtype.Timestamp `json:"check_in"`
 	CheckOut     pgtype.Timestamp `json:"check_out"`
 }
 
-func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX, arg FetchParticipantsBySoloEventQueryParams) ([]FetchParticipantsBySoloEventQueryRow, error) {
-	rows, err := db.Query(ctx, fetchParticipantsBySoloEventQuery, arg.EventScheduleID, arg.EventID)
+func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX, eventScheduleID uuid.UUID) ([]FetchParticipantsBySoloEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsBySoloEventQuery, eventScheduleID)
 	if err != nil {
 		return nil, err
 	}
@@ -208,10 +197,10 @@ func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX
 	for rows.Next() {
 		var i FetchParticipantsBySoloEventQueryRow
 		if err := rows.Scan(
+			&i.AttendanceID,
 			&i.StudentID,
 			&i.StudentName,
 			&i.StudentEmail,
-			&i.AttendanceID,
 			&i.CheckIn,
 			&i.CheckOut,
 		); err != nil {
@@ -227,38 +216,29 @@ func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX
 
 const fetchParticipantsByTeamEventQuery = `-- name: FetchParticipantsByTeamEventQuery :many
 SELECT
-  b.student_id AS student_id,
+  tea.id AS attendance_id,
+  tea.student_id AS student_id,
   s.name AS student_name,
   s.email AS student_email,
-  tea.id AS attendance_id,
   tea.check_in AS check_in,
   tea.check_out AS check_out
-FROM bookings b
+FROM team_events_attendance tea
 INNER JOIN student s
-  ON b.student_id = s.id
-INNER JOIN team_events_attendance tea
-  ON b.student_id = tea.student_id
-  AND tea.event_schedule_id = $1
-WHERE b.event_id = $2
-  AND b.txn_status = 'SUCCESS'
+  ON tea.student_id = s.id
+WHERE tea.event_schedule_id = $1
 `
 
-type FetchParticipantsByTeamEventQueryParams struct {
-	EventScheduleID uuid.UUID `json:"event_schedule_id"`
-	EventID         uuid.UUID `json:"event_id"`
-}
-
 type FetchParticipantsByTeamEventQueryRow struct {
+	AttendanceID uuid.UUID        `json:"attendance_id"`
 	StudentID    uuid.UUID        `json:"student_id"`
 	StudentName  string           `json:"student_name"`
 	StudentEmail string           `json:"student_email"`
-	AttendanceID uuid.UUID        `json:"attendance_id"`
 	CheckIn      pgtype.Timestamp `json:"check_in"`
 	CheckOut     pgtype.Timestamp `json:"check_out"`
 }
 
-func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX, arg FetchParticipantsByTeamEventQueryParams) ([]FetchParticipantsByTeamEventQueryRow, error) {
-	rows, err := db.Query(ctx, fetchParticipantsByTeamEventQuery, arg.EventScheduleID, arg.EventID)
+func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX, eventScheduleID uuid.UUID) ([]FetchParticipantsByTeamEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsByTeamEventQuery, eventScheduleID)
 	if err != nil {
 		return nil, err
 	}
@@ -267,10 +247,10 @@ func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX
 	for rows.Next() {
 		var i FetchParticipantsByTeamEventQueryRow
 		if err := rows.Scan(
+			&i.AttendanceID,
 			&i.StudentID,
 			&i.StudentName,
 			&i.StudentEmail,
-			&i.AttendanceID,
 			&i.CheckIn,
 			&i.CheckOut,
 		); err != nil {
