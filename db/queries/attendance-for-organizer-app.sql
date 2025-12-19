@@ -87,15 +87,22 @@ SELECT
     ON e.id = es.event_id
   WHERE event_to_organizer_mapping.organizer_id = $1;
 
--- name: FetchParticipantsByEventQuery :many
+-- name: FetchParticipantsBySoloEventQuery :many
 SELECT
   b.student_id AS student_id,
   s.name AS student_name,
-  s.email AS student_email
+  s.email AS student_email,
+  sep.id AS attendance_id,
+  sep.check_in AS check_in,
+  sep.check_out AS check_out
 FROM bookings b
 INNER JOIN student s
   ON b.student_id = s.id
-WHERE b.event_id = $1;
+INNER JOIN solo_event_participant sep
+  ON b.student_id = sep.student_id
+  AND sep.event_schedule_id = $1
+WHERE b.event_id = $2
+  AND b.txn_status = 'SUCCESS';
 
 -- name: MarkSoloCheckInQuery :execrows
 UPDATE solo_event_participant

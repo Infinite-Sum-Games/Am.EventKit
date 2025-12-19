@@ -166,33 +166,55 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 	return items, nil
 }
 
-const fetchParticipantsByEventQuery = `-- name: FetchParticipantsByEventQuery :many
+const fetchParticipantsBySoloEventQuery = `-- name: FetchParticipantsBySoloEventQuery :many
 SELECT
   b.student_id AS student_id,
   s.name AS student_name,
-  s.email AS student_email
+  s.email AS student_email,
+  sep.id AS attendance_id,
+  sep.check_in AS check_in,
+  sep.check_out AS check_out
 FROM bookings b
 INNER JOIN student s
   ON b.student_id = s.id
-WHERE b.event_id = $1
+INNER JOIN solo_event_participant sep
+  ON b.student_id = sep.student_id
+  AND sep.event_schedule_id = $1
+WHERE b.event_id = $2
+  AND b.txn_status = 'SUCCESS'
 `
 
-type FetchParticipantsByEventQueryRow struct {
-	StudentID    uuid.UUID `json:"student_id"`
-	StudentName  string    `json:"student_name"`
-	StudentEmail string    `json:"student_email"`
+type FetchParticipantsBySoloEventQueryParams struct {
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+	EventID         uuid.UUID `json:"event_id"`
 }
 
-func (q *Queries) FetchParticipantsByEventQuery(ctx context.Context, db DBTX, eventID uuid.UUID) ([]FetchParticipantsByEventQueryRow, error) {
-	rows, err := db.Query(ctx, fetchParticipantsByEventQuery, eventID)
+type FetchParticipantsBySoloEventQueryRow struct {
+	StudentID    uuid.UUID        `json:"student_id"`
+	StudentName  string           `json:"student_name"`
+	StudentEmail string           `json:"student_email"`
+	AttendanceID int32            `json:"attendance_id"`
+	CheckIn      pgtype.Timestamp `json:"check_in"`
+	CheckOut     pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX, arg FetchParticipantsBySoloEventQueryParams) ([]FetchParticipantsBySoloEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsBySoloEventQuery, arg.EventScheduleID, arg.EventID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchParticipantsByEventQueryRow
+	var items []FetchParticipantsBySoloEventQueryRow
 	for rows.Next() {
-		var i FetchParticipantsByEventQueryRow
-		if err := rows.Scan(&i.StudentID, &i.StudentName, &i.StudentEmail); err != nil {
+		var i FetchParticipantsBySoloEventQueryRow
+		if err := rows.Scan(
+			&i.StudentID,
+			&i.StudentName,
+			&i.StudentEmail,
+			&i.AttendanceID,
+			&i.CheckIn,
+			&i.CheckOut,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
