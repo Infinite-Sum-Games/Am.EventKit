@@ -919,7 +919,7 @@ func SeedSoloEventParticipant(conn *pgx.Conn) error {
 	}
 
 	// 3.Fetch events
-	events, err := q.ViewEventSeedQuery(ctx, conn)
+	events, err := q.ViewSoloEventSeedQuery(ctx, conn)
 	if err != nil {
 		pkg.Log.Error("Error listing events: %v\n", err)
 		return err
@@ -989,7 +989,7 @@ func SeedTeamEventsAttendance(conn *pgx.Conn) error {
 	}
 
 	// 3. Fetch events schedules
-	eventSchedules, err := q.ViewEventScheduleSeedQuery(ctx, conn)
+	eventSchedules, err := q.ViewTeamEventScheduleSeedQuery(ctx, conn)
 	if err != nil {
 		pkg.Log.Error("Error listing event schedules: %v\n", err)
 		return err

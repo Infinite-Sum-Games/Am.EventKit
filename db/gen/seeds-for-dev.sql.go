@@ -828,6 +828,78 @@ func (q *Queries) ViewSoloEventParticipantQuery(ctx context.Context, db DBTX) ([
 	return items, nil
 }
 
+const viewSoloEventSeedQuery = `-- name: ViewSoloEventSeedQuery :many
+SELECT 
+  id, 
+  name, 
+  blurb, 
+  description, 
+  price, 
+  is_per_head, 
+  rules, 
+  event_type, 
+  is_group, 
+  total_seats, 
+  seats_filled, 
+  event_status, 
+  event_mode, 
+  attendance_mode
+FROM event
+where is_group = false
+`
+
+type ViewSoloEventSeedQueryRow struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	Blurb          string             `json:"blurb"`
+	Description    string             `json:"description"`
+	Price          int32              `json:"price"`
+	IsPerHead      bool               `json:"is_per_head"`
+	Rules          string             `json:"rules"`
+	EventType      EventTypeEnum      `json:"event_type"`
+	IsGroup        bool               `json:"is_group"`
+	TotalSeats     int32              `json:"total_seats"`
+	SeatsFilled    int32              `json:"seats_filled"`
+	EventStatus    EventStatusEnum    `json:"event_status"`
+	EventMode      EventModeEnum      `json:"event_mode"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+}
+
+func (q *Queries) ViewSoloEventSeedQuery(ctx context.Context, db DBTX) ([]ViewSoloEventSeedQueryRow, error) {
+	rows, err := db.Query(ctx, viewSoloEventSeedQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ViewSoloEventSeedQueryRow
+	for rows.Next() {
+		var i ViewSoloEventSeedQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Blurb,
+			&i.Description,
+			&i.Price,
+			&i.IsPerHead,
+			&i.Rules,
+			&i.EventType,
+			&i.IsGroup,
+			&i.TotalSeats,
+			&i.SeatsFilled,
+			&i.EventStatus,
+			&i.EventMode,
+			&i.AttendanceMode,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const viewStudentSeedQuery = `-- name: ViewStudentSeedQuery :many
 SELECT
   id, 
@@ -893,6 +965,55 @@ func (q *Queries) ViewTagSeedQuery(ctx context.Context, db DBTX) ([]Tag, error) 
 	for rows.Next() {
 		var i Tag
 		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const viewTeamEventScheduleSeedQuery = `-- name: ViewTeamEventScheduleSeedQuery :many
+SELECT 
+  id, 
+  event_id, 
+  event_date, 
+  start_time, 
+  end_time, 
+  venue
+FROM event_schedule
+where event_id IN
+(SELECT id FROM event where is_group = true)
+`
+
+type ViewTeamEventScheduleSeedQueryRow struct {
+	ID        uuid.UUID        `json:"id"`
+	EventID   uuid.UUID        `json:"event_id"`
+	EventDate pgtype.Date      `json:"event_date"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+	Venue     string           `json:"venue"`
+}
+
+func (q *Queries) ViewTeamEventScheduleSeedQuery(ctx context.Context, db DBTX) ([]ViewTeamEventScheduleSeedQueryRow, error) {
+	rows, err := db.Query(ctx, viewTeamEventScheduleSeedQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ViewTeamEventScheduleSeedQueryRow
+	for rows.Next() {
+		var i ViewTeamEventScheduleSeedQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.EventDate,
+			&i.StartTime,
+			&i.EndTime,
+			&i.Venue,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
