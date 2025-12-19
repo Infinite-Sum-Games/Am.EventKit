@@ -6,7 +6,7 @@ import (
 
 func AttendanceRoutes(r *gin.RouterGroup) {
 	r.GET("/list/event", FetchEventsByOrganizer)
-	r.GET("/list/:eventId", FetchParticipantsByEvent)
+	r.GET("/list/:eventId/:scheduleId", FetchParticipantsByEvent)
 	r.POST("/solo/mark/:key/:studentId/:scheduleId", MarkSoloCheckInOutBoth)
 	r.POST("/team/mark/:key/:studentId/:scheduleId", MarkTeamCheckInOutBoth)
 	r.DELETE("/solo/unMark/:key/:studentId/:scheduleId", UnMarkSoloCheckInOutBoth)

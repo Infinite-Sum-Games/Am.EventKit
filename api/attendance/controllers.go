@@ -52,9 +52,14 @@ func FetchEventsByOrganizer(c *gin.Context) {
 func FetchParticipantsByEvent(c *gin.Context) {
 
 	eventIdStr := c.Param("eventId")
+	scheduleIdStr := c.Param("scheduleId")
 
 	eventId, ok := pkg.GrabUuid(c, eventIdStr, "ATTENDANCE", "eventId")
+	if !ok {
+		return
+	}
 
+	scheduleId, ok := pkg.GrabUuid(c, scheduleIdStr, "ATTENDANCE", "scheduleId")
 	if !ok {
 		return
 	}
@@ -70,20 +75,48 @@ func FetchParticipantsByEvent(c *gin.Context) {
 
 	q := db.New()
 
-	participants, err := q.FetchParticipantsByEventQuery(ctx, conn, eventId)
+	event, err := q.GetEventByIdQuery(ctx, conn, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to fetch events by organizer ID", err)
+		pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to fetch event by ID", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":      "Participants list fetched successfully",
-		"participants": participants,
-	})
-	pkg.Log.SuccessCtx(c)
+	if event.IsGroup {
+		participants, err := q.FetchParticipantsByTeamEventQuery(ctx, conn, scheduleId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to fetch event participants", err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":      "Participants list fetched successfully",
+			"participants": participants,
+		})
+		pkg.Log.SuccessCtx(c)
+		return
+	} else {
+		participants, err := q.FetchParticipantsBySoloEventQuery(ctx, conn, scheduleId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[ATTENDANCE-ERROR]: Failed to fetch solo event participants", err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":      "Participants list fetched successfully",
+			"participants": participants,
+		})
+		pkg.Log.SuccessCtx(c)
+		return
+	}
 }
 
 func MarkSoloCheckInOutBoth(c *gin.Context) {

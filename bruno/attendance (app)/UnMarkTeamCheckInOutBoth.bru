@@ -4,12 +4,19 @@ meta {
   seq: 12
 }
 
-get {
-  url: 
+delete {
+  url: {{baseUrl}}/attendance/team/unMark/:key/:studentId/:scheduleId
   body: none
   auth: inherit
 }
 
+params:path {
+  key: BOTH
+  studentId: 5c23c181-ae3e-41f6-a3fd-198700c9f8e1
+  scheduleId: 0201ba1d-ffba-4168-8545-5cbebe1ebb3f
+}
+
 settings {
   encodeUrl: true
+  timeout: 0
 }
