@@ -61,13 +61,7 @@ func VerifyTransaction(c *gin.Context) {
 			"status":  booking.TxnStatus,
 		})
 		pkg.Log.SuccessCtx(c)
-
-		// TODO: This commit is not necessary, we can use one connection instead of a transaction here
-		err = tx.Commit(ctx)
-		pkg.HandleDbTxnCommitErr(c, err, "VERIFY")
-		if !ok {
-			return
-		}
+		return
 	}
 
 	// TODO: Call the PayU verify API here.
