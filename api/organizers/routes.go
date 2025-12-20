@@ -12,3 +12,8 @@ func OrganizerRoutes(r *gin.RouterGroup) {
 	r.PUT("/password/:organizerId", mw.Auth, mw.CheckAdmin, ChangeOrganizerPassword)
 	r.DELETE("/:organizerId", mw.Auth, mw.CheckAdmin, DeleteOrganizer)
 }
+
+func OrganizerDashboardRoutes(r *gin.RouterGroup) {
+	r.GET("/dashboard", mw.Auth, mw.CheckOrganizer, GetOrganizerEvents)
+	r.GET("/dashboard/:eventId", mw.Auth, mw.CheckOrganizer, GetOrganizerEventParticipantList)
+}

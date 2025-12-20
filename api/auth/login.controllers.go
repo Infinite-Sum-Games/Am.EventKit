@@ -140,24 +140,6 @@ func LoginUser(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func LoginOrganizerCsrf(c *gin.Context) {
-	csrfToken, err := pkg.CreateCsrfToken("login.organizer@amrita.edu", c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		return
-	}
-
-	pkg.SetCsrfCookie(c, csrfToken)
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Organizer login action initiated successfully",
-		"key":     csrfToken,
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func LoginOrganizer(c *gin.Context) {
 	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
 	if !ok {

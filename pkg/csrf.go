@@ -12,7 +12,6 @@ var CsrfRoutes = map[string]string{
 	"/api/v1/auth/user/login":                      "user.login",
 	"/api/v1/auth/user/register":                   "user.register",
 	"/api/v1/auth/user/register/otp/verify":        "user.otp_verify",
-	"/api/v1/auth/organizer/login":                 "organizer.login",
 	"/api/v1/auth/user/forgot-password":            "user.forgot_password",
 	"/api/v1/auth/user/forgot-password/otp/verify": "user.forgot_password_otp",
 	"/api/v1/user/profile/edit":                    "user.edit_profile",

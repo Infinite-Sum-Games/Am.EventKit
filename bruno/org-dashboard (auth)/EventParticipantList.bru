@@ -1,0 +1,20 @@
+meta {
+  name: EventParticipantList
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/organizers/dashboard/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 66f7540c-5d13-46c2-8cf0-8f79e927c7ef
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
