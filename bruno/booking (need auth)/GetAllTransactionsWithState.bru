@@ -1,0 +1,20 @@
+meta {
+  name: GetAllTransactionsWithState
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/events/transactions?status=FAILED
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: FAILED
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

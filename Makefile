@@ -3,6 +3,7 @@ ifneq (,$(wildcard .env))
     export $(shell sed 's/=.*//' .env)
 endif
 
+ENVIRONMENT := "DEVELOPMENT2"
 DB_URL := "postgresql://postgres:1234@localhost:5432/postgres"
 GO_BIN := $(shell go env GOPATH)/bin
 GOOSE_DRIVER := postgres
@@ -41,7 +42,11 @@ upone:
 	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up-by-one
 
 seed: build
-	@go run seed/seed.go seed/truncate.go seed/main.go -s
+	@if [ "$(subst ",,$(ENVIRONMENT))" = "DEVELOPMENT" ]; then \
+		go run seed/seed.go seed/truncate.go seed/main.go -s; \
+	else \
+		echo "Skipping seed: not in DEVELOPMENT environment."; \
+	fi
 
 down:
 	@goose -dir $(GOOSE_MIGRATION_DIR) $(GOOSE_DRIVER) $(GOOSE_DBSTRING) reset

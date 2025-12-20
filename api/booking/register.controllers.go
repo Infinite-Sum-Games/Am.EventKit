@@ -64,14 +64,14 @@ func BookEvent(c *gin.Context) {
 
 	// Get event details
 	event, err := q.GetEventForBooking(ctx, tx, eventId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Event not found",
+		})
+		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Booking request sent for invalid event", nil)
+		return
+	}
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Event not found",
-			})
-			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Booking request sent for invalid event", nil)
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
@@ -102,19 +102,17 @@ func BookEvent(c *gin.Context) {
 		if !ok {
 			return
 		}
-		// Creating the group list
+
+		// Creating the group list and check for duplicates
 		for _, m := range req.TeamMembers {
 			allMembers = append(allMembers, m.StudentEmail)
-		}
-
-		// Checking if duplicate emails are present in team details
-		for _, email := range allMembers {
-			emailCount[email]++
-			if emailCount[email] > 1 {
+			emailCount[m.StudentEmail]++
+			if emailCount[m.StudentEmail] > 1 {
 				hasDuplicates = true
 				break
 			}
 		}
+
 		if hasDuplicates {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Duplicate team members found",
@@ -122,6 +120,7 @@ func BookEvent(c *gin.Context) {
 			pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Duplicate team details found", err)
 			return
 		}
+
 		// Validating team size
 		lesser := len(allMembers) < int(event.MinTeamsize.Int32)
 		greater := len(allMembers) > int(event.MaxTeamsize.Int32)
@@ -164,12 +163,11 @@ func BookEvent(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Unable to get student/member detail from email", err)
 		return
 	}
+
 	studentMap := make(map[uuid.UUID]db.Student)
-	for _, s := range students {
-		studentMap[s.ID] = s
-	}
 	emailToId := make(map[string]uuid.UUID)
 	for _, s := range students {
+		studentMap[s.ID] = s
 		emailToId[s.Email] = s.ID
 	}
 
@@ -460,7 +458,6 @@ func BookEvent(c *gin.Context) {
 	}
 
 	// Generating the hash
-	// TODO: Check salt
 	hashedData := pkg.GenerateSHA512Hash(
 		txnId,
 		leaderEmail,

@@ -95,7 +95,6 @@ func NullifyCookies(c *gin.Context) {
 
 	email, exists := c.Get("email")
 	if !exists {
-		Log.WarnCtx(c, "[AUTH-ERROR]: No email in gin.Context, failed to revoke Refresh-Token in DB")
 		return
 	}
 	RevokeRefreshToken(c, email.(string))
