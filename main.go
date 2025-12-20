@@ -80,6 +80,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiAttend.AttendanceRoutes(attendanceRouter)
 	apiPeople.PeopleRoutes(peopleRouter)
 	apiOrganizers.OrganizerRoutes(organizerRouter)
+	apiOrganizers.OrganizerDashboardRoutes(organizerRouter)
 	apiBooking.BookingRoutes(eventRouter)
 	apiAnalytics.AnalyticsRoutes(analyticsRouter)
 
