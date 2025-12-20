@@ -50,7 +50,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	r.Use(pkg.Log.LogMiddleware)
 	r.Use(pkg.TagRequestWithId)
 	r.Use(mw.RecoveryPanics)
-	// r.Use(mw.PrometheusMiddleware("anokha-26"))
+	r.Use(mw.PrometheusMiddleware("anokha-26"))
 
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -58,6 +58,8 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 		})
 		pkg.Log.SuccessCtx(c)
 	})
+
+	r.GET("/metrics", mw.MetricsHandler())
 
 	v1 := r.Group("/api/v1")
 	authRouter := v1.Group("/auth")

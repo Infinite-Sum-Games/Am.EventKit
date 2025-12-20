@@ -3,5 +3,6 @@ global:
 
 scrape_configs:
   - job_name: 'anokha-backend'
+    metrics_path: '/metrics'
     static_configs:
-      - targets: ['anokha-backend-host:9000']
+      - targets: ['localhost:8080']
