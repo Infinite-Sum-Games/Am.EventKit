@@ -7,6 +7,7 @@ import (
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +27,7 @@ import (
 // txn_status
 func FetchAdminTransactions(c *gin.Context) {
 	txnType := c.Query("status")
-	if txnType != "PENDING" && txnType != "SUCCESS" && txnType != "FAILED" {
+	if txnType != models.PaymentFailed && txnType != models.PaymentPending && txnType != models.PaymentSuccess {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "No transaction status requested",
 		})
