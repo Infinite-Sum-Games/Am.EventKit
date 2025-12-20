@@ -13,16 +13,18 @@ import (
 
 const fetchAdminTransactionsQuery = `-- name: FetchAdminTransactionsQuery :many
 SELECT
-  b.txn_id as transaction_id,
-  e.id as event_id,
-  e.name as event_name,
-  s.name as student_name,
-  s.email as email,
-  s.phone_number as student_phone_number,
+  b.txn_id AS transaction_id,
+  e.id AS event_id,
+  e.name AS event_name,
+  s.name AS student_name,
+  e.is_group AS is_group,
+  s.email AS email,
+  s.phone_number AS student_phone_number,
   s.college_name,
   s.college_city,
   s.is_amrita_student,
-  b.txn_status
+  b.txn_status,
+  b.registration_fee
 
 FROM bookings b
 
@@ -39,12 +41,14 @@ type FetchAdminTransactionsQueryRow struct {
 	EventID            pgtype.UUID `json:"event_id"`
 	EventName          pgtype.Text `json:"event_name"`
 	StudentName        pgtype.Text `json:"student_name"`
+	IsGroup            pgtype.Bool `json:"is_group"`
 	Email              pgtype.Text `json:"email"`
 	StudentPhoneNumber pgtype.Text `json:"student_phone_number"`
 	CollegeName        pgtype.Text `json:"college_name"`
 	CollegeCity        pgtype.Text `json:"college_city"`
 	IsAmritaStudent    pgtype.Bool `json:"is_amrita_student"`
 	TxnStatus          string      `json:"txn_status"`
+	RegistrationFee    int32       `json:"registration_fee"`
 }
 
 func (q *Queries) FetchAdminTransactionsQuery(ctx context.Context, db DBTX, txnStatus string) ([]FetchAdminTransactionsQueryRow, error) {
@@ -61,12 +65,14 @@ func (q *Queries) FetchAdminTransactionsQuery(ctx context.Context, db DBTX, txnS
 			&i.EventID,
 			&i.EventName,
 			&i.StudentName,
+			&i.IsGroup,
 			&i.Email,
 			&i.StudentPhoneNumber,
 			&i.CollegeName,
 			&i.CollegeCity,
 			&i.IsAmritaStudent,
 			&i.TxnStatus,
+			&i.RegistrationFee,
 		); err != nil {
 			return nil, err
 		}

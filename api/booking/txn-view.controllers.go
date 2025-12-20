@@ -22,6 +22,7 @@ import (
 // college_name,
 // college_city,
 // is_amrita_student,
+// is_group
 // txn_status
 func FetchAdminTransactions(c *gin.Context) {
 	txnType := c.Query("status")
