@@ -14,5 +14,5 @@ func BookingRoutes(r *gin.RouterGroup) {
 	r.POST("/verify", mw.Auth, VerifyTransaction)
 
 	// Fetch transactions
-	r.GET("/transactions", FetchAdminTransactions)
+	r.GET("/transactions", mw.Auth, mw.CheckAdmin, FetchAdminTransactions)
 }
