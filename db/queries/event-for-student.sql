@@ -14,6 +14,12 @@ SELECT
       array_agg(DISTINCT t.abbreviation) FILTER (WHERE t.id IS NOT NULL)
     ) AS tags,
 
+    COALESCE(
+      array_agg(DISTINCT UPPER(SUBSTRING(o.email FROM 1 FOR (POSITION('@' IN o.email) - 1)))) 
+      FILTER (WHERE o.id IS NOT NULL),
+      '{}'
+    ) AS organizers,
+
     e.price AS event_price,
     (e.seats_filled = e.total_seats) AS is_full
 
@@ -22,10 +28,10 @@ FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN event_to_organizer_mapping etom on e.id = etom.event_id
+LEFT JOIN organizer o ON etom.organizer_id = o.id
 
-WHERE
-  e.event_status = 'ACTIVE' 
-  OR e.event_status = 'COMPLETED'
+WHERE e.event_status IN ('ACTIVE', 'COMPLETED')
 
 GROUP BY e.id;
 
@@ -111,6 +117,12 @@ SELECT
         '[]'::jsonb
     ) AS tags,
 
+    COALESCE(
+      array_agg(DISTINCT UPPER(SUBSTRING(o.email FROM 1 FOR (POSITION('@' IN o.email) - 1)))) 
+      FILTER (WHERE o.id IS NOT NULL),
+      '{}'
+    ) AS organizers,
+
     e.price AS event_price,
     (e.seats_filled = e.total_seats) AS is_full,
 
@@ -146,6 +158,8 @@ FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
 LEFT JOIN event_tag_mapping etm ON e.id = etm.event_id
 LEFT JOIN tags t ON etm.tag_id = t.id
+LEFT JOIN event_to_organizer_mapping etom on e.id = etom.event_id
+LEFT JOIN organizer o ON etom.organizer_id = o.id
 
 WHERE e.event_status IN ('ACTIVE', 'COMPLETED')
 
