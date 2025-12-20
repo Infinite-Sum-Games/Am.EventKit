@@ -1,0 +1,16 @@
+meta {
+  name: GetAllTransactionsWithState
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
