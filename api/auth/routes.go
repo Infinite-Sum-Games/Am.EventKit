@@ -29,6 +29,7 @@ func StudentAuthRoutes(r *gin.RouterGroup) {
 func OrganizerAuthRoutes(r *gin.RouterGroup) {
 	r.POST("/organizer/login", LoginOrganizer)
 	r.GET("/organizer/logout", mw.Auth, mw.CheckOrganizer, Logout)
+	r.GET("/organizer/session", mw.Auth, mw.CheckOrganizer, FetchOrganizerSession)
 }
 
 func AdminAuthRoutes(r *gin.RouterGroup) {
