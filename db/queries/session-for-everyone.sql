@@ -17,3 +17,13 @@ FROM
   admin
 WHERE
   email = $1;
+
+-- name: FetchOrganizerSessionQuery :one
+SELECT
+  id,
+  name,
+  email
+FROM
+  organizer
+WHERE
+  email = $1;
