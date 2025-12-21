@@ -29,8 +29,8 @@ func (e TeamBookingRequest) Validate() error {
 		v.Field(&e.TeamName, v.Required, v.Length(2, 100)),
 		v.Field(&e.TeamMembers,
 			v.Required,
-			v.Length(1, 100),
-			v.Each(v.By(func(value interface{}) error {
+			v.Length(0, 100),
+			v.Each(v.By(func(value any) error {
 				if tm, ok := value.(TeamMember); ok {
 					return tm.Validate()
 				}
