@@ -15,5 +15,5 @@ func OrganizerRoutes(r *gin.RouterGroup) {
 
 func OrganizerDashboardRoutes(r *gin.RouterGroup) {
 	r.GET("/dashboard", mw.Auth, mw.CheckOrganizer, GetOrganizerEvents)
-	r.GET("/dashboard/:eventId", mw.Auth, mw.CheckOrganizer, GetOrganizerEventParticipantList)
+	r.GET("/dashboard/:eventId", mw.Auth, mw.CheckOrgAndAdmin, GetOrganizerEventParticipantList)
 }
