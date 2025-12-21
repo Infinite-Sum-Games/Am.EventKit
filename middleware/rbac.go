@@ -35,3 +35,13 @@ func CheckOrganizer(c *gin.Context) {
 		"message": "Access denied.",
 	})
 }
+
+func CheckOrgAndAdmin(c *gin.Context) {
+	if c.GetBool("ADMIN-ROLE") || c.GetBool("ORGANIZER-ROLE") {
+		c.Next()
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"message": "Admin denied.",
+	})
+}
