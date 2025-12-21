@@ -1,0 +1,22 @@
+meta {
+  name: MarkSoloCheckInOutBoth
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/attendance/solo/mark/:key/:studentId/:scheduleId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  studentId: 
+  scheduleId: 
+  key: BOTH
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

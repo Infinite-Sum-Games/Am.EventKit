@@ -1,3 +1,71 @@
+-- name: SeedTeamEventsAttendanceQuery :exec
+INSERT INTO team_events_attendance(
+  student_id,
+  event_schedule_id
+) VALUES($1, $2);
+
+-- name: ViewTeamEventsAttendanceQuery :many
+SELECT 
+  id,
+  student_id,
+  event_schedule_id,
+  check_in,
+  check_out
+FROM team_events_attendance;
+
+-- name: SeedSoloEventParticipantQuery :exec
+INSERT INTO solo_event_participant(
+  student_id,
+  event_id,
+  event_schedule_id,
+  booking_id,
+  student_name,
+  student_email
+) VALUES($1, $2, $3, $4, $5, $6);
+
+-- name: ViewSoloEventParticipantQuery :many
+SELECT 
+  id,
+  student_id,
+  event_id,
+  event_schedule_id,
+  booking_id,
+  student_name,
+  student_email
+  FROM solo_event_participant;
+
+-- name: ViewSoloEventSeedQuery :many
+SELECT 
+  id, 
+  name, 
+  blurb, 
+  description, 
+  price, 
+  is_per_head, 
+  rules, 
+  event_type, 
+  is_group, 
+  total_seats, 
+  seats_filled, 
+  event_status, 
+  event_mode, 
+  attendance_mode
+FROM event
+where is_group = false;
+
+-- name: ViewTeamEventScheduleSeedQuery :many
+SELECT 
+  id, 
+  event_id, 
+  event_date, 
+  start_time, 
+  end_time, 
+  venue
+FROM event_schedule
+where event_id IN
+(SELECT id FROM event where is_group = true);
+
+
 -- name: SeedBookingsQuery :exec
 INSERT INTO bookings(
   txn_id ,

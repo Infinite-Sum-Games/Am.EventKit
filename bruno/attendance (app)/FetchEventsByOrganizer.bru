@@ -1,11 +1,11 @@
 meta {
-  name: UnmarkCheckOut
+  name: FetchEventsByOrganizer
   type: http
-  seq: 5
+  seq: 2
 }
 
-delete {
-  url: 
+get {
+  url: {{baseUrl}}/attendance/list/event
   body: none
   auth: inherit
 }

@@ -1,0 +1,22 @@
+meta {
+  name: UnMarkSoloCheckInOutBoth
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/attendance/solo/unMark/:key/:studentId/:scheduleId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  key: BOTH
+  studentId: b52dc5b1-b0f1-4211-9b95-827da5f11621
+  scheduleId: d49b8f30-e826-4d50-a41a-0b76400825d1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

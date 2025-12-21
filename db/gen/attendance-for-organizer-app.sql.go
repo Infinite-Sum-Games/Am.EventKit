@@ -114,6 +114,156 @@ func (q *Queries) CreateTeamAttendance(ctx context.Context, db DBTX, arg CreateT
 	return id, err
 }
 
+const fetchEventsByOrganizerQuery = `-- name: FetchEventsByOrganizerQuery :many
+SELECT 
+  e.id AS event_id,
+  e.name AS event_name,
+  es.id AS event_schedule_id,
+  es.event_date AS event_date,
+  es.start_time AS start_time,
+  es.end_time AS end_time
+  FROM event_to_organizer_mapping 
+  INNER JOIN event e 
+    ON event_to_organizer_mapping.event_id = e.id
+  INNER JOIN event_schedule es
+    ON e.id = es.event_id
+  WHERE event_to_organizer_mapping.organizer_id = $1
+`
+
+type FetchEventsByOrganizerQueryRow struct {
+	EventID         uuid.UUID        `json:"event_id"`
+	EventName       string           `json:"event_name"`
+	EventScheduleID uuid.UUID        `json:"event_schedule_id"`
+	EventDate       pgtype.Date      `json:"event_date"`
+	StartTime       pgtype.Timestamp `json:"start_time"`
+	EndTime         pgtype.Timestamp `json:"end_time"`
+}
+
+func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, organizerID uuid.UUID) ([]FetchEventsByOrganizerQueryRow, error) {
+	rows, err := db.Query(ctx, fetchEventsByOrganizerQuery, organizerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchEventsByOrganizerQueryRow
+	for rows.Next() {
+		var i FetchEventsByOrganizerQueryRow
+		if err := rows.Scan(
+			&i.EventID,
+			&i.EventName,
+			&i.EventScheduleID,
+			&i.EventDate,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const fetchParticipantsBySoloEventQuery = `-- name: FetchParticipantsBySoloEventQuery :many
+SELECT
+  sep.id AS attendance_id,
+  sep.student_id AS student_id,
+  sep.student_name AS student_name,
+  sep.student_email AS student_email,
+  sep.check_in AS check_in,
+  sep.check_out AS check_out
+FROM solo_event_participant sep
+WHERE sep.event_schedule_id = $1
+`
+
+type FetchParticipantsBySoloEventQueryRow struct {
+	AttendanceID int32            `json:"attendance_id"`
+	StudentID    uuid.UUID        `json:"student_id"`
+	StudentName  string           `json:"student_name"`
+	StudentEmail string           `json:"student_email"`
+	CheckIn      pgtype.Timestamp `json:"check_in"`
+	CheckOut     pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX, eventScheduleID uuid.UUID) ([]FetchParticipantsBySoloEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsBySoloEventQuery, eventScheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchParticipantsBySoloEventQueryRow
+	for rows.Next() {
+		var i FetchParticipantsBySoloEventQueryRow
+		if err := rows.Scan(
+			&i.AttendanceID,
+			&i.StudentID,
+			&i.StudentName,
+			&i.StudentEmail,
+			&i.CheckIn,
+			&i.CheckOut,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const fetchParticipantsByTeamEventQuery = `-- name: FetchParticipantsByTeamEventQuery :many
+SELECT
+  tea.id AS attendance_id,
+  tea.student_id AS student_id,
+  s.name AS student_name,
+  s.email AS student_email,
+  tea.check_in AS check_in,
+  tea.check_out AS check_out
+FROM team_events_attendance tea
+INNER JOIN student s
+  ON tea.student_id = s.id
+WHERE tea.event_schedule_id = $1
+`
+
+type FetchParticipantsByTeamEventQueryRow struct {
+	AttendanceID uuid.UUID        `json:"attendance_id"`
+	StudentID    uuid.UUID        `json:"student_id"`
+	StudentName  string           `json:"student_name"`
+	StudentEmail string           `json:"student_email"`
+	CheckIn      pgtype.Timestamp `json:"check_in"`
+	CheckOut     pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX, eventScheduleID uuid.UUID) ([]FetchParticipantsByTeamEventQueryRow, error) {
+	rows, err := db.Query(ctx, fetchParticipantsByTeamEventQuery, eventScheduleID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchParticipantsByTeamEventQueryRow
+	for rows.Next() {
+		var i FetchParticipantsByTeamEventQueryRow
+		if err := rows.Scan(
+			&i.AttendanceID,
+			&i.StudentID,
+			&i.StudentName,
+			&i.StudentEmail,
+			&i.CheckIn,
+			&i.CheckOut,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAttendanceRecord = `-- name: GetAttendanceRecord :one
 SELECT
     id,
@@ -151,140 +301,6 @@ func (q *Queries) GetAttendanceRecord(ctx context.Context, db DBTX, arg GetAtten
 		&i.CheckOut,
 	)
 	return i, err
-}
-
-const getEventsByDateAndOrganizer = `-- name: GetEventsByDateAndOrganizer :many
-SELECT
-    e.id,
-    e.name AS event_name,
-    e.blurb,
-    e.description AS event_description,
-    e.cover_image_url,
-    e.price,
-    e.is_per_head,
-    e.rules,
-    e.event_type,
-    e.is_group,
-    e.max_teamsize,
-    e.min_teamsize,
-    e.total_seats,
-    e.seats_filled,
-    e.event_status,
-    e.event_mode,
-
-    COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'organizer_name', o.name,
-        'org_abbreviation', o.abbr,
-        'org_type', o.org_type
-      )) FILTER (WHERE o.id IS NOT NULL),
-      '[]'::jsonb
-    ) AS organizers,
-
-    COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'event_date', es.event_date,
-        'start_time', es.start_time,
-        'end_time', es.end_time,
-        'venue', es.venue
-      )) FILTER (WHERE es.id IS NOT NULL),
-      '[]'::jsonb
-    ) AS schedules,
-
-    COALESCE(
-      JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'tag_name', t.name,
-        'tag_abbreviation', t.abbreviation
-      )) FILTER (WHERE t.id IS NOT NULL),
-      '[]'::jsonb
-    ) AS tags
-
-FROM event e
-
-LEFT JOIN event_schedule es 
-  ON e.id = es.event_id
-LEFT JOIN event_to_organizer_mapping m 
-  ON e.id = m.event_id
-LEFT JOIN organizer o 
-  ON m.organizer_id = o.id
-LEFT JOIN event_tag_mapping etm 
-  ON e.id = etm.event_id
-LEFT JOIN tags t 
-  ON etm.tag_id = t.id
-
-WHERE 
-  es.event_date = $1
-  AND o.email = $2
-
-GROUP BY e.id
-ORDER BY es.start_time ASC
-`
-
-type GetEventsByDateAndOrganizerParams struct {
-	EventDate pgtype.Date `json:"event_date"`
-	Email     string      `json:"email"`
-}
-
-type GetEventsByDateAndOrganizerRow struct {
-	ID               uuid.UUID       `json:"id"`
-	EventName        string          `json:"event_name"`
-	Blurb            string          `json:"blurb"`
-	EventDescription string          `json:"event_description"`
-	CoverImageUrl    pgtype.Text     `json:"cover_image_url"`
-	Price            int32           `json:"price"`
-	IsPerHead        bool            `json:"is_per_head"`
-	Rules            string          `json:"rules"`
-	EventType        EventTypeEnum   `json:"event_type"`
-	IsGroup          bool            `json:"is_group"`
-	MaxTeamsize      pgtype.Int4     `json:"max_teamsize"`
-	MinTeamsize      pgtype.Int4     `json:"min_teamsize"`
-	TotalSeats       int32           `json:"total_seats"`
-	SeatsFilled      int32           `json:"seats_filled"`
-	EventStatus      EventStatusEnum `json:"event_status"`
-	EventMode        EventModeEnum   `json:"event_mode"`
-	Organizers       interface{}     `json:"organizers"`
-	Schedules        interface{}     `json:"schedules"`
-	Tags             interface{}     `json:"tags"`
-}
-
-func (q *Queries) GetEventsByDateAndOrganizer(ctx context.Context, db DBTX, arg GetEventsByDateAndOrganizerParams) ([]GetEventsByDateAndOrganizerRow, error) {
-	rows, err := db.Query(ctx, getEventsByDateAndOrganizer, arg.EventDate, arg.Email)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetEventsByDateAndOrganizerRow
-	for rows.Next() {
-		var i GetEventsByDateAndOrganizerRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.EventName,
-			&i.Blurb,
-			&i.EventDescription,
-			&i.CoverImageUrl,
-			&i.Price,
-			&i.IsPerHead,
-			&i.Rules,
-			&i.EventType,
-			&i.IsGroup,
-			&i.MaxTeamsize,
-			&i.MinTeamsize,
-			&i.TotalSeats,
-			&i.SeatsFilled,
-			&i.EventStatus,
-			&i.EventMode,
-			&i.Organizers,
-			&i.Schedules,
-			&i.Tags,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getScheduleById = `-- name: GetScheduleById :one
@@ -346,6 +362,82 @@ SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_n
 WHERE email = $1
 `
 
+// -- name: GetEventsByDateAndOrganizer :many
+// SELECT
+//
+//	e.id,
+//	e.name AS event_name,
+//	e.blurb,
+//	e.description AS event_description,
+//	e.cover_image_url,
+//	e.price,
+//	e.is_per_head,
+//	e.rules,
+//	e.event_type,
+//	e.is_group,
+//	e.max_teamsize,
+//	e.min_teamsize,
+//	e.total_seats,
+//	e.seats_filled,
+//	e.event_status,
+//	e.event_mode,
+//
+//	COALESCE(
+//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+//	    'organizer_name', o.name,
+//	    'org_abbreviation', o.abbr,
+//	    'org_type', o.org_type
+//	  )) FILTER (WHERE o.id IS NOT NULL),
+//	  '[]'::jsonb
+//	) AS organizers,
+//
+//	COALESCE(
+//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+//	    'event_date', es.event_date,
+//	    'start_time', es.start_time,
+//	    'end_time', es.end_time,
+//	    'venue', es.venue
+//	  )) FILTER (WHERE es.id IS NOT NULL),
+//	  '[]'::jsonb
+//	) AS schedules,
+//
+//	COALESCE(
+//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+//	    'tag_name', t.name,
+//	    'tag_abbreviation', t.abbreviation
+//	  )) FILTER (WHERE t.id IS NOT NULL),
+//	  '[]'::jsonb
+//	) AS tags
+//
+// # FROM event e
+//
+// LEFT JOIN event_schedule es
+//
+//	ON e.id = es.event_id
+//
+// LEFT JOIN event_to_organizer_mapping m
+//
+//	ON e.id = m.event_id
+//
+// LEFT JOIN organizer o
+//
+//	ON m.organizer_id = o.id
+//
+// LEFT JOIN event_tag_mapping etm
+//
+//	ON e.id = etm.event_id
+//
+// LEFT JOIN tags t
+//
+//	ON etm.tag_id = t.id
+//
+// WHERE
+//
+//	es.event_date = $1
+//	AND o.email = $2
+//
+// GROUP BY e.id
+// ORDER BY es.start_time ASC;
 func (q *Queries) GetStudentByEmail(ctx context.Context, db DBTX, email string) (Student, error) {
 	row := db.QueryRow(ctx, getStudentByEmail, email)
 	var i Student
@@ -459,6 +551,252 @@ func (q *Queries) InsertCheckIn(ctx context.Context, db DBTX, arg InsertCheckInP
 		&i.CheckOut,
 	)
 	return i, err
+}
+
+const markSoloBothQuery = `-- name: MarkSoloBothQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NOW(), 
+  check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type MarkSoloBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloBothQuery(ctx context.Context, db DBTX, arg MarkSoloBothQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markSoloBothQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markSoloCheckInQuery = `-- name: MarkSoloCheckInQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type MarkSoloCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloCheckInQuery(ctx context.Context, db DBTX, arg MarkSoloCheckInQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markSoloCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markSoloCheckOutQuery = `-- name: MarkSoloCheckOutQuery :execrows
+UPDATE solo_event_participant
+SET check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+  AND check_in IS NOT NULL
+`
+
+type MarkSoloCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkSoloCheckOutQuery(ctx context.Context, db DBTX, arg MarkSoloCheckOutQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markSoloCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markTeamBothQuery = `-- name: MarkTeamBothQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NOW(), 
+  check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type MarkTeamBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkTeamBothQuery(ctx context.Context, db DBTX, arg MarkTeamBothQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markTeamBothQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markTeamCheckInQuery = `-- name: MarkTeamCheckInQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type MarkTeamCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkTeamCheckInQuery(ctx context.Context, db DBTX, arg MarkTeamCheckInQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markTeamCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markTeamCheckOutQuery = `-- name: MarkTeamCheckOutQuery :execrows
+UPDATE team_events_attendance
+SET check_out = NOW()
+WHERE student_id = $1
+  AND event_schedule_id = $2
+  AND check_in IS NOT NULL
+`
+
+type MarkTeamCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) MarkTeamCheckOutQuery(ctx context.Context, db DBTX, arg MarkTeamCheckOutQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, markTeamCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkSoloBothQuery = `-- name: UnMarkSoloBothQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NULL, 
+  check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkSoloBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkSoloBothQuery(ctx context.Context, db DBTX, arg UnMarkSoloBothQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkSoloBothQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkSoloCheckInQuery = `-- name: UnMarkSoloCheckInQuery :execrows
+UPDATE solo_event_participant
+SET check_in = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkSoloCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkSoloCheckInQuery(ctx context.Context, db DBTX, arg UnMarkSoloCheckInQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkSoloCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkSoloCheckOutQuery = `-- name: UnMarkSoloCheckOutQuery :execrows
+UPDATE solo_event_participant
+SET check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkSoloCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkSoloCheckOutQuery(ctx context.Context, db DBTX, arg UnMarkSoloCheckOutQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkSoloCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkTeamBothQuery = `-- name: UnMarkTeamBothQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL, 
+  check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamBothQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamBothQuery(ctx context.Context, db DBTX, arg UnMarkTeamBothQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamBothQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkTeamCheckInQuery = `-- name: UnMarkTeamCheckInQuery :execrows
+UPDATE team_events_attendance
+SET check_in = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamCheckInQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamCheckInQuery(ctx context.Context, db DBTX, arg UnMarkTeamCheckInQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamCheckInQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const unMarkTeamCheckOutQuery = `-- name: UnMarkTeamCheckOutQuery :execrows
+UPDATE team_events_attendance
+SET check_out = NULL
+WHERE student_id = $1
+  AND event_schedule_id = $2
+`
+
+type UnMarkTeamCheckOutQueryParams struct {
+	StudentID       uuid.UUID `json:"student_id"`
+	EventScheduleID uuid.UUID `json:"event_schedule_id"`
+}
+
+func (q *Queries) UnMarkTeamCheckOutQuery(ctx context.Context, db DBTX, arg UnMarkTeamCheckOutQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, unMarkTeamCheckOutQuery, arg.StudentID, arg.EventScheduleID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const updateCheckOut = `-- name: UpdateCheckOut :one

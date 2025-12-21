@@ -1,0 +1,22 @@
+meta {
+  name: MarkTeamCheckInOutBoth
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/attendance/team/mark/:key/:studentId/:scheduleId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  key: OUT
+  studentId: 9aa5ef4b-0257-4a0f-afdc-56c7adb3cfca
+  scheduleId: 48522356-7351-4b61-ad35-be52abe92194
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
