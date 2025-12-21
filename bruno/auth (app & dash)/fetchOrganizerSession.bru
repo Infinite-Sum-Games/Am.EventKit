@@ -1,0 +1,16 @@
+meta {
+  name: fetchOrganizerSession
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/auth/organizer/session
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
