@@ -23,9 +23,15 @@ SELECT
     s.college_city as city,
     s.email,
     s.is_amrita_student
-FROM solo_event_participant sep
-JOIN student s ON sep.student_id = s.id
-WHERE sep.event_id = $1;
+FROM student s
+LEFT JOIN solo_event_participant sep ON sep.student_id = s.id
+WHERE sep.event_id = $1
+GROUP BY 
+  s.name,
+  s.college_name,
+  s.college_city,
+  s.email,
+  s.is_amrita_student;
 
 
 -- name: GetOrganizerGroupEventParticipantListQuery :many
