@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
@@ -15,7 +14,6 @@ import (
 // which implicitly means, we should not have more than 4 or 5 workers
 type Mailer struct {
 	dialer *gomail.Dialer
-	sender gomail.SendCloser
 }
 
 func NewMailer() *Mailer {
@@ -38,13 +36,19 @@ type EmailRequest struct {
 	Subject string   `json:"subject"`
 	Type    string   `json:"type"` // "otp" | "welcome" | "event-reg"
 	Data    any      `json:"data"`
+	Retries int
 }
 
 // function to send mail from to SMTP server
-func (m *Mailer) Send(toAddresses []string, subject, emailType string, data any) error {
+func (m *Mailer) Send(
+	toAddresses []string,
+	subject, emailType string,
+	data any,
+	retryCount int,
+) error {
 	var lastErr error
 
-	for attempt := range 3 {
+	if retryCount > 0 {
 		body, err := getTemplate(emailType, data)
 		if err != nil {
 			return err
@@ -57,23 +61,26 @@ func (m *Mailer) Send(toAddresses []string, subject, emailType string, data any)
 		msg.SetBody("text/html", body)
 
 		// 🔑 Dial per send
-		sender, err := m.dialer.Dial()
-		if err != nil {
-			lastErr = err
-			time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
-			continue
-		}
-
-		err = gomail.Send(sender, msg)
-		_ = sender.Close()
-
+		// sender, err := m.dialer.Dial()
+		// if err != nil {
+		// 	lastErr = err
+		// 	time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
+		// 	continue
+		// }
+		//
+		// err = gomail.Send(sender, msg)
+		// _ = sender.Close()
+		err = m.dialer.DialAndSend(msg)
 		if err == nil {
-			pkg.Log.Info(fmt.Sprintf("Email sent successfully: %s", strings.Join(toAddresses, ", ")))
+			pkg.Log.Info(
+				fmt.Sprintf("Email sent successfully: %s - Retry count: %d",
+					strings.Join(toAddresses, ", "),
+					3-retryCount,
+				))
 			return nil
 		}
 
 		lastErr = err
-		time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
 	}
 
 	return fmt.Errorf("email send failed after retries: %w", lastErr)

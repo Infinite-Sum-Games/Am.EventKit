@@ -359,6 +359,7 @@ func VerifyTransaction(c *gin.Context) {
 				EventTime:     selected.StartTime + " - " + selected.EndTime,
 				EventLocation: selected.Venue,
 			},
+			Retries: mail.MaxRetryCount,
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
