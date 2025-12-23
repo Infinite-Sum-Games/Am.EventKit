@@ -52,6 +52,7 @@ func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 
 func (m *MailerService) Start() {
 	for i := range m.workers {
+		m.wg.Add(1)
 		go m.worker(i)
 	}
 
@@ -60,11 +61,11 @@ func (m *MailerService) Start() {
 }
 
 func (m *MailerService) Enqueue(req *EmailRequest) error {
-	m.wg.Add(1)
 	return m.Queue.Enqueue(req)
 }
 
 func (m *MailerService) worker(id int) {
+	defer m.wg.Done()
 	sender := NewMailer()
 	pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: started", id))
 
@@ -97,7 +98,6 @@ func (m *MailerService) worker(id int) {
 					pkg.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
 				}
 			}
-			m.wg.Done()
 		}
 	}
 }
@@ -108,8 +108,8 @@ func (m *MailerService) Wait() {
 
 func (m *MailerService) Shutdown() {
 	m.cancel()
-	m.wg.Wait()
 	if err := m.Queue.Close(); err != nil {
 		pkg.Log.Error("[MAIL-SERVICE]: error in closing mail queue", err)
 	}
+	m.wg.Wait()
 }
