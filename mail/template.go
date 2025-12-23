@@ -14,6 +14,8 @@ func init() {
 	gob.Register(RegistrationData{})
 }
 
+const MaxRetryCount = 3
+
 type OTPTemplateData struct {
 	UserName string
 	OTP      []string

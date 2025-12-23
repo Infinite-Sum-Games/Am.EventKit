@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// 1. Load Configuration
-	fmt.Println("Loading configuration...")
+	log.Println("Loading configuration...")
 	config, err := cmd.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -22,7 +22,7 @@ func main() {
 	cmd.Env = config // Important: Set the global variable used by mail package
 
 	// 2. Initialize Logger
-	fmt.Println("Initializing logger...")
+	log.Println("Initializing logger...")
 	logger, err := pkg.InitLogger(cmd.Env.Environment)
 	if err != nil {
 		log.Fatalf("Failed to initialize logger: %v", err)
@@ -32,7 +32,7 @@ func main() {
 	// 3. Initialize Mail Service
 	// Using a temporary queue directory for the test to avoid messing with production/dev queue if any
 	queueDir := filepath.Join(os.TempDir(), "anokha_mail_test_queue")
-	fmt.Printf("Initializing mail service (queue: %s)...\n", queueDir)
+	log.Printf("Initializing mail service (queue: %s)...\n", queueDir)
 
 	// Clean up previous test runs if needed
 	if err := os.RemoveAll(queueDir); err != nil {
@@ -50,7 +50,7 @@ func main() {
 
 	// 5. Enqueue 100 Emails
 	targetEmail := "kakshinaruto24@gmail.com" // You might want to change this
-	fmt.Printf("Enqueueing 100 emails to %s...\n", targetEmail)
+	log.Printf("Enqueueing 100 emails to %s...\n", targetEmail)
 
 	startTime := time.Now()
 
@@ -62,6 +62,7 @@ func main() {
 			Data: mail.WelcomeTemplateData{
 				UserName: fmt.Sprintf("User %d", i),
 			},
+			Retries: mail.MaxRetryCount,
 		}
 
 		if err := mailerService.Enqueue(req); err != nil {
@@ -69,13 +70,13 @@ func main() {
 		}
 	}
 
-	fmt.Println("All emails enqueued. Waiting for workers to finish...")
+	log.Println("All emails enqueued. Waiting for workers to finish...")
 
 	// 6. Wait for completion
 	mailerService.Wait()
 
 	duration := time.Since(startTime)
-	fmt.Printf("Done! Sent 100 emails in %v\n", duration)
+	log.Printf("Done! Sent 100 emails in %v\n", duration)
 
 	// Clean up queue dir
 
