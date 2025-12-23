@@ -46,7 +46,7 @@ func (m *Mailer) Send(
 	data any,
 	retryCount int,
 ) error {
-	var lastErr error = nil
+	var lastErr error
 
 	if retryCount > 0 {
 		body, err := getTemplate(emailType, data)
