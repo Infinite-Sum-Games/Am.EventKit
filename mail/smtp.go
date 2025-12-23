@@ -81,7 +81,9 @@ func (m *Mailer) Send(
 		}
 
 		lastErr = err
+	} else {
+		pkg.Log.Error("Max retries reached for email send", nil)
+		return nil
 	}
-
 	return fmt.Errorf("email send failed after retries: %w", lastErr)
 }
