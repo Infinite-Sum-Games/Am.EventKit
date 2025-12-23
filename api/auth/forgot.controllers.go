@@ -129,6 +129,7 @@ func ForgotUserPassword(c *gin.Context) {
 			UserName: result.Name,
 			OTP:      otpSlice,
 		},
+		Retries: 3,
 	}
 	err = mail.Mail.Enqueue(&emailReq)
 	if err != nil {
@@ -238,6 +239,7 @@ func ResendPasswordChangeOtp(c *gin.Context) {
 			UserName: result.Name,
 			OTP:      strings.Split(result.Otp, ""),
 		},
+		Retries: 3,
 	}
 	if err := mail.Mail.Enqueue(&emailReq); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

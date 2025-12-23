@@ -163,6 +163,7 @@ func RegisterUserAccount(c *gin.Context) {
 			UserName: req.Name,
 			OTP:      otpSlice,
 		},
+		Retries: 3,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -276,6 +277,7 @@ func VerifyUserOtp(c *gin.Context) {
 		Data: &mail.WelcomeTemplateData{
 			UserName: result.Name,
 		},
+		Retries: 3,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -334,6 +336,7 @@ func ResendUserOtp(c *gin.Context) {
 			UserName: results.Name,
 			OTP:      strings.Split(results.Otp, ""),
 		},
+		Retries: 3,
 	}
 	if err := mail.Mail.Enqueue(&emailReq); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
