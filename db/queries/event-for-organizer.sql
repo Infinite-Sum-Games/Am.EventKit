@@ -24,8 +24,13 @@ SELECT
     s.email,
     s.is_amrita_student
 FROM student s
-LEFT JOIN solo_event_participant sep ON sep.student_id = s.id
-WHERE sep.event_id = $1
+LEFT JOIN 
+    solo_event_participant sep ON sep.student_id = s.id
+JOIN
+    bookings b ON b.id = sep.booking_id
+WHERE 
+    sep.event_id = $1 
+    AND b.txn_status = 'SUCCESS'
 GROUP BY 
   s.name,
   s.college_name,
@@ -48,5 +53,8 @@ JOIN
     team_members AS tm ON t.id = tm.team_id
 JOIN
     student AS s ON tm.student_id = s.id
+JOIN
+    bookings AS b on b.id = t.booking_id
 WHERE
-    t.event_id = $1;
+    t.event_id = $1
+    AND b.txn_status = 'SUCCESS';
