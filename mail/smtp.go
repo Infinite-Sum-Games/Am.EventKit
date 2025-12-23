@@ -15,7 +15,6 @@ import (
 // which implicitly means, we should not have more than 4 or 5 workers
 type Mailer struct {
 	dialer *gomail.Dialer
-	sender gomail.SendCloser
 }
 
 func NewMailer() *Mailer {

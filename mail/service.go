@@ -71,9 +71,6 @@ func (m *MailerService) worker(id int) {
 	for {
 		select {
 		case <-m.ctx.Done():
-			if sender.sender != nil {
-				_ = sender.sender.Close()
-			}
 			pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: shutting down", id))
 			return
 
