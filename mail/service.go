@@ -60,6 +60,7 @@ func (m *MailerService) Start() {
 }
 
 func (m *MailerService) Enqueue(req *EmailRequest) error {
+	m.wg.Add(1)
 	return m.Queue.Enqueue(req)
 }
 
@@ -88,7 +89,6 @@ func (m *MailerService) worker(id int) {
 				continue
 			}
 
-			m.wg.Add(1)
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data)
 			if err != nil {
 				// sender.Send has its own retry-with-backoff logic for transient errors.

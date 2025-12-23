@@ -57,16 +57,16 @@ func (m *Mailer) Send(toAddresses []string, subject, emailType string, data any)
 		msg.SetBody("text/html", body)
 
 		// 🔑 Dial per send
-		sender, err := m.dialer.Dial()
-		if err != nil {
-			lastErr = err
-			time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
-			continue
-		}
-
-		err = gomail.Send(sender, msg)
-		_ = sender.Close()
-
+		// sender, err := m.dialer.Dial()
+		// if err != nil {
+		// 	lastErr = err
+		// 	time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
+		// 	continue
+		// }
+		//
+		// err = gomail.Send(sender, msg)
+		// _ = sender.Close()
+		err = m.dialer.DialAndSend(msg)
 		if err == nil {
 			pkg.Log.Info(fmt.Sprintf("Email sent successfully: %s", strings.Join(toAddresses, ", ")))
 			return nil
