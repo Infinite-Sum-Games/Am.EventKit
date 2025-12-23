@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const getEventRegistrationAnalytics = `-- name: GetEventRegistrationAnalytics :one
@@ -45,6 +47,94 @@ func (q *Queries) GetPeopleRegistrationAnalytics(ctx context.Context, db DBTX) (
 	var i PeopleRegistrationAnalytic
 	err := row.Scan(&i.ID, &i.WebsiteRegistrationSplit, &i.TotalWebsiteRegistrations)
 	return i, err
+}
+
+const getQuickDashboardQuery = `-- name: GetQuickDashboardQuery :many
+WITH successful_bookings AS (
+  SELECT
+    event_id,
+    SUM(registration_fee) AS revenue,
+    COUNT(id) AS seats_filled
+  FROM
+    bookings
+  WHERE
+    txn_status = 'SUCCESS'
+  GROUP BY
+    event_id
+),
+team_participant_count AS (
+  SELECT
+    t.event_id,
+    COUNT(tm.id) AS participant_count
+  FROM
+    team_members tm
+  JOIN teams t ON tm.team_id = t.id
+  JOIN bookings b ON t.booking_id = b.id
+  WHERE b.txn_status = 'SUCCESS'
+  GROUP BY t.event_id
+)
+SELECT
+  e.id AS event_id,
+  e.name AS event_name,
+  COALESCE(sb.revenue, 0) AS revenue,
+  COALESCE(sb.seats_filled, 0) AS seats_filled,
+  e.total_seats,
+  e.is_group,
+  e.event_type,
+CASE
+  WHEN e.is_group = TRUE THEN
+    COALESCE(tpc.participant_count, 0)
+  ELSE
+    COALESCE(sb.seats_filled, 0)
+  END AS actual_participant_count
+FROM
+  event e
+LEFT JOIN successful_bookings sb ON e.id = sb.event_id
+LEFT JOIN team_participant_count tpc ON e.id = tpc.event_id
+ORDER BY e.name
+`
+
+type GetQuickDashboardQueryRow struct {
+	EventID                uuid.UUID     `json:"event_id"`
+	EventName              string        `json:"event_name"`
+	Revenue                int64         `json:"revenue"`
+	SeatsFilled            int64         `json:"seats_filled"`
+	TotalSeats             int32         `json:"total_seats"`
+	IsGroup                bool          `json:"is_group"`
+	EventType              EventTypeEnum `json:"event_type"`
+	ActualParticipantCount interface{}   `json:"actual_participant_count"`
+}
+
+// CTE to calculate revenue and seats filled from successful txns
+// CTE to count the total number of members in teams for each event
+// Data combination step
+func (q *Queries) GetQuickDashboardQuery(ctx context.Context, db DBTX) ([]GetQuickDashboardQueryRow, error) {
+	rows, err := db.Query(ctx, getQuickDashboardQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetQuickDashboardQueryRow
+	for rows.Next() {
+		var i GetQuickDashboardQueryRow
+		if err := rows.Scan(
+			&i.EventID,
+			&i.EventName,
+			&i.Revenue,
+			&i.SeatsFilled,
+			&i.TotalSeats,
+			&i.IsGroup,
+			&i.EventType,
+			&i.ActualParticipantCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getRevenueAnalytics = `-- name: GetRevenueAnalytics :one

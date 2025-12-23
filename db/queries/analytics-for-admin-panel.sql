@@ -31,3 +31,50 @@ SELECT
     transaction_summary
 FROM transaction_analytics
 WHERE id = 1;
+
+-- name: GetQuickDashboardQuery :many
+WITH successful_bookings AS (
+-- CTE to calculate revenue and seats filled from successful txns
+  SELECT
+    event_id,
+    SUM(registration_fee) AS revenue,
+    COUNT(id) AS seats_filled
+  FROM
+    bookings
+  WHERE
+    txn_status = 'SUCCESS'
+  GROUP BY
+    event_id
+),
+-- CTE to count the total number of members in teams for each event
+team_participant_count AS (
+  SELECT
+    t.event_id,
+    COUNT(tm.id) AS participant_count
+  FROM
+    team_members tm
+  JOIN teams t ON tm.team_id = t.id
+  JOIN bookings b ON t.booking_id = b.id
+  WHERE b.txn_status = 'SUCCESS'
+  GROUP BY t.event_id
+)
+-- Data combination step
+SELECT
+  e.id AS event_id,
+  e.name AS event_name,
+  COALESCE(sb.revenue, 0) AS revenue,
+  COALESCE(sb.seats_filled, 0) AS seats_filled,
+  e.total_seats,
+  e.is_group,
+  e.event_type,
+CASE
+  WHEN e.is_group = TRUE THEN
+    COALESCE(tpc.participant_count, 0)
+  ELSE
+    COALESCE(sb.seats_filled, 0)
+  END AS actual_participant_count
+FROM
+  event e
+LEFT JOIN successful_bookings sb ON e.id = sb.event_id
+LEFT JOIN team_participant_count tpc ON e.id = tpc.event_id
+ORDER BY e.name;
