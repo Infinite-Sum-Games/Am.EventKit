@@ -94,8 +94,10 @@ func (m *MailerService) worker(id int) {
 				// Removed infinite retry to avoid blocking the worker forever on a bad email.
 				// Instead, we re-enqueue the mail only for the Retries count specified in the request.
 				req.Retries--
-				if err := m.Enqueue(req); err != nil {
-					pkg.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
+				if req.Retries > 0 {
+					if err := m.Enqueue(req); err != nil {
+						pkg.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
+					}
 				}
 			}
 		}

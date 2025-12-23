@@ -46,7 +46,7 @@ func (m *Mailer) Send(
 	data any,
 	retryCount int,
 ) error {
-	var lastErr error
+	var lastErr error = nil
 
 	if retryCount > 0 {
 		body, err := getTemplate(emailType, data)
@@ -81,7 +81,9 @@ func (m *Mailer) Send(
 		}
 
 		lastErr = err
+	} else {
+		pkg.Log.Error("Max retries reached for email send", nil)
+		return nil
 	}
-
 	return fmt.Errorf("email send failed after retries: %w", lastErr)
 }
