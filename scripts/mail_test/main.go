@@ -35,7 +35,9 @@ func main() {
 	fmt.Printf("Initializing mail service (queue: %s)...\n", queueDir)
 
 	// Clean up previous test runs if needed
-	os.RemoveAll(queueDir)
+	if err := os.RemoveAll(queueDir); err != nil {
+		log.Printf("warning: failed to cleanup queue dir %s: %v", queueDir, err)
+	}
 
 	mailerService, err := mail.NewMailerService(queueDir, 5) // 5 workers
 	if err != nil {
@@ -76,5 +78,8 @@ func main() {
 	fmt.Printf("Done! Sent 100 emails in %v\n", duration)
 
 	// Clean up queue dir
-	os.RemoveAll(queueDir)
+
+	if err := os.RemoveAll(queueDir); err != nil {
+		log.Printf("warning: failed to cleanup queue dir %s: %v", queueDir, err)
+	}
 }
