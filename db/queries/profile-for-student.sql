@@ -6,7 +6,10 @@ SELECT
   is_amrita_student,
   amrita_roll_number,
   college_name,
-  college_city
+  college_city,
+  is_amrita_student,
+  (id IN (SELECT student_id FROM solo_event_participant) OR
+  id IN (SELECT student_id FROM team_members)) AS is_registered
 FROM student 
 WHERE account_status = 'VERIFIED' and email = $1;
 
