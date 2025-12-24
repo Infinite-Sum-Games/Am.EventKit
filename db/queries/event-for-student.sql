@@ -21,7 +21,8 @@ SELECT
     ) AS organizers,
 
     e.price AS event_price,
-    (e.seats_filled = e.total_seats) AS is_full
+    (e.seats_filled = e.total_seats) AS is_full,
+    (e.seats_filled*10 >= e.total_seats*7) AS is_filling_fast
 
 FROM event e
 
@@ -152,7 +153,9 @@ SELECT
       FROM favourites f
       WHERE f.event_id = e.id
         AND f.email = $2
-    ) AS is_starred
+    ) AS is_starred,
+
+    (e.seats_filled*10 >= e.total_seats*7) AS is_filling_fast
 
 FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
