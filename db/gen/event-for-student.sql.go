@@ -312,7 +312,8 @@ SELECT
     ) AS organizers,
 
     e.price AS event_price,
-    (e.seats_filled = e.total_seats) AS is_full
+    (e.seats_filled = e.total_seats) AS is_full,
+    (e.seats_filled*10 >= e.total_seats*7) AS is_filling_fast
 
 FROM event e
 
@@ -341,6 +342,7 @@ type GetEventsQueryRow struct {
 	Organizers       interface{}     `json:"organizers"`
 	EventPrice       int32           `json:"event_price"`
 	IsFull           bool            `json:"is_full"`
+	IsFillingFast    bool            `json:"is_filling_fast"`
 }
 
 func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQueryRow, error) {
@@ -366,6 +368,7 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 			&i.Organizers,
 			&i.EventPrice,
 			&i.IsFull,
+			&i.IsFillingFast,
 		); err != nil {
 			return nil, err
 		}
@@ -429,7 +432,9 @@ SELECT
       FROM favourites f
       WHERE f.event_id = e.id
         AND f.email = $2
-    ) AS is_starred
+    ) AS is_starred,
+
+    (e.seats_filled*10 >= e.total_seats*7) AS is_filling_fast
 
 FROM event e
 LEFT JOIN event_schedule es ON e.id = es.event_id
@@ -464,6 +469,7 @@ type GetEventsWithAuthQueryRow struct {
 	IsFull           bool            `json:"is_full"`
 	IsRegistered     pgtype.Bool     `json:"is_registered"`
 	IsStarred        bool            `json:"is_starred"`
+	IsFillingFast    bool            `json:"is_filling_fast"`
 }
 
 func (q *Queries) GetEventsWithAuthQuery(ctx context.Context, db DBTX, arg GetEventsWithAuthQueryParams) ([]GetEventsWithAuthQueryRow, error) {
@@ -491,6 +497,7 @@ func (q *Queries) GetEventsWithAuthQuery(ctx context.Context, db DBTX, arg GetEv
 			&i.IsFull,
 			&i.IsRegistered,
 			&i.IsStarred,
+			&i.IsFillingFast,
 		); err != nil {
 			return nil, err
 		}
