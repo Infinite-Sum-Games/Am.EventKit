@@ -44,18 +44,18 @@ func (q *Queries) CloseAsTrueDisputeQuery(ctx context.Context, db DBTX, id uuid.
 
 const createDisputeQuery = `-- name: CreateDisputeQuery :exec
 INSERT INTO dispute (
-    transaction_id,
+    txn_id,
     event_id
 ) VALUES ($1, $2)
 `
 
 type CreateDisputeQueryParams struct {
-	TransactionID string    `json:"transaction_id"`
-	EventID       uuid.UUID `json:"event_id"`
+	TxnID   string    `json:"txn_id"`
+	EventID uuid.UUID `json:"event_id"`
 }
 
 func (q *Queries) CreateDisputeQuery(ctx context.Context, db DBTX, arg CreateDisputeQueryParams) error {
-	_, err := db.Exec(ctx, createDisputeQuery, arg.TransactionID, arg.EventID)
+	_, err := db.Exec(ctx, createDisputeQuery, arg.TxnID, arg.EventID)
 	return err
 }
 
@@ -75,7 +75,7 @@ func (q *Queries) DecrementSeatFilledCountQuery(ctx context.Context, db DBTX, id
 
 const getAllDisputesQuery = `-- name: GetAllDisputesQuery :many
 SELECT id,
-    transaction_id,
+    txn_id,
     student_email,
     event_id,
     dispute_status
@@ -84,7 +84,7 @@ FROM dispute
 
 type GetAllDisputesQueryRow struct {
 	ID            uuid.UUID             `json:"id"`
-	TransactionID string                `json:"transaction_id"`
+	TxnID         string                `json:"txn_id"`
 	StudentEmail  pgtype.Text           `json:"student_email"`
 	EventID       uuid.UUID             `json:"event_id"`
 	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
@@ -101,7 +101,7 @@ func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDis
 		var i GetAllDisputesQueryRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.TransactionID,
+			&i.TxnID,
 			&i.StudentEmail,
 			&i.EventID,
 			&i.DisputeStatus,
@@ -118,7 +118,7 @@ func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDis
 
 const getDisputeByIDQuery = `-- name: GetDisputeByIDQuery :one
 SELECT id,
-    transaction_id,
+    txn_id,
     student_email,
     description,
     event_id,
@@ -129,7 +129,7 @@ WHERE id = $1
 
 type GetDisputeByIDQueryRow struct {
 	ID            uuid.UUID             `json:"id"`
-	TransactionID string                `json:"transaction_id"`
+	TxnID         string                `json:"txn_id"`
 	StudentEmail  pgtype.Text           `json:"student_email"`
 	Description   pgtype.Text           `json:"description"`
 	EventID       uuid.UUID             `json:"event_id"`
@@ -141,7 +141,7 @@ func (q *Queries) GetDisputeByIDQuery(ctx context.Context, db DBTX, id uuid.UUID
 	var i GetDisputeByIDQueryRow
 	err := row.Scan(
 		&i.ID,
-		&i.TransactionID,
+		&i.TxnID,
 		&i.StudentEmail,
 		&i.Description,
 		&i.EventID,

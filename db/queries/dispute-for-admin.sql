@@ -1,6 +1,6 @@
 -- name: GetAllDisputesQuery :many
 SELECT id,
-    transaction_id,
+    txn_id,
     student_email,
     event_id,
     dispute_status
@@ -8,7 +8,7 @@ FROM dispute;
 
 -- name: GetDisputeByIDQuery :one
 SELECT id,
-    transaction_id,
+    txn_id,
     student_email,
     description,
     event_id,
@@ -18,7 +18,7 @@ WHERE id = $1;
 
 -- name: CreateDisputeQuery :exec
 INSERT INTO dispute (
-    transaction_id,
+    txn_id,
     event_id
 ) VALUES ($1, $2);
 

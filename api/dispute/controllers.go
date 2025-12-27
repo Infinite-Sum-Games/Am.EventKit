@@ -93,8 +93,8 @@ func CreateDispute(c *gin.Context) {
 	q := db.New()
 
 	err = q.CreateDisputeQuery(ctx, tx, db.CreateDisputeQueryParams{
-		EventID:       req.EventId,
-		TransactionID: req.TransactionId,
+		EventID: req.EventId,
+		TxnID:   req.TransactionId,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

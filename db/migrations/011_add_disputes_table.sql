@@ -10,7 +10,7 @@ CREATE TYPE dispute_status_enum AS ENUM (
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS dispute (
   id UUID DEFAULT gen_random_uuid(),
-  transaction_id TEXT NOT NULL,
+  txn_id TEXT NOT NULL,
   student_email TEXT,
   description TEXT,
   event_id UUID NOT NULL,
@@ -19,8 +19,21 @@ CREATE TABLE IF NOT EXISTS dispute (
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
 
-  CONSTRAINT "dispute_pkey" PRIMARY KEY (id)
-);
+  CONSTRAINT "dispute_pkey" PRIMARY KEY (id),
+
+  CONSTRAINT "dispute_to_student_mapping_fkey"
+    FOREIGN KEY (student_email)
+    REFERENCES student (email)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT "dispute_to_event_mapping_fkey"
+    FOREIGN KEY (event_id)
+    REFERENCES event (id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+
+  );
 -- +goose StatementEnd
 
 -- +goose down

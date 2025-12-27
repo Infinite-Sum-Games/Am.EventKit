@@ -336,7 +336,7 @@ type Booking struct {
 
 type Dispute struct {
 	ID                uuid.UUID             `json:"id"`
-	TransactionID     string                `json:"transaction_id"`
+	TxnID             string                `json:"txn_id"`
 	StudentEmail      pgtype.Text           `json:"student_email"`
 	Description       pgtype.Text           `json:"description"`
 	EventID           uuid.UUID             `json:"event_id"`
