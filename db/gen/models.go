@@ -97,6 +97,49 @@ func (ns NullAttendanceModeEnum) Value() (driver.Value, error) {
 	return string(ns.AttendanceModeEnum), nil
 }
 
+type DisputeStatusEnum string
+
+const (
+	DisputeStatusEnumOPEN          DisputeStatusEnum = "OPEN"
+	DisputeStatusEnumCLOSEDASTRUE  DisputeStatusEnum = "CLOSED_AS_TRUE"
+	DisputeStatusEnumCLOSEDASFALSE DisputeStatusEnum = "CLOSED_AS_FALSE"
+)
+
+func (e *DisputeStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DisputeStatusEnum(s)
+	case string:
+		*e = DisputeStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DisputeStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullDisputeStatusEnum struct {
+	DisputeStatusEnum DisputeStatusEnum `json:"dispute_status_enum"`
+	Valid             bool              `json:"valid"` // Valid is true if DisputeStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDisputeStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.DisputeStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DisputeStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDisputeStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DisputeStatusEnum), nil
+}
+
 type EventModeEnum string
 
 const (
@@ -289,6 +332,18 @@ type Booking struct {
 	Metadata        []byte           `json:"metadata"`
 	CreatedAt       pgtype.Timestamp `json:"created_at"`
 	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+}
+
+type Dispute struct {
+	ID                uuid.UUID             `json:"id"`
+	TransactionID     uuid.UUID             `json:"transaction_id"`
+	StudentEmail      pgtype.Text           `json:"student_email"`
+	Description       pgtype.Text           `json:"description"`
+	EventID           uuid.UUID             `json:"event_id"`
+	DisputeStatus     NullDisputeStatusEnum `json:"dispute_status"`
+	TeamMemberDatails []byte                `json:"team_member_datails"`
+	CreatedAt         pgtype.Timestamp      `json:"created_at"`
+	UpdatedAt         pgtype.Timestamp      `json:"updated_at"`
 }
 
 type Event struct {
