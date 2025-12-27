@@ -6,16 +6,14 @@ import (
 )
 
 type UpdateDisputeStatusInput struct {
-	StudentEmail      string         `json:"student_email"`
-	Description       string         `json:"description"`
-	TeamMemberDetails map[string]any `json:"team_member_details"`
+	StudentEmail string `json:"student_email"`
+	Description  string `json:"description"`
 }
 
 func (u UpdateDisputeStatusInput) Validate() error {
 	if err := v.ValidateStruct(&u,
 		v.Field(&u.StudentEmail, is.Email),
 		v.Field(&u.Description),
-		v.Field(&u.TeamMemberDetails),
 	); err != nil {
 		return err
 	}

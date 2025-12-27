@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"encoding/json"
 	"regexp"
 	"time"
 
@@ -81,11 +80,4 @@ func ToPgNumericFromFloat(f float64) (pgtype.Numeric, error) {
 func GenerateTxnID() string {
 	txnID := "TXN-ANK26-" + ksuid.New().String()
 	return txnID
-}
-
-func MarshalTeamMemberDetails(details map[string]interface{}) ([]byte, error) {
-	if details == nil {
-		return nil, nil
-	}
-	return json.Marshal(details)
 }
