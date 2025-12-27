@@ -14,6 +14,7 @@ import (
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
 	apiBooking "github.com/Thanus-Kumaar/anokha-2025-backend/api/booking"
+	apiDispute "github.com/Thanus-Kumaar/anokha-2025-backend/api/dispute"
 	apiEvent "github.com/Thanus-Kumaar/anokha-2025-backend/api/event"
 	apiOrganizers "github.com/Thanus-Kumaar/anokha-2025-backend/api/organizers"
 	apiPeople "github.com/Thanus-Kumaar/anokha-2025-backend/api/people"
@@ -70,6 +71,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	tagRouter := v1.Group("/tags")
 	organizerRouter := v1.Group("/organizers")
 	analyticsRouter := v1.Group("/analytics")
+	disputeRouter := v1.Group("/disputes")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
@@ -83,6 +85,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiOrganizers.OrganizerDashboardRoutes(organizerRouter)
 	apiBooking.BookingRoutes(eventRouter)
 	apiAnalytics.AnalyticsRoutes(analyticsRouter)
+	apiDispute.DisputeRoutes(disputeRouter)
 
 	return r
 }

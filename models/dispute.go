@@ -3,23 +3,7 @@ package models
 import (
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"github.com/google/uuid"
 )
-
-type CreateDisputeInput struct {
-	EventId       uuid.UUID `json:"event_id"`
-	TransactionId string    `json:"transaction_id"`
-}
-
-func (d CreateDisputeInput) Validate() error {
-	if err := v.ValidateStruct(&d,
-		v.Field(&d.EventId, v.Required, is.UUID),
-		v.Field(&d.TransactionId, v.Required),
-	); err != nil {
-		return err
-	}
-	return nil
-}
 
 type UpdateDisputeStatusInput struct {
 	StudentEmail      string         `json:"student_email"`

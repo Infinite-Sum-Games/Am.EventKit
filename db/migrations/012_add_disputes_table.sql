@@ -31,8 +31,13 @@ CREATE TABLE IF NOT EXISTS dispute (
     FOREIGN KEY (event_id)
     REFERENCES event (id)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE
+    ON UPDATE CASCADE,
 
+  CONSTRAINT "dispute_to_txn_mapping_fkey"
+    FOREIGN KEY (txn_id)
+    REFERENCES bookings (txn_id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
   );
 -- +goose StatementEnd
 

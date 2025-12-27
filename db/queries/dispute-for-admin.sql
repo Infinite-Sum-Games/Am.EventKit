@@ -2,8 +2,10 @@
 SELECT id,
     txn_id,
     student_email,
+    description,
     event_id,
-    dispute_status
+    dispute_status,
+    team_member_datails::jsonb
 FROM dispute;
 
 -- name: GetDisputeByIDQuery :one
@@ -21,6 +23,11 @@ INSERT INTO dispute (
     txn_id,
     event_id
 ) VALUES ($1, $2);
+
+-- name: GetEventIdByTxnIdQuery :one
+SELECT event_id
+FROM bookings
+WHERE txn_id = $1;
 
 -- name: IncrementSeatFilledCountQuery :execrows
 UPDATE event

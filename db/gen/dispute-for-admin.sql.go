@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -77,17 +78,21 @@ const getAllDisputesQuery = `-- name: GetAllDisputesQuery :many
 SELECT id,
     txn_id,
     student_email,
+    description,
     event_id,
-    dispute_status
+    dispute_status,
+    team_member_datails::jsonb
 FROM dispute
 `
 
 type GetAllDisputesQueryRow struct {
-	ID            uuid.UUID             `json:"id"`
-	TxnID         string                `json:"txn_id"`
-	StudentEmail  pgtype.Text           `json:"student_email"`
-	EventID       uuid.UUID             `json:"event_id"`
-	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
+	ID                uuid.UUID             `json:"id"`
+	TxnID             string                `json:"txn_id"`
+	StudentEmail      pgtype.Text           `json:"student_email"`
+	Description       pgtype.Text           `json:"description"`
+	EventID           uuid.UUID             `json:"event_id"`
+	DisputeStatus     NullDisputeStatusEnum `json:"dispute_status"`
+	TeamMemberDatails json.RawMessage       `json:"team_member_datails"`
 }
 
 func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDisputesQueryRow, error) {
@@ -103,8 +108,10 @@ func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDis
 			&i.ID,
 			&i.TxnID,
 			&i.StudentEmail,
+			&i.Description,
 			&i.EventID,
 			&i.DisputeStatus,
+			&i.TeamMemberDatails,
 		); err != nil {
 			return nil, err
 		}
@@ -148,6 +155,19 @@ func (q *Queries) GetDisputeByIDQuery(ctx context.Context, db DBTX, id uuid.UUID
 		&i.DisputeStatus,
 	)
 	return i, err
+}
+
+const getEventIdByTxnIdQuery = `-- name: GetEventIdByTxnIdQuery :one
+SELECT event_id
+FROM bookings
+WHERE txn_id = $1
+`
+
+func (q *Queries) GetEventIdByTxnIdQuery(ctx context.Context, db DBTX, txnID string) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, getEventIdByTxnIdQuery, txnID)
+	var event_id uuid.UUID
+	err := row.Scan(&event_id)
+	return event_id, err
 }
 
 const incrementSeatFilledCountQuery = `-- name: IncrementSeatFilledCountQuery :execrows

@@ -40,46 +40,8 @@ func GetAllDisputes(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func GetDisputeByID(c *gin.Context) {
-	disputeIdStr := c.Param("dispute_id")
-
-	disputeId, ok := pkg.GrabUuid(c, disputeIdStr, "DISPUTE", "disputeId")
-	if !ok {
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "DISPUTE") {
-		return
-	}
-	defer conn.Release()
-
-	q := db.New()
-
-	dispute, err := q.GetDisputeByIDQuery(ctx, conn, disputeId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch dispute by ID", err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"messaage": "Dispute fetched successfully",
-		"dispute":  dispute,
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func CreateDispute(c *gin.Context) {
-	req, ok := pkg.ValidateRequest[models.CreateDisputeInput](c)
-	if !ok {
-		return
-	}
+	txnId := c.Param("txnId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -92,9 +54,18 @@ func CreateDispute(c *gin.Context) {
 
 	q := db.New()
 
+	eventId, err := q.GetEventIdByTxnIdQuery(ctx, tx, txnId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch event ID by transaction ID", err)
+		return
+	}
+
 	err = q.CreateDisputeQuery(ctx, tx, db.CreateDisputeQueryParams{
-		EventID: req.EventId,
-		TxnID:   req.TransactionId,
+		EventID: eventId,
+		TxnID:   txnId,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -104,7 +75,7 @@ func CreateDispute(c *gin.Context) {
 		return
 	}
 
-	rows, err := q.IncrementSeatFilledCountQuery(ctx, tx, req.EventId)
+	rows, err := q.IncrementSeatFilledCountQuery(ctx, tx, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -177,6 +148,10 @@ func UpdateDispute(c *gin.Context) {
 	if event.IsGroup {
 		teamMemberBytes, err := pkg.MarshalTeamMemberDetails(req.TeamMemberDetails)
 		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid team_member_details format",
+			})
+			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to marshal team member details", err)
 			return
 		}
 
