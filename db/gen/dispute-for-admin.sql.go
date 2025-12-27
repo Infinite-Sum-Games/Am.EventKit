@@ -50,7 +50,7 @@ INSERT INTO dispute (
 `
 
 type CreateDisputeQueryParams struct {
-	TransactionID uuid.UUID `json:"transaction_id"`
+	TransactionID string    `json:"transaction_id"`
 	EventID       uuid.UUID `json:"event_id"`
 }
 
@@ -84,7 +84,7 @@ FROM dispute
 
 type GetAllDisputesQueryRow struct {
 	ID            uuid.UUID             `json:"id"`
-	TransactionID uuid.UUID             `json:"transaction_id"`
+	TransactionID string                `json:"transaction_id"`
 	StudentEmail  pgtype.Text           `json:"student_email"`
 	EventID       uuid.UUID             `json:"event_id"`
 	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
@@ -129,7 +129,7 @@ WHERE id = $1
 
 type GetDisputeByIDQueryRow struct {
 	ID            uuid.UUID             `json:"id"`
-	TransactionID uuid.UUID             `json:"transaction_id"`
+	TransactionID string                `json:"transaction_id"`
 	StudentEmail  pgtype.Text           `json:"student_email"`
 	Description   pgtype.Text           `json:"description"`
 	EventID       uuid.UUID             `json:"event_id"`

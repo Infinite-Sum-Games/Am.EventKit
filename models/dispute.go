@@ -8,13 +8,13 @@ import (
 
 type CreateDisputeInput struct {
 	EventId       uuid.UUID `json:"event_id"`
-	TransactionId uuid.UUID `json:"transaction_id"`
+	TransactionId string    `json:"transaction_id"`
 }
 
 func (d CreateDisputeInput) Validate() error {
 	if err := v.ValidateStruct(&d,
 		v.Field(&d.EventId, v.Required, is.UUID),
-		v.Field(&d.TransactionId, v.Required, is.UUID),
+		v.Field(&d.TransactionId, v.Required),
 	); err != nil {
 		return err
 	}

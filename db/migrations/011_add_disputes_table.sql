@@ -10,7 +10,7 @@ CREATE TYPE dispute_status_enum AS ENUM (
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS dispute (
   id UUID DEFAULT gen_random_uuid(),
-  transaction_id UUID NOT NULL,
+  transaction_id TEXT NOT NULL,
   student_email TEXT,
   description TEXT,
   event_id UUID NOT NULL,
@@ -26,4 +26,5 @@ CREATE TABLE IF NOT EXISTS dispute (
 -- +goose down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS dispute;
+DROP TYPE IF EXISTS dispute_status_enum;
 -- +goose StatementEnd
