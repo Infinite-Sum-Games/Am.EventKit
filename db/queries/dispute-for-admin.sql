@@ -36,6 +36,12 @@ UPDATE event
 SET seats_filled = seats_filled + 1
 WHERE id = $1;
 
+-- name: GetEventIdByDisputeIDQuery :one
+SELECT 
+    d.event_id AS event_id
+FROM dispute d
+WHERE d.id = $1;
+
 -- name: DecrementSeatFilledCountQuery :execrows
 UPDATE event
 SET seats_filled = seats_filled - 1

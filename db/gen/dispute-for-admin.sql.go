@@ -153,6 +153,20 @@ func (q *Queries) GetDisputeByIDQuery(ctx context.Context, db DBTX, id uuid.UUID
 	return i, err
 }
 
+const getEventIdByDisputeIDQuery = `-- name: GetEventIdByDisputeIDQuery :one
+SELECT 
+    d.event_id AS event_id
+FROM dispute d
+WHERE d.id = $1
+`
+
+func (q *Queries) GetEventIdByDisputeIDQuery(ctx context.Context, db DBTX, id uuid.UUID) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, getEventIdByDisputeIDQuery, id)
+	var event_id uuid.UUID
+	err := row.Scan(&event_id)
+	return event_id, err
+}
+
 const getEventIdByTxnIdQuery = `-- name: GetEventIdByTxnIdQuery :one
 SELECT 
     b.event_id AS event_id,

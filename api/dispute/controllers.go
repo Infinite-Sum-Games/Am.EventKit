@@ -221,6 +221,15 @@ func CloseAsFalseDispute(c *gin.Context) {
 
 	q := db.New()
 
+	eventId, err := q.GetEventIdByDisputeIDQuery(ctx, tx, disputeId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch event ID by dispute ID", err)
+		return
+	}
+
 	rows, err := q.CloseAsFalseDisputeQuery(ctx, tx, disputeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -237,7 +246,7 @@ func CloseAsFalseDispute(c *gin.Context) {
 		return
 	}
 
-	row, err := q.DecrementSeatFilledCountQuery(ctx, tx, disputeId)
+	row, err := q.DecrementSeatFilledCountQuery(ctx, tx, eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
