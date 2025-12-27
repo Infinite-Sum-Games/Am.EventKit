@@ -115,28 +115,36 @@ func (q *Queries) CreateTeamAttendance(ctx context.Context, db DBTX, arg CreateT
 }
 
 const fetchEventsByOrganizerQuery = `-- name: FetchEventsByOrganizerQuery :many
-SELECT 
+SELECT
   e.id AS event_id,
   e.name AS event_name,
-  es.id AS event_schedule_id,
-  es.event_date AS event_date,
-  es.start_time AS start_time,
-  es.end_time AS end_time
-  FROM event_to_organizer_mapping 
-  INNER JOIN event e 
-    ON event_to_organizer_mapping.event_id = e.id
-  INNER JOIN event_schedule es
-    ON e.id = es.event_id
-  WHERE event_to_organizer_mapping.organizer_id = $1
+  e.is_group,
+  COALESCE(
+    JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
+      'id', es.id,
+      'event_date', es.event_date,
+      'start_time', es.start_time,
+      'end_time', es.end_time,
+      'venue', es.venue
+    )) FILTER (WHERE es.id IS NOT NULL),
+    '[]'::jsonb
+  ) AS schedules
+FROM event e
+JOIN event_to_organizer_mapping etom
+  ON e.id = etom.event_id
+LEFT JOIN event_schedule es
+  ON e.id = es.event_id
+WHERE
+  etom.organizer_id = $1
+GROUP BY
+  e.id, e.name, e.is_group
 `
 
 type FetchEventsByOrganizerQueryRow struct {
-	EventID         uuid.UUID        `json:"event_id"`
-	EventName       string           `json:"event_name"`
-	EventScheduleID uuid.UUID        `json:"event_schedule_id"`
-	EventDate       pgtype.Date      `json:"event_date"`
-	StartTime       pgtype.Timestamp `json:"start_time"`
-	EndTime         pgtype.Timestamp `json:"end_time"`
+	EventID   uuid.UUID   `json:"event_id"`
+	EventName string      `json:"event_name"`
+	IsGroup   bool        `json:"is_group"`
+	Schedules interface{} `json:"schedules"`
 }
 
 func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, organizerID uuid.UUID) ([]FetchEventsByOrganizerQueryRow, error) {
@@ -151,10 +159,8 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 		if err := rows.Scan(
 			&i.EventID,
 			&i.EventName,
-			&i.EventScheduleID,
-			&i.EventDate,
-			&i.StartTime,
-			&i.EndTime,
+			&i.IsGroup,
+			&i.Schedules,
 		); err != nil {
 			return nil, err
 		}
@@ -362,82 +368,6 @@ SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_n
 WHERE email = $1
 `
 
-// -- name: GetEventsByDateAndOrganizer :many
-// SELECT
-//
-//	e.id,
-//	e.name AS event_name,
-//	e.blurb,
-//	e.description AS event_description,
-//	e.cover_image_url,
-//	e.price,
-//	e.is_per_head,
-//	e.rules,
-//	e.event_type,
-//	e.is_group,
-//	e.max_teamsize,
-//	e.min_teamsize,
-//	e.total_seats,
-//	e.seats_filled,
-//	e.event_status,
-//	e.event_mode,
-//
-//	COALESCE(
-//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-//	    'organizer_name', o.name,
-//	    'org_abbreviation', o.abbr,
-//	    'org_type', o.org_type
-//	  )) FILTER (WHERE o.id IS NOT NULL),
-//	  '[]'::jsonb
-//	) AS organizers,
-//
-//	COALESCE(
-//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-//	    'event_date', es.event_date,
-//	    'start_time', es.start_time,
-//	    'end_time', es.end_time,
-//	    'venue', es.venue
-//	  )) FILTER (WHERE es.id IS NOT NULL),
-//	  '[]'::jsonb
-//	) AS schedules,
-//
-//	COALESCE(
-//	  JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
-//	    'tag_name', t.name,
-//	    'tag_abbreviation', t.abbreviation
-//	  )) FILTER (WHERE t.id IS NOT NULL),
-//	  '[]'::jsonb
-//	) AS tags
-//
-// # FROM event e
-//
-// LEFT JOIN event_schedule es
-//
-//	ON e.id = es.event_id
-//
-// LEFT JOIN event_to_organizer_mapping m
-//
-//	ON e.id = m.event_id
-//
-// LEFT JOIN organizer o
-//
-//	ON m.organizer_id = o.id
-//
-// LEFT JOIN event_tag_mapping etm
-//
-//	ON e.id = etm.event_id
-//
-// LEFT JOIN tags t
-//
-//	ON etm.tag_id = t.id
-//
-// WHERE
-//
-//	es.event_date = $1
-//	AND o.email = $2
-//
-// GROUP BY e.id
-// ORDER BY es.start_time ASC;
 func (q *Queries) GetStudentByEmail(ctx context.Context, db DBTX, email string) (Student, error) {
 	row := db.QueryRow(ctx, getStudentByEmail, email)
 	var i Student

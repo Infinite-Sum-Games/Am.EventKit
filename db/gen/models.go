@@ -309,6 +309,18 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type AccomodationFormResp struct {
+	ID                   uuid.UUID        `json:"id"`
+	StudentID            uuid.UUID        `json:"student_id"`
+	Name                 string           `json:"name"`
+	IsMale               pgtype.Bool      `json:"is_male"`
+	CollegeRollNumber    string           `json:"college_roll_number"`
+	CollegeNameMentioned string           `json:"college_name_mentioned"`
+	IsAmrita             pgtype.Bool      `json:"is_amrita"`
+	CheckIn              pgtype.Timestamp `json:"check_in"`
+	CheckOut             pgtype.Timestamp `json:"check_out"`
+}
+
 type Admin struct {
 	ID           uuid.UUID        `json:"id"`
 	Name         pgtype.Text      `json:"name"`
@@ -402,6 +414,15 @@ type Favourite struct {
 	ID      int32     `json:"id"`
 	Email   string    `json:"email"`
 	EventID uuid.UUID `json:"event_id"`
+}
+
+type GateManagement struct {
+}
+
+type HostelCheckIn struct {
+}
+
+type HostelMetadatum struct {
 }
 
 type Organizer struct {
