@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -80,19 +79,17 @@ SELECT id,
     student_email,
     description,
     event_id,
-    dispute_status,
-    team_member_datails::jsonb
+    dispute_status
 FROM dispute
 `
 
 type GetAllDisputesQueryRow struct {
-	ID                uuid.UUID             `json:"id"`
-	TxnID             string                `json:"txn_id"`
-	StudentEmail      pgtype.Text           `json:"student_email"`
-	Description       pgtype.Text           `json:"description"`
-	EventID           uuid.UUID             `json:"event_id"`
-	DisputeStatus     NullDisputeStatusEnum `json:"dispute_status"`
-	TeamMemberDatails json.RawMessage       `json:"team_member_datails"`
+	ID            uuid.UUID             `json:"id"`
+	TxnID         string                `json:"txn_id"`
+	StudentEmail  pgtype.Text           `json:"student_email"`
+	Description   pgtype.Text           `json:"description"`
+	EventID       uuid.UUID             `json:"event_id"`
+	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
 }
 
 func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDisputesQueryRow, error) {
@@ -111,7 +108,6 @@ func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDis
 			&i.Description,
 			&i.EventID,
 			&i.DisputeStatus,
-			&i.TeamMemberDatails,
 		); err != nil {
 			return nil, err
 		}
@@ -158,16 +154,24 @@ func (q *Queries) GetDisputeByIDQuery(ctx context.Context, db DBTX, id uuid.UUID
 }
 
 const getEventIdByTxnIdQuery = `-- name: GetEventIdByTxnIdQuery :one
-SELECT event_id
-FROM bookings
+SELECT 
+    b.event_id AS event_id,
+    e.event_status AS event_status
+FROM bookings b
+INNER JOIN event e on b.event_id = e.id
 WHERE txn_id = $1
 `
 
-func (q *Queries) GetEventIdByTxnIdQuery(ctx context.Context, db DBTX, txnID string) (uuid.UUID, error) {
+type GetEventIdByTxnIdQueryRow struct {
+	EventID     uuid.UUID       `json:"event_id"`
+	EventStatus EventStatusEnum `json:"event_status"`
+}
+
+func (q *Queries) GetEventIdByTxnIdQuery(ctx context.Context, db DBTX, txnID string) (GetEventIdByTxnIdQueryRow, error) {
 	row := db.QueryRow(ctx, getEventIdByTxnIdQuery, txnID)
-	var event_id uuid.UUID
-	err := row.Scan(&event_id)
-	return event_id, err
+	var i GetEventIdByTxnIdQueryRow
+	err := row.Scan(&i.EventID, &i.EventStatus)
+	return i, err
 }
 
 const incrementSeatFilledCountQuery = `-- name: IncrementSeatFilledCountQuery :execrows
@@ -184,36 +188,7 @@ func (q *Queries) IncrementSeatFilledCountQuery(ctx context.Context, db DBTX, id
 	return result.RowsAffected(), nil
 }
 
-const updateDisputeGroupQuery = `-- name: UpdateDisputeGroupQuery :execrows
-UPDATE dispute
-SET student_email = $2,
-    description = $3,
-    team_member_datails = $4,
-    updated_at = NOW()
-WHERE id = $1
-`
-
-type UpdateDisputeGroupQueryParams struct {
-	ID                uuid.UUID   `json:"id"`
-	StudentEmail      pgtype.Text `json:"student_email"`
-	Description       pgtype.Text `json:"description"`
-	TeamMemberDatails []byte      `json:"team_member_datails"`
-}
-
-func (q *Queries) UpdateDisputeGroupQuery(ctx context.Context, db DBTX, arg UpdateDisputeGroupQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, updateDisputeGroupQuery,
-		arg.ID,
-		arg.StudentEmail,
-		arg.Description,
-		arg.TeamMemberDatails,
-	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
-}
-
-const updateDisputeSoloQuery = `-- name: UpdateDisputeSoloQuery :execrows
+const updateDisputeQuery = `-- name: UpdateDisputeQuery :execrows
 UPDATE dispute
 SET student_email = $2,
     description = $3,
@@ -221,14 +196,14 @@ SET student_email = $2,
 WHERE id = $1
 `
 
-type UpdateDisputeSoloQueryParams struct {
+type UpdateDisputeQueryParams struct {
 	ID           uuid.UUID   `json:"id"`
 	StudentEmail pgtype.Text `json:"student_email"`
 	Description  pgtype.Text `json:"description"`
 }
 
-func (q *Queries) UpdateDisputeSoloQuery(ctx context.Context, db DBTX, arg UpdateDisputeSoloQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, updateDisputeSoloQuery, arg.ID, arg.StudentEmail, arg.Description)
+func (q *Queries) UpdateDisputeQuery(ctx context.Context, db DBTX, arg UpdateDisputeQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateDisputeQuery, arg.ID, arg.StudentEmail, arg.Description)
 	if err != nil {
 		return 0, err
 	}

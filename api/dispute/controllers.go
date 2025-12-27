@@ -54,7 +54,7 @@ func CreateDispute(c *gin.Context) {
 
 	q := db.New()
 
-	eventId, err := q.GetEventIdByTxnIdQuery(ctx, tx, txnId)
+	event, err := q.GetEventIdByTxnIdQuery(ctx, tx, txnId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -63,43 +63,51 @@ func CreateDispute(c *gin.Context) {
 		return
 	}
 
-	err = q.CreateDisputeQuery(ctx, tx, db.CreateDisputeQueryParams{
-		EventID: eventId,
-		TxnID:   txnId,
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to create dispute", err)
-		return
-	}
+	if event.EventStatus == "ACTIVE" {
 
-	rows, err := q.IncrementSeatFilledCountQuery(ctx, tx, eventId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
+		err = q.CreateDisputeQuery(ctx, tx, db.CreateDisputeQueryParams{
+			EventID: event.EventID,
+			TxnID:   txnId,
 		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to increment seat filled count", err)
-		return
-	}
-	if rows == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to create dispute", err)
+			return
+		}
+
+		rows, err := q.IncrementSeatFilledCountQuery(ctx, tx, event.EventID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to increment seat filled count", err)
+			return
+		}
+		if rows == 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later",
+			})
+			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: No rows affected while incrementing seat filled count", nil)
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "DISPUTE") {
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "Dispute created successfully",
 		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: No rows affected while incrementing seat filled count", nil)
-		return
+		pkg.Log.SuccessCtx(c)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Cannot create dispute for inactive event",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Attempted to create dispute for inactive event", nil)
 	}
-
-	err = tx.Commit(ctx)
-	if pkg.HandleDbTxnCommitErr(c, err, "DISPUTE") {
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "Dispute created successfully",
-	})
-	pkg.Log.SuccessCtx(c)
 
 }
 
@@ -127,75 +135,26 @@ func UpdateDispute(c *gin.Context) {
 
 	q := db.New()
 
-	dispute, err := q.GetDisputeByIDQuery(ctx, conn, disputeId)
+	row, err := q.UpdateDisputeQuery(ctx, conn, db.UpdateDisputeQueryParams{
+		ID:           disputeId,
+		StudentEmail: pkg.ToPgText(req.StudentEmail),
+		Description:  pkg.ToPgText(req.Description),
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch dispute by ID", err)
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to update individual dispute", err)
 		return
 	}
-
-	event, err := q.GetEventByIdQuery(ctx, conn, dispute.EventID)
-	if err != nil {
+	if row == 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch event by ID", err)
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: No rows affected while updating individual dispute", nil)
 		return
 	}
 
-	if event.IsGroup {
-		teamMemberBytes, err := pkg.MarshalTeamMemberDetails(req.TeamMemberDetails)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Invalid team_member_details format",
-			})
-			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to marshal team member details", err)
-			return
-		}
-
-		row, err := q.UpdateDisputeGroupQuery(ctx, conn, db.UpdateDisputeGroupQueryParams{
-			ID:                disputeId,
-			StudentEmail:      pkg.ToPgText(req.StudentEmail),
-			Description:       pkg.ToPgText(req.Description),
-			TeamMemberDatails: teamMemberBytes,
-		})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to update group dispute", err)
-			return
-		}
-		if row == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: No rows affected while updating group dispute", nil)
-			return
-		}
-	} else {
-		row, err := q.UpdateDisputeSoloQuery(ctx, conn, db.UpdateDisputeSoloQueryParams{
-			ID:           disputeId,
-			StudentEmail: pkg.ToPgText(req.StudentEmail),
-			Description:  pkg.ToPgText(req.Description),
-		})
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to update individual dispute", err)
-			return
-		}
-		if row == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Oops! Something happened. Please try again later",
-			})
-			pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: No rows affected while updating individual dispute", nil)
-			return
-		}
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Dispute updated successfully",
 	})

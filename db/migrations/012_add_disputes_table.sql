@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS dispute (
   description TEXT,
   event_id UUID NOT NULL,
   dispute_status dispute_status_enum DEFAULT 'OPEN',
-  team_member_datails JSONB,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
 

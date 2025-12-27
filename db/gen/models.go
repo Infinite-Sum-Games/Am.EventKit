@@ -335,15 +335,14 @@ type Booking struct {
 }
 
 type Dispute struct {
-	ID                uuid.UUID             `json:"id"`
-	TxnID             string                `json:"txn_id"`
-	StudentEmail      pgtype.Text           `json:"student_email"`
-	Description       pgtype.Text           `json:"description"`
-	EventID           uuid.UUID             `json:"event_id"`
-	DisputeStatus     NullDisputeStatusEnum `json:"dispute_status"`
-	TeamMemberDatails []byte                `json:"team_member_datails"`
-	CreatedAt         pgtype.Timestamp      `json:"created_at"`
-	UpdatedAt         pgtype.Timestamp      `json:"updated_at"`
+	ID            uuid.UUID             `json:"id"`
+	TxnID         string                `json:"txn_id"`
+	StudentEmail  pgtype.Text           `json:"student_email"`
+	Description   pgtype.Text           `json:"description"`
+	EventID       uuid.UUID             `json:"event_id"`
+	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
+	CreatedAt     pgtype.Timestamp      `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp      `json:"updated_at"`
 }
 
 type Event struct {
