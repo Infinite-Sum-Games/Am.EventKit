@@ -119,6 +119,7 @@ SELECT
   e.id AS event_id,
   e.name AS event_name,
   e.is_group,
+  e.attendance_mode,
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
       'id', es.id,
@@ -141,10 +142,11 @@ GROUP BY
 `
 
 type FetchEventsByOrganizerQueryRow struct {
-	EventID   uuid.UUID   `json:"event_id"`
-	EventName string      `json:"event_name"`
-	IsGroup   bool        `json:"is_group"`
-	Schedules interface{} `json:"schedules"`
+	EventID        uuid.UUID          `json:"event_id"`
+	EventName      string             `json:"event_name"`
+	IsGroup        bool               `json:"is_group"`
+	AttendanceMode AttendanceModeEnum `json:"attendance_mode"`
+	Schedules      interface{}        `json:"schedules"`
 }
 
 func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, organizerID uuid.UUID) ([]FetchEventsByOrganizerQueryRow, error) {
@@ -160,6 +162,7 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 			&i.EventID,
 			&i.EventName,
 			&i.IsGroup,
+			&i.AttendanceMode,
 			&i.Schedules,
 		); err != nil {
 			return nil, err

@@ -11,6 +11,7 @@ SELECT
   e.id AS event_id,
   e.name AS event_name,
   e.is_group,
+  e.attendance_mode,
   COALESCE(
     JSONB_AGG(DISTINCT JSONB_BUILD_OBJECT(
       'id', es.id,
