@@ -333,12 +333,13 @@ type AccomodationFormResp struct {
 }
 
 type AccomodationPersonell struct {
-	ID        uuid.UUID        `json:"id"`
-	Name      string           `json:"name"`
-	Email     string           `json:"email"`
-	Password  string           `json:"password"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	ID           uuid.UUID        `json:"id"`
+	Name         string           `json:"name"`
+	Email        string           `json:"email"`
+	Password     string           `json:"password"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	RefreshToken pgtype.Text      `json:"refresh_token"`
 }
 
 type Admin struct {

@@ -27,3 +27,13 @@ FROM
   organizer
 WHERE
   email = $1;
+
+-- name: FetchHospitalitySessionQuery :one
+SELECT
+  id,
+  name,
+  email
+FROM
+  organizer
+WHERE
+  email = $1;

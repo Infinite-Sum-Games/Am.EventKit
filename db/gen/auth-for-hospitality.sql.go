@@ -14,7 +14,7 @@ import (
 
 const checkHospitalityRefreshTokenQuery = `-- name: CheckHospitalityRefreshTokenQuery :one
 SELECT refresh_token
-FROM hospitality_personell
+FROM accomodation_personell
 WHERE email = $1
 `
 
@@ -32,15 +32,15 @@ SELECT
   email,
   password,
   refresh_token
-FROM hospitality_personell
+FROM accomodation_personell 
 WHERE email = $1
 `
 
 type LoginHospitalityQueryRow struct {
 	ID           uuid.UUID   `json:"id"`
-	Name         pgtype.Text `json:"name"`
+	Name         string      `json:"name"`
 	Email        string      `json:"email"`
-	Password     pgtype.Text `json:"password"`
+	Password     string      `json:"password"`
 	RefreshToken pgtype.Text `json:"refresh_token"`
 }
 
@@ -58,7 +58,7 @@ func (q *Queries) LoginHospitalityQuery(ctx context.Context, db DBTX, email stri
 }
 
 const revokeHospitalityRefreshTokenQuery = `-- name: RevokeHospitalityRefreshTokenQuery :one
-UPDATE hospitality_personell
+UPDATE accomodation_personell
 SET
   refresh_token = NULL,
   updated_at = NOW()
@@ -75,7 +75,7 @@ func (q *Queries) RevokeHospitalityRefreshTokenQuery(ctx context.Context, db DBT
 }
 
 const updateHospitalityRefreshTokenQuery = `-- name: UpdateHospitalityRefreshTokenQuery :one
-UPDATE hospitality_personell
+UPDATE accomodation_personell
 SET
   refresh_token = $1,
   updated_at = NOW()
