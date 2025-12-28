@@ -38,7 +38,7 @@ WITH successful_bookings AS (
   SELECT
     event_id,
     SUM(registration_fee) AS revenue,
-    SUM(registration_fee_without_gst) AS revenue_without_gst,
+    SUM(COALESCE(registration_fee_without_gst, 0)) AS revenue_without_gst,
     COUNT(id) AS seats_filled
   FROM
     bookings
@@ -64,7 +64,7 @@ SELECT
   e.id AS event_id,
   e.name AS event_name,
   COALESCE(sb.revenue, 0) AS revenue,
-  COALESCE(sb.revenue_without_gst) AS revenue_without_gst,
+  COALESCE(sb.revenue_without_gst, 0) AS revenue_without_gst,
   COALESCE(sb.seats_filled, 0) AS seats_filled,
   e.total_seats,
   e.is_group,
