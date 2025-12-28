@@ -97,6 +97,49 @@ func (ns NullAttendanceModeEnum) Value() (driver.Value, error) {
 	return string(ns.AttendanceModeEnum), nil
 }
 
+type DisputeStatusEnum string
+
+const (
+	DisputeStatusEnumOPEN          DisputeStatusEnum = "OPEN"
+	DisputeStatusEnumCLOSEDASTRUE  DisputeStatusEnum = "CLOSED_AS_TRUE"
+	DisputeStatusEnumCLOSEDASFALSE DisputeStatusEnum = "CLOSED_AS_FALSE"
+)
+
+func (e *DisputeStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DisputeStatusEnum(s)
+	case string:
+		*e = DisputeStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DisputeStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullDisputeStatusEnum struct {
+	DisputeStatusEnum DisputeStatusEnum `json:"dispute_status_enum"`
+	Valid             bool              `json:"valid"` // Valid is true if DisputeStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDisputeStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.DisputeStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DisputeStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDisputeStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DisputeStatusEnum), nil
+}
+
 type EventModeEnum string
 
 const (
@@ -266,6 +309,38 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type AccomodationDetail struct {
+	ID                uuid.UUID        `json:"id"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	HostelID          pgtype.UUID      `json:"hostel_id"`
+	Name              string           `json:"name"`
+	Email             string           `json:"email"`
+	PhoneNumber       string           `json:"phone_number"`
+	IsMale            bool             `json:"is_male"`
+	IsHosteller       bool             `json:"is_hosteller"`
+	CollegeRollNumber string           `json:"college_roll_number"`
+	CollegeName       string           `json:"college_name"`
+	RoomPreference    string           `json:"room_preference"`
+	IsAmritaCampus    bool             `json:"is_amrita_campus"`
+	IsPaid            bool             `json:"is_paid"`
+	CheckIn           pgtype.Timestamp `json:"check_in"`
+	CheckOut          pgtype.Timestamp `json:"check_out"`
+	CreatedAt         pgtype.Timestamp `json:"created_at"`
+	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
+}
+
+type AccomodationFormResp struct {
+}
+
+type AccomodationPersonell struct {
+	ID        uuid.UUID        `json:"id"`
+	Name      string           `json:"name"`
+	Email     string           `json:"email"`
+	Password  string           `json:"password"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
 type Admin struct {
 	ID           uuid.UUID        `json:"id"`
 	Name         pgtype.Text      `json:"name"`
@@ -277,18 +352,30 @@ type Admin struct {
 }
 
 type Booking struct {
-	ID              uuid.UUID        `json:"id"`
-	TxnID           string           `json:"txn_id"`
-	StudentID       uuid.UUID        `json:"student_id"`
-	EventID         uuid.UUID        `json:"event_id"`
-	RegistrationFee int32            `json:"registration_fee"`
-	ProductInfo     string           `json:"product_info"`
-	SeatsReleased   int32            `json:"seats_released"`
-	TxnStatus       string           `json:"txn_status"`
-	TeamDetails     []byte           `json:"team_details"`
-	Metadata        []byte           `json:"metadata"`
-	CreatedAt       pgtype.Timestamp `json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	ID                        uuid.UUID        `json:"id"`
+	TxnID                     string           `json:"txn_id"`
+	StudentID                 uuid.UUID        `json:"student_id"`
+	EventID                   uuid.UUID        `json:"event_id"`
+	RegistrationFee           int32            `json:"registration_fee"`
+	ProductInfo               string           `json:"product_info"`
+	SeatsReleased             int32            `json:"seats_released"`
+	TxnStatus                 string           `json:"txn_status"`
+	TeamDetails               []byte           `json:"team_details"`
+	Metadata                  []byte           `json:"metadata"`
+	CreatedAt                 pgtype.Timestamp `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamp `json:"updated_at"`
+	RegistrationFeeWithoutGst pgtype.Int4      `json:"registration_fee_without_gst"`
+}
+
+type Dispute struct {
+	ID            uuid.UUID             `json:"id"`
+	TxnID         string                `json:"txn_id"`
+	StudentEmail  pgtype.Text           `json:"student_email"`
+	Description   pgtype.Text           `json:"description"`
+	EventID       uuid.UUID             `json:"event_id"`
+	DisputeStatus NullDisputeStatusEnum `json:"dispute_status"`
+	CreatedAt     pgtype.Timestamp      `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp      `json:"updated_at"`
 }
 
 type Event struct {
@@ -348,6 +435,24 @@ type Favourite struct {
 	ID      int32     `json:"id"`
 	Email   string    `json:"email"`
 	EventID uuid.UUID `json:"event_id"`
+}
+
+type GateManagement struct {
+}
+
+type HostelCheckIn struct {
+}
+
+type HostelMetadatum struct {
+	ID                 uuid.UUID   `json:"id"`
+	RoomCount          int32       `json:"room_count"`
+	IsMale             bool        `json:"is_male"`
+	WardenEmail        pgtype.Text `json:"warden_email"`
+	WardenPassword     pgtype.Text `json:"warden_password"`
+	WardenRefreshToken pgtype.Text `json:"warden_refresh_token"`
+	Latitude           pgtype.Text `json:"latitude"`
+	Longtitude         pgtype.Text `json:"longtitude"`
+	MapUrl             pgtype.Text `json:"map_url"`
 }
 
 type Organizer struct {

@@ -1,0 +1,20 @@
+meta {
+  name: CreateDispute
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/disputes/:txnId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  txnId: TXN-35010d84-86eb-439f-b2d7-1fc79d3230dd
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

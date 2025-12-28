@@ -1,0 +1,20 @@
+meta {
+  name: CloseAsTrue
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/disputes/closeAsTrue/:disputeId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  disputeId: ea54d1f7-1943-4a62-9468-1e7c7c5c2a36
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

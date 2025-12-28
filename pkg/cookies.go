@@ -118,6 +118,7 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	isStudent := c.GetBool("STUDENT-ROLE")
 	isOrganizer := c.GetBool("ORGANIZER-ROLE")
 	isAdmin := c.GetBool("ADMIN-ROLE")
+	isHospitality := c.GetBool("HOSPITALITY-ROLE")
 
 	q := db.New()
 
@@ -127,6 +128,8 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 		_, err = q.RevokeOrganizerRefreshTokenQuery(ctx, conn, email)
 	} else if isAdmin {
 		_, err = q.RevokeAdminRefreshTokenQuery(ctx, conn, email)
+	} else if isHospitality {
+		_, err = q.RevokeHospitalityRefreshTokenQuery(ctx, conn, email)
 	}
 
 	if err != nil {

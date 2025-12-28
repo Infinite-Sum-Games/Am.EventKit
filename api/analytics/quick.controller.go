@@ -27,7 +27,7 @@ func GetQuickDashboard(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
 		})
-		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: ", err)
+		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get analytics", err)
 		return
 	}
 

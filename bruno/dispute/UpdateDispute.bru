@@ -1,0 +1,28 @@
+meta {
+  name: UpdateDispute
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/disputes/:disputeId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  disputeId: ea54d1f7-1943-4a62-9468-1e7c7c5c2a36
+}
+
+body:json {
+  {
+    "student_email": "akshay@amrita.edu",
+    "description": "Our entire team attended but the booking was incorrect."
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

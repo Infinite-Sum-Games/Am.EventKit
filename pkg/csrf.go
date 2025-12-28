@@ -16,6 +16,7 @@ var CsrfRoutes = map[string]string{
 	"/api/v1/auth/user/forgot-password/otp/verify": "user.forgot_password_otp",
 	"/api/v1/user/profile/edit":                    "user.edit_profile",
 	"/api/v1/events/:eventId/book":                 "event.book_event",
+	"/api/v1/accommodation/":                       "user.accomodation_form",
 }
 
 func CreateCsrfToken(email string, c *gin.Context) (string, error) {
