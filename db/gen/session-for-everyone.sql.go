@@ -34,6 +34,30 @@ func (q *Queries) FetchAdminSessionQuery(ctx context.Context, db DBTX, email str
 	return i, err
 }
 
+const fetchHospitalitySessionQuery = `-- name: FetchHospitalitySessionQuery :one
+SELECT
+  id,
+  name,
+  email
+FROM
+  organizer
+WHERE
+  email = $1
+`
+
+type FetchHospitalitySessionQueryRow struct {
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Email string    `json:"email"`
+}
+
+func (q *Queries) FetchHospitalitySessionQuery(ctx context.Context, db DBTX, email string) (FetchHospitalitySessionQueryRow, error) {
+	row := db.QueryRow(ctx, fetchHospitalitySessionQuery, email)
+	var i FetchHospitalitySessionQueryRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
+}
+
 const fetchOrganizerSessionQuery = `-- name: FetchOrganizerSessionQuery :one
 SELECT
   id,

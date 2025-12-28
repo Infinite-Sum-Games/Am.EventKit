@@ -5,11 +5,11 @@ SELECT
   email,
   password,
   refresh_token
-FROM hospitality_personell
+FROM accomodation_personell 
 WHERE email = $1;
 
 -- name: UpdateHospitalityRefreshTokenQuery :one
-UPDATE hospitality_personell
+UPDATE accomodation_personell
 SET
   refresh_token = $1,
   updated_at = NOW()
@@ -19,7 +19,7 @@ RETURNING
   refresh_token;
 
 -- name: RevokeHospitalityRefreshTokenQuery :one
-UPDATE hospitality_personell
+UPDATE accomodation_personell
 SET
   refresh_token = NULL,
   updated_at = NOW()
@@ -30,5 +30,5 @@ RETURNING
 
 -- name: CheckHospitalityRefreshTokenQuery :one
 SELECT refresh_token
-FROM hospitality_personell
+FROM accomodation_personell
 WHERE email = $1;
