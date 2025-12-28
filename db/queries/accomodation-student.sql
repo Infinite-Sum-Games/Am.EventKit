@@ -38,6 +38,8 @@ INSERT INTO accomodation_details (
   college_roll_number,
   college_name,
   room_preference,
-  is_amrita_campus
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  is_amrita_campus,
+  check_in,
+  check_out
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 RETURNING id;

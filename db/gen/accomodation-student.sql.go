@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const checkStudentHasTicketQuery = `-- name: CheckStudentHasTicketQuery :one
@@ -81,22 +82,26 @@ INSERT INTO accomodation_details (
   college_roll_number,
   college_name,
   room_preference,
-  is_amrita_campus
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  is_amrita_campus,
+  check_in,
+  check_out
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 RETURNING id
 `
 
 type InsertAccomodationFormEntryQueryParams struct {
-	StudentID         uuid.UUID `json:"student_id"`
-	Name              string    `json:"name"`
-	IsMale            bool      `json:"is_male"`
-	Email             string    `json:"email"`
-	PhoneNumber       string    `json:"phone_number"`
-	IsHosteller       bool      `json:"is_hosteller"`
-	CollegeRollNumber string    `json:"college_roll_number"`
-	CollegeName       string    `json:"college_name"`
-	RoomPreference    string    `json:"room_preference"`
-	IsAmritaCampus    bool      `json:"is_amrita_campus"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	Name              string           `json:"name"`
+	IsMale            bool             `json:"is_male"`
+	Email             string           `json:"email"`
+	PhoneNumber       string           `json:"phone_number"`
+	IsHosteller       bool             `json:"is_hosteller"`
+	CollegeRollNumber string           `json:"college_roll_number"`
+	CollegeName       string           `json:"college_name"`
+	RoomPreference    string           `json:"room_preference"`
+	IsAmritaCampus    bool             `json:"is_amrita_campus"`
+	CheckIn           pgtype.Timestamp `json:"check_in"`
+	CheckOut          pgtype.Timestamp `json:"check_out"`
 }
 
 func (q *Queries) InsertAccomodationFormEntryQuery(ctx context.Context, db DBTX, arg InsertAccomodationFormEntryQueryParams) (uuid.UUID, error) {
@@ -111,6 +116,8 @@ func (q *Queries) InsertAccomodationFormEntryQuery(ctx context.Context, db DBTX,
 		arg.CollegeName,
 		arg.RoomPreference,
 		arg.IsAmritaCampus,
+		arg.CheckIn,
+		arg.CheckOut,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
