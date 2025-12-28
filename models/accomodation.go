@@ -22,7 +22,7 @@ type AccomodationForm struct {
 func (r AccomodationForm) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.RoomPreference, v.Required, v.In("single", "4 sharing", "dormitory")),
-		v.Field(&r.CollegeName, v.Required.When(r.IsAmritaCampus == false)),
+		v.Field(&r.CollegeName, v.Required.When(!r.IsAmritaCampus)),
 		v.Field(&r.CollegeRollNumber, v.Required.When(r.IsAmritaCampus == false)),
 		v.Field(&r.CheckInDate, v.Required, v.Date("2006-01-02")),
 		v.Field(&r.CheckInTime, v.Required, v.Match(regexp.MustCompile("^([01][0-9]|2[0-3]):[0-5][0-9]$"))),
