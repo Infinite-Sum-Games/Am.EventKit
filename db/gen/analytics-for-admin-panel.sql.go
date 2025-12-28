@@ -54,6 +54,7 @@ WITH successful_bookings AS (
   SELECT
     event_id,
     SUM(registration_fee) AS revenue,
+    SUM(COALESCE(registration_fee_without_gst, 0)) AS revenue_without_gst,
     COUNT(id) AS seats_filled
   FROM
     bookings
@@ -77,6 +78,7 @@ SELECT
   e.id AS event_id,
   e.name AS event_name,
   COALESCE(sb.revenue, 0) AS revenue,
+  COALESCE(sb.revenue_without_gst, 0) AS revenue_without_gst,
   COALESCE(sb.seats_filled, 0) AS seats_filled,
   e.total_seats,
   e.is_group,
@@ -98,6 +100,7 @@ type GetQuickDashboardQueryRow struct {
 	EventID                uuid.UUID     `json:"event_id"`
 	EventName              string        `json:"event_name"`
 	Revenue                int64         `json:"revenue"`
+	RevenueWithoutGst      int64         `json:"revenue_without_gst"`
 	SeatsFilled            int64         `json:"seats_filled"`
 	TotalSeats             int32         `json:"total_seats"`
 	IsGroup                bool          `json:"is_group"`
@@ -121,6 +124,7 @@ func (q *Queries) GetQuickDashboardQuery(ctx context.Context, db DBTX) ([]GetQui
 			&i.EventID,
 			&i.EventName,
 			&i.Revenue,
+			&i.RevenueWithoutGst,
 			&i.SeatsFilled,
 			&i.TotalSeats,
 			&i.IsGroup,
