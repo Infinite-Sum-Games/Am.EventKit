@@ -10,6 +10,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func AccomodationExists(c *gin.Context) {
@@ -105,6 +106,22 @@ func AccomodationFormSubmission(c *gin.Context) {
 		return
 	}
 
+	checkInString := req.CheckInDate + " " + req.CheckInTime
+	checkIn, err := time.Parse("2006-01-02 15:04", checkInString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid check-in date or time format"})
+		pkg.Log.ErrorCtx(c, "[ACCOMODATION-ERROR]: Failed to parse check-in date/time", err)
+		return
+	}
+
+	checkOutString := req.CheckOutDate + " " + req.CheckOutTime
+	checkOut, err := time.Parse("2006-01-02 15:04", checkOutString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid check-out date or time format"})
+		pkg.Log.ErrorCtx(c, "[ACCOMODATION-ERROR]: Failed to parse check-out date/time", err)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -136,6 +153,8 @@ func AccomodationFormSubmission(c *gin.Context) {
 			CollegeName:       req.CollegeName,
 			RoomPreference:    req.RoomPreference,
 			CollegeRollNumber: req.CollegeRollNumber,
+			CheckIn:           pgtype.Timestamp{Time: checkIn, Valid: true},
+			CheckOut:          pgtype.Timestamp{Time: checkOut, Valid: true},
 		})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
