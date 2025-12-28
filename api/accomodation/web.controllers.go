@@ -58,7 +58,7 @@ func AccomodationExists(c *gin.Context) {
 	}
 	if hasAccomodation {
 		c.JSON(http.StatusOK, gin.H{
-			"has_accommodation": "FILLED_ACCOMODATION",
+			"has_accommodation": "FILLED_ACCOMMODATION",
 		})
 		pkg.Log.WarnCtx(c, "[ACCOMMODATION-WARN]: Already filled accomodation form")
 		return
