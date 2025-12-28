@@ -181,7 +181,7 @@ func BookEvent(c *gin.Context) {
 			}
 		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Student not registered: " + missing,
+			"message": "Student not signed-up: " + missing,
 		})
 		pkg.Log.ErrorCtx(c, "[BOOKING-ERROR]: Student not registered in anokha"+missing, err)
 		return
