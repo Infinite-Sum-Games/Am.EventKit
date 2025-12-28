@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	apiAccomodation "github.com/Thanus-Kumaar/anokha-2025-backend/api/accomodation"
 	apiAnalytics "github.com/Thanus-Kumaar/anokha-2025-backend/api/analytics"
 	apiAttend "github.com/Thanus-Kumaar/anokha-2025-backend/api/attendance"
 	apiAuth "github.com/Thanus-Kumaar/anokha-2025-backend/api/auth"
@@ -72,6 +73,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	organizerRouter := v1.Group("/organizers")
 	analyticsRouter := v1.Group("/analytics")
 	disputeRouter := v1.Group("/disputes")
+	accomodationRouter := v1.Group("/accomodation")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
@@ -86,6 +88,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiBooking.BookingRoutes(eventRouter)
 	apiAnalytics.AnalyticsRoutes(analyticsRouter)
 	apiDispute.DisputeRoutes(disputeRouter)
+	apiAccomodation.AccomodationRoutes(accomodationRouter)
 
 	return r
 }
