@@ -39,9 +39,24 @@ type CheckStudentRegisteredForEventParams struct {
 	EventID   uuid.UUID `json:"event_id"`
 }
 
-func (q *Queries) CheckStudentRegisteredForEvent(ctx context.Context, db DBTX, arg CheckStudentRegisteredForEventParams) (Booking, error) {
+type CheckStudentRegisteredForEventRow struct {
+	ID              uuid.UUID        `json:"id"`
+	TxnID           string           `json:"txn_id"`
+	StudentID       uuid.UUID        `json:"student_id"`
+	EventID         uuid.UUID        `json:"event_id"`
+	RegistrationFee int32            `json:"registration_fee"`
+	ProductInfo     string           `json:"product_info"`
+	SeatsReleased   int32            `json:"seats_released"`
+	TxnStatus       string           `json:"txn_status"`
+	TeamDetails     []byte           `json:"team_details"`
+	Metadata        []byte           `json:"metadata"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) CheckStudentRegisteredForEvent(ctx context.Context, db DBTX, arg CheckStudentRegisteredForEventParams) (CheckStudentRegisteredForEventRow, error) {
 	row := db.QueryRow(ctx, checkStudentRegisteredForEvent, arg.StudentID, arg.EventID)
-	var i Booking
+	var i CheckStudentRegisteredForEventRow
 	err := row.Scan(
 		&i.ID,
 		&i.TxnID,

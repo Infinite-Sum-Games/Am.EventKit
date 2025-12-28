@@ -16,7 +16,7 @@ SELECT
     CASE 
         WHEN EXISTS (
           SELECT 1 
-          FROM accomodation_form_resp
+          FROM accomodation_details
           WHERE student_id = $1
         ) 
         THEN TRUE 
@@ -29,4 +29,74 @@ func (q *Queries) CheckUserAccomodationExistsQuery(ctx context.Context, db DBTX,
 	var has_accomodation bool
 	err := row.Scan(&has_accomodation)
 	return has_accomodation, err
+}
+
+const fetchStudentMetadata = `-- name: FetchStudentMetadata :one
+SELECT
+  id,
+  name,
+  phone_number
+FROM student
+WHERE
+  email = $1
+`
+
+type FetchStudentMetadataRow struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	PhoneNumber string    `json:"phone_number"`
+}
+
+func (q *Queries) FetchStudentMetadata(ctx context.Context, db DBTX, email string) (FetchStudentMetadataRow, error) {
+	row := db.QueryRow(ctx, fetchStudentMetadata, email)
+	var i FetchStudentMetadataRow
+	err := row.Scan(&i.ID, &i.Name, &i.PhoneNumber)
+	return i, err
+}
+
+const insertAccomodationFormEntryQuery = `-- name: InsertAccomodationFormEntryQuery :one
+INSERT INTO accomodation_details (
+  student_id,
+  name,
+  is_male,
+  email,
+  phone_number,
+  is_hosteller,
+  college_roll_number,
+  college_name,
+  room_preference,
+  is_amrita_campus
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+RETURNING id
+`
+
+type InsertAccomodationFormEntryQueryParams struct {
+	StudentID         uuid.UUID `json:"student_id"`
+	Name              string    `json:"name"`
+	IsMale            bool      `json:"is_male"`
+	Email             string    `json:"email"`
+	PhoneNumber       string    `json:"phone_number"`
+	IsHosteller       bool      `json:"is_hosteller"`
+	CollegeRollNumber string    `json:"college_roll_number"`
+	CollegeName       string    `json:"college_name"`
+	RoomPreference    string    `json:"room_preference"`
+	IsAmritaCampus    bool      `json:"is_amrita_campus"`
+}
+
+func (q *Queries) InsertAccomodationFormEntryQuery(ctx context.Context, db DBTX, arg InsertAccomodationFormEntryQueryParams) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, insertAccomodationFormEntryQuery,
+		arg.StudentID,
+		arg.Name,
+		arg.IsMale,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.IsHosteller,
+		arg.CollegeRollNumber,
+		arg.CollegeName,
+		arg.RoomPreference,
+		arg.IsAmritaCampus,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

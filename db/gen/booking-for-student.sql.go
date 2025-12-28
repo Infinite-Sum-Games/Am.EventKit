@@ -214,7 +214,7 @@ func (q *Queries) GetAnyPendingBookingByUser(ctx context.Context, db DBTX, stude
 }
 
 const getBookingByTxnID = `-- name: GetBookingByTxnID :one
-SELECT id, txn_id, student_id, event_id, registration_fee, product_info, seats_released, txn_status, team_details, metadata, created_at, updated_at FROM bookings WHERE txn_id = $1
+SELECT id, txn_id, student_id, event_id, registration_fee, product_info, seats_released, txn_status, team_details, metadata, created_at, updated_at, registration_fee_without_gst FROM bookings WHERE txn_id = $1
 `
 
 func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) (Booking, error) {
@@ -233,6 +233,7 @@ func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) 
 		&i.Metadata,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.RegistrationFeeWithoutGst,
 	)
 	return i, err
 }

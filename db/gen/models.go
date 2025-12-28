@@ -309,16 +309,36 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type AccomodationDetail struct {
+	ID                uuid.UUID        `json:"id"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	HostelID          pgtype.UUID      `json:"hostel_id"`
+	Name              string           `json:"name"`
+	Email             string           `json:"email"`
+	PhoneNumber       string           `json:"phone_number"`
+	IsMale            bool             `json:"is_male"`
+	IsHosteller       bool             `json:"is_hosteller"`
+	CollegeRollNumber string           `json:"college_roll_number"`
+	CollegeName       string           `json:"college_name"`
+	RoomPreference    string           `json:"room_preference"`
+	IsAmritaCampus    bool             `json:"is_amrita_campus"`
+	IsPaid            bool             `json:"is_paid"`
+	CheckIn           pgtype.Timestamp `json:"check_in"`
+	CheckOut          pgtype.Timestamp `json:"check_out"`
+	CreatedAt         pgtype.Timestamp `json:"created_at"`
+	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
+}
+
 type AccomodationFormResp struct {
-	ID                   uuid.UUID        `json:"id"`
-	StudentID            uuid.UUID        `json:"student_id"`
-	Name                 string           `json:"name"`
-	IsMale               pgtype.Bool      `json:"is_male"`
-	CollegeRollNumber    string           `json:"college_roll_number"`
-	CollegeNameMentioned string           `json:"college_name_mentioned"`
-	IsAmrita             pgtype.Bool      `json:"is_amrita"`
-	CheckIn              pgtype.Timestamp `json:"check_in"`
-	CheckOut             pgtype.Timestamp `json:"check_out"`
+}
+
+type AccomodationPersonell struct {
+	ID        uuid.UUID        `json:"id"`
+	Name      string           `json:"name"`
+	Email     string           `json:"email"`
+	Password  string           `json:"password"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Admin struct {
@@ -332,18 +352,19 @@ type Admin struct {
 }
 
 type Booking struct {
-	ID              uuid.UUID        `json:"id"`
-	TxnID           string           `json:"txn_id"`
-	StudentID       uuid.UUID        `json:"student_id"`
-	EventID         uuid.UUID        `json:"event_id"`
-	RegistrationFee int32            `json:"registration_fee"`
-	ProductInfo     string           `json:"product_info"`
-	SeatsReleased   int32            `json:"seats_released"`
-	TxnStatus       string           `json:"txn_status"`
-	TeamDetails     []byte           `json:"team_details"`
-	Metadata        []byte           `json:"metadata"`
-	CreatedAt       pgtype.Timestamp `json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	ID                        uuid.UUID        `json:"id"`
+	TxnID                     string           `json:"txn_id"`
+	StudentID                 uuid.UUID        `json:"student_id"`
+	EventID                   uuid.UUID        `json:"event_id"`
+	RegistrationFee           int32            `json:"registration_fee"`
+	ProductInfo               string           `json:"product_info"`
+	SeatsReleased             int32            `json:"seats_released"`
+	TxnStatus                 string           `json:"txn_status"`
+	TeamDetails               []byte           `json:"team_details"`
+	Metadata                  []byte           `json:"metadata"`
+	CreatedAt                 pgtype.Timestamp `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamp `json:"updated_at"`
+	RegistrationFeeWithoutGst pgtype.Int4      `json:"registration_fee_without_gst"`
 }
 
 type Dispute struct {
@@ -423,6 +444,15 @@ type HostelCheckIn struct {
 }
 
 type HostelMetadatum struct {
+	ID                 uuid.UUID   `json:"id"`
+	RoomCount          int32       `json:"room_count"`
+	IsMale             bool        `json:"is_male"`
+	WardenEmail        pgtype.Text `json:"warden_email"`
+	WardenPassword     pgtype.Text `json:"warden_password"`
+	WardenRefreshToken pgtype.Text `json:"warden_refresh_token"`
+	Latitude           pgtype.Text `json:"latitude"`
+	Longtitude         pgtype.Text `json:"longtitude"`
+	MapUrl             pgtype.Text `json:"map_url"`
 }
 
 type Organizer struct {
