@@ -73,7 +73,7 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	organizerRouter := v1.Group("/organizers")
 	analyticsRouter := v1.Group("/analytics")
 	disputeRouter := v1.Group("/disputes")
-	accomodationRouter := v1.Group("/accomodation")
+	accomodationRouter := v1.Group("/accommodation")
 
 	apiAuth.StudentAuthRoutes(authRouter)
 	apiAuth.OrganizerAuthRoutes(authRouter)
