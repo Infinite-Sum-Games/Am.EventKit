@@ -40,7 +40,7 @@ func AccomodationExists(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[ACCOMMODATION-ERROR]: Failed to check if student has a ticket", err)
 		return
 	}
-	if hasRegistration {
+	if !hasRegistration {
 		c.JSON(http.StatusOK, gin.H{
 			"has_accommodation": "NOT_REGISTERED",
 		})
