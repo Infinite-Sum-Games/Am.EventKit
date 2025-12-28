@@ -11,6 +11,22 @@ import (
 	"github.com/google/uuid"
 )
 
+const checkStudentHasTicketQuery = `-- name: CheckStudentHasTicketQuery :one
+SELECT EXISTS (
+  SELECT 1
+  FROM bookings
+  WHERE student_id = $1
+  AND txn_status = 'SUCCESS'
+)
+`
+
+func (q *Queries) CheckStudentHasTicketQuery(ctx context.Context, db DBTX, studentID uuid.UUID) (bool, error) {
+	row := db.QueryRow(ctx, checkStudentHasTicketQuery, studentID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const checkUserAccomodationExistsQuery = `-- name: CheckUserAccomodationExistsQuery :one
 SELECT 
     CASE 

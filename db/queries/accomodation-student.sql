@@ -1,3 +1,11 @@
+-- name: CheckStudentHasTicketQuery :one
+SELECT EXISTS (
+  SELECT 1
+  FROM bookings
+  WHERE student_id = $1
+  AND txn_status = 'SUCCESS'
+);
+
 -- name: CheckUserAccomodationExistsQuery :one
 SELECT 
     CASE 
