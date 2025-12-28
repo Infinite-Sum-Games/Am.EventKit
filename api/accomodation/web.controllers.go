@@ -32,6 +32,22 @@ func AccomodationExists(c *gin.Context) {
 	defer conn.Release()
 
 	q := db.New()
+	hasRegistration, err := q.CheckStudentHasTicketQuery(ctx, conn, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[ACCOMMODATION-ERROR]: Failed to check if student has a ticket", err)
+		return
+	}
+	if hasRegistration {
+		c.JSON(http.StatusOK, gin.H{
+			"has_accommodation": "NOT_REGISTERED",
+		})
+		pkg.Log.WarnCtx(c, "[ACCOMODATION-WARN]: Attempt to register without a ticket")
+		return
+	}
+
 	hasAccomodation, err := q.CheckUserAccomodationExistsQuery(ctx, conn, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -40,9 +56,16 @@ func AccomodationExists(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[ACCOMODATION-ERROR]: Failed to check if user has accomodation", err)
 		return
 	}
+	if hasAccomodation {
+		c.JSON(http.StatusOK, gin.H{
+			"has_accommodation": "FILLED_ACCOMODATION",
+		})
+		pkg.Log.WarnCtx(c, "[ACCOMMODATION-WARN]: Already filled accomodation form")
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"has_accomodation": hasAccomodation,
+		"has_accommodation": "ELIGIBLE",
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -58,13 +81,14 @@ func AccomodationFormCsrf(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later.",
 		})
+		pkg.Log.ErrorCtx(c, "[ACCOMODATION-ERROR]: Failed to create CSRF token", err)
 		return
 	}
 
 	pkg.SetCsrfCookie(c, csrfToken)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Hospitality",
+		"message": "Successfully initiated accomodation form filling",
 		"key":     csrfToken,
 	})
 	pkg.Log.SuccessCtx(c)
