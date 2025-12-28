@@ -1,9 +1,18 @@
 -- name: CheckStudentHasTicketQuery :one
 SELECT EXISTS (
-  SELECT 1
-  FROM bookings
-  WHERE student_id = $1
-  AND txn_status = 'SUCCESS'
+    SELECT 1
+    FROM bookings b 
+    WHERE b.student_id = $1
+      AND b.txn_status = 'SUCCESS'
+      
+    UNION ALL
+    
+    SELECT 1
+    FROM team_members tm
+    JOIN teams t ON t.id = tm.team_id
+    JOIN bookings b ON b.id = t.booking_id
+    WHERE tm.student_id = $1
+      AND b.txn_status = 'SUCCESS'
 );
 
 -- name: CheckUserAccomodationExistsQuery :one
