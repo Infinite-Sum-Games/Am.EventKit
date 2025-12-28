@@ -1,9 +1,4 @@
--- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS hostel_metadata (
-
-);
--- +goose StatementEnd
-
+-- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS hostel_check_in (
 
