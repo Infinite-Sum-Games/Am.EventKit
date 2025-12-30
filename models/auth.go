@@ -32,7 +32,7 @@ func (s StudentOnboardingRequest) Validate() error {
 		v.Field(&s.Email, v.Required, is.Email),
 		v.Field(&s.Password, v.Required, v.Length(8, 0)),
 		v.Field(&s.PhoneNumber, v.Required, v.Length(10, 10)),
-		v.Field(&s.CollegeName, v.Required, v.Length(3, 50)),
+		v.Field(&s.CollegeName, v.Required, v.Length(3, 128)),
 		v.Field(&s.CollegeCity, v.Required, v.Length(3, 50)),
 	)
 }
