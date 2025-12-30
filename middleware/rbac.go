@@ -45,3 +45,13 @@ func CheckOrgAndAdmin(c *gin.Context) {
 		"message": "Admin denied.",
 	})
 }
+
+func CheckHospitality(c *gin.Context) {
+	if c.GetBool("HOSPITALITY-ROLE") {
+		c.Next()
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"message": "Hospitality denied.",
+	})
+}
