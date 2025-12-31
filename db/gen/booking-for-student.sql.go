@@ -238,6 +238,21 @@ func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) 
 	return i, err
 }
 
+const getEmailByTxnId = `-- name: GetEmailByTxnId :one
+SELECT s.email
+FROM bookings b 
+INNER JOIN student s 
+  ON b.student_id = s.id
+WHERE b.txn_id = $1
+`
+
+func (q *Queries) GetEmailByTxnId(ctx context.Context, db DBTX, txnID string) (string, error) {
+	row := db.QueryRow(ctx, getEmailByTxnId, txnID)
+	var email string
+	err := row.Scan(&email)
+	return email, err
+}
+
 const getEventForBooking = `-- name: GetEventForBooking :one
 SELECT
   e.id,
@@ -294,7 +309,11 @@ func (q *Queries) GetEventForBooking(ctx context.Context, db DBTX, id uuid.UUID)
 }
 
 const getTeamIDByBooking = `-- name: GetTeamIDByBooking :one
-SELECT id FROM teams WHERE booking_id = $1
+SELECT teams.id FROM teams 
+INNER JOIN bookings b
+  ON teams.booking_id = b.id 
+  AND b.txn_status = 'SUCCESS'
+WHERE booking_id = $1
 `
 
 func (q *Queries) GetTeamIDByBooking(ctx context.Context, db DBTX, bookingID uuid.UUID) (uuid.UUID, error) {
@@ -305,18 +324,52 @@ func (q *Queries) GetTeamIDByBooking(ctx context.Context, db DBTX, bookingID uui
 }
 
 const getTeamMembersByTeamID = `-- name: GetTeamMembersByTeamID :many
-SELECT id, team_id, student_id, student_role, student_name, student_email FROM team_members WHERE team_id = $1
+SELECT team_members.id, team_id, team_members.student_id, student_role, student_name, student_email, t.id, team_name, t.event_id, leader_name, booking_id, t.metadata, b.id, txn_id, b.student_id, b.event_id, registration_fee, product_info, seats_released, txn_status, team_details, b.metadata, created_at, updated_at, registration_fee_without_gst FROM team_members
+INNER JOIN teams t 
+  ON team_members.team_id = t.id
+INNER JOIN bookings b 
+  ON t.booking_id = b.id
+  AND b.txn_status = 'SUCCESS'
+WHERE team_id = $1
 `
 
-func (q *Queries) GetTeamMembersByTeamID(ctx context.Context, db DBTX, teamID uuid.UUID) ([]TeamMember, error) {
+type GetTeamMembersByTeamIDRow struct {
+	ID                        uuid.UUID        `json:"id"`
+	TeamID                    uuid.UUID        `json:"team_id"`
+	StudentID                 uuid.UUID        `json:"student_id"`
+	StudentRole               string           `json:"student_role"`
+	StudentName               string           `json:"student_name"`
+	StudentEmail              string           `json:"student_email"`
+	ID_2                      uuid.UUID        `json:"id_2"`
+	TeamName                  string           `json:"team_name"`
+	EventID                   uuid.UUID        `json:"event_id"`
+	LeaderName                string           `json:"leader_name"`
+	BookingID                 uuid.UUID        `json:"booking_id"`
+	Metadata                  []byte           `json:"metadata"`
+	ID_3                      uuid.UUID        `json:"id_3"`
+	TxnID                     string           `json:"txn_id"`
+	StudentID_2               uuid.UUID        `json:"student_id_2"`
+	EventID_2                 uuid.UUID        `json:"event_id_2"`
+	RegistrationFee           int32            `json:"registration_fee"`
+	ProductInfo               string           `json:"product_info"`
+	SeatsReleased             int32            `json:"seats_released"`
+	TxnStatus                 string           `json:"txn_status"`
+	TeamDetails               []byte           `json:"team_details"`
+	Metadata_2                []byte           `json:"metadata_2"`
+	CreatedAt                 pgtype.Timestamp `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamp `json:"updated_at"`
+	RegistrationFeeWithoutGst pgtype.Int4      `json:"registration_fee_without_gst"`
+}
+
+func (q *Queries) GetTeamMembersByTeamID(ctx context.Context, db DBTX, teamID uuid.UUID) ([]GetTeamMembersByTeamIDRow, error) {
 	rows, err := db.Query(ctx, getTeamMembersByTeamID, teamID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TeamMember
+	var items []GetTeamMembersByTeamIDRow
 	for rows.Next() {
-		var i TeamMember
+		var i GetTeamMembersByTeamIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.TeamID,
@@ -324,6 +377,25 @@ func (q *Queries) GetTeamMembersByTeamID(ctx context.Context, db DBTX, teamID uu
 			&i.StudentRole,
 			&i.StudentName,
 			&i.StudentEmail,
+			&i.ID_2,
+			&i.TeamName,
+			&i.EventID,
+			&i.LeaderName,
+			&i.BookingID,
+			&i.Metadata,
+			&i.ID_3,
+			&i.TxnID,
+			&i.StudentID_2,
+			&i.EventID_2,
+			&i.RegistrationFee,
+			&i.ProductInfo,
+			&i.SeatsReleased,
+			&i.TxnStatus,
+			&i.TeamDetails,
+			&i.Metadata_2,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.RegistrationFeeWithoutGst,
 		); err != nil {
 			return nil, err
 		}

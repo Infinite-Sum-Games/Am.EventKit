@@ -92,10 +92,20 @@ WHERE id = $2;
 SELECT * FROM bookings WHERE txn_id = $1;
 
 -- name: GetTeamMembersByTeamID :many
-SELECT * FROM team_members WHERE team_id = $1;
+SELECT * FROM team_members
+INNER JOIN teams t 
+  ON team_members.team_id = t.id
+INNER JOIN bookings b 
+  ON t.booking_id = b.id
+  AND b.txn_status = 'SUCCESS'
+WHERE team_id = $1;
 
 -- name: GetTeamIDByBooking :one
-SELECT id FROM teams WHERE booking_id = $1;
+SELECT teams.id FROM teams 
+INNER JOIN bookings b
+  ON teams.booking_id = b.id 
+  AND b.txn_status = 'SUCCESS'
+WHERE booking_id = $1;
 
 -- name: DeleteTeam :exec
 DELETE 
@@ -111,3 +121,10 @@ WHERE team_id = $1;
 UPDATE bookings
 SET txn_status = $2
 WHERE id = $1;
+
+-- name: GetEmailByTxnId :one
+SELECT s.email
+FROM bookings b 
+INNER JOIN student s 
+  ON b.student_id = s.id
+WHERE b.txn_id = $1;
