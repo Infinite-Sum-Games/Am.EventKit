@@ -8,16 +8,13 @@ CREATE MATERIALIZED VIEW participants_analytics AS
 WITH participants AS (
     SELECT student_id FROM solo_event_participant
     UNION
-    SELECT team_members.student_id FROM team_members
-    INNER JOIN teams t ON t.id = team_members.team_id
-    INNER JOIN bookings b ON b.id = t.booking_id
-    WHERE b.txn_status = 'SUCCESS'
-)
+    SELECT student_id FROM team_events_attendance
+   )
 SELECT
     1 AS id,
 
     -- TOTAL EVENT REGISTRATIONS
-    (SELECT COUNT(*) FROM participants) AS total_event_registrations,
+    (SELECT COUNT(*) FROM participants) AS total_event_participants,
 
     -- PARTICIPANTS VS NON-PARTICIPANTS
     (
@@ -66,7 +63,7 @@ SELECT
 
 
 -- Create unique index for CONCURRENT refresh support
-CREATE UNIQUE INDEX event_registration_analytics_id_index 
+CREATE UNIQUE INDEX participants_id_index 
 ON participants_analytics(id);
 
 -- +goose StatementEnd
