@@ -12,6 +12,7 @@ func BookingRoutes(r *gin.RouterGroup) {
 	// Booking endpoints
 	r.POST("/:eventId/book", mw.VerifyCsrf, mw.Auth, BookEvent)
 	r.POST("/verify", mw.Auth, VerifyTransactionNew)
+	r.POST("/reverify", ReverifyFailedTransaction)
 
 	// Fetch transactions
 	r.GET("/transactions", mw.Auth, mw.CheckAdmin, FetchAdminTransactions)

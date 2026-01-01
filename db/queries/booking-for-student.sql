@@ -7,8 +7,9 @@ INSERT INTO bookings (
   txn_status,
   product_info,
   seats_released,
-  metadata
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  metadata,
+  registration_fee_without_gst
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id;
 
 -- name: CreateTeam :one
@@ -97,14 +98,12 @@ INNER JOIN teams t
   ON team_members.team_id = t.id
 INNER JOIN bookings b 
   ON t.booking_id = b.id
-  AND b.txn_status = 'SUCCESS'
 WHERE team_id = $1;
 
 -- name: GetTeamIDByBooking :one
 SELECT teams.id FROM teams 
 INNER JOIN bookings b
   ON teams.booking_id = b.id 
-  AND b.txn_status = 'SUCCESS'
 WHERE booking_id = $1;
 
 -- name: DeleteTeam :exec
@@ -128,3 +127,8 @@ FROM bookings b
 INNER JOIN student s 
   ON b.student_id = s.id
 WHERE b.txn_id = $1;
+
+-- name: GetDisputeIdFromTxnIdQuery :one
+SELECT d.id
+FROM dispute d
+WHERE d.txn_id = $1;
