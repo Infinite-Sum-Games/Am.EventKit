@@ -56,23 +56,37 @@ SELECT
   amrita_roll_number,
   college_name,
   college_city,
-  is_amrita_student,
-  (id IN (SELECT student_id FROM solo_event_participant) OR
-  id IN (SELECT student_id FROM team_events_attendance)) AS is_registered
+  (EXISTS(
+      SELECT 1
+      FROM solo_event_participant sep
+      JOIN event e ON sep.event_id = e.id
+      JOIN bookings b ON sep.event_id = e.id
+      WHERE sep.event_id = student.id
+        AND e.event_mode = 'OFFLINE'
+        AND b.txn_status = 'SUCCESS'
+  ) OR EXISTS (
+    SELECT 1
+    FROM team_members tm
+    JOIN teams t ON tm.team_id = t.id
+    JOIN event e ON t.event_id = e.id
+    JOIN bookings b ON t.booking_id = b.id
+    WHERE tm.student_Id = student.id
+      AND e.event_mode = 'OFFLINE'
+      AND b.txn_status = 'SUCCESS'
+  )) AS is_registered
 FROM student 
 WHERE account_status = 'VERIFIED' and email = $1
 `
 
 type FetchUserProfileQueryRow struct {
-	Name              string      `json:"name"`
-	Email             string      `json:"email"`
-	PhoneNumber       string      `json:"phone_number"`
-	IsAmritaStudent   pgtype.Bool `json:"is_amrita_student"`
-	AmritaRollNumber  pgtype.Text `json:"amrita_roll_number"`
-	CollegeName       string      `json:"college_name"`
-	CollegeCity       string      `json:"college_city"`
-	IsAmritaStudent_2 pgtype.Bool `json:"is_amrita_student_2"`
-	IsRegistered      pgtype.Bool `json:"is_registered"`
+	Name             string      `json:"name"`
+	Email            string      `json:"email"`
+	PhoneNumber      string      `json:"phone_number"`
+	IsAmritaStudent  pgtype.Bool `json:"is_amrita_student"`
+	AmritaRollNumber pgtype.Text `json:"amrita_roll_number"`
+	CollegeName      string      `json:"college_name"`
+	CollegeCity      string      `json:"college_city"`
+	IsRegistered     pgtype.Bool `json:"is_registered"`
 }
 
 func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email string) (FetchUserProfileQueryRow, error) {
@@ -86,7 +100,6 @@ func (q *Queries) FetchUserProfileQuery(ctx context.Context, db DBTX, email stri
 		&i.AmritaRollNumber,
 		&i.CollegeName,
 		&i.CollegeCity,
-		&i.IsAmritaStudent_2,
 		&i.IsRegistered,
 	)
 	return i, err
