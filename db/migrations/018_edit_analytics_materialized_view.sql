@@ -8,7 +8,7 @@ CREATE MATERIALIZED VIEW participants_analytics AS
 WITH participants AS (
     SELECT student_id FROM solo_event_participant
     UNION
-    SELECT student_id FROM team_members
+    SELECT team_members.student_id FROM team_members
     INNER JOIN teams t ON t.id = team_members.team_id
     INNER JOIN bookings b ON b.id = t.booking_id
     WHERE b.txn_status = 'SUCCESS'
@@ -55,11 +55,11 @@ SELECT
                     + COUNT(DISTINCT CASE WHEN b_t.txn_status = 'SUCCESS' THEN tm.student_id END) AS registered_count
             FROM event e
             LEFT JOIN solo_event_participant sp ON sp.event_id = e.id
-   66       LEFT JOIN bookings b_sp ON b_sp.id = sp.booking_id
-   67       LEFT JOIN teams t ON t.event_id = e.id
-   68       LEFT JOIN bookings b_t ON b_t.id = t.booking_id
-   69       LEFT JOIN team_members tm ON tm.team_id = t.id
-   70       GROUP BY e.id, e.name, e.total_seats            
+            LEFT JOIN bookings b_sp ON b_sp.id = sp.booking_id
+            LEFT JOIN teams t ON t.event_id = e.id
+            LEFT JOIN bookings b_t ON b_t.id = t.booking_id
+            LEFT JOIN team_members tm ON tm.team_id = t.id
+         GROUP BY e.id, e.name, e.total_seats            
             ORDER BY e.name
         ) x
     ) AS event_registration_stats;
@@ -67,11 +67,11 @@ SELECT
 
 -- Create unique index for CONCURRENT refresh support
 CREATE UNIQUE INDEX event_registration_analytics_id_index 
-ON event_registration_analytics(id);
+ON participants_analytics(id);
 
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP MATERIALIZED VIEW IF EXISTS event_registration_analytics;
+DROP MATERIALIZED VIEW IF EXISTS participants_analytics;
 -- +goose StatementEnd
