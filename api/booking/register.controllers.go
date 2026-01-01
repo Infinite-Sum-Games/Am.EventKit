@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func BookEventCsrf(c *gin.Context) {
@@ -356,14 +357,15 @@ func BookEvent(c *gin.Context) {
 		totalFee,
 	)
 	bookingID, err := q.CreateBooking(ctx, tx, db.CreateBookingParams{
-		EventID:         eventId,
-		StudentID:       leaderId,
-		TxnID:           txnId,
-		RegistrationFee: totalFee,
-		TxnStatus:       models.PaymentPending,
-		ProductInfo:     prodInfo,
-		SeatsReleased:   1,
-		Metadata:        metadataJson, // TODO: I need to set it as default data of the jsonb if not present
+		EventID:                   eventId,
+		StudentID:                 leaderId,
+		TxnID:                     txnId,
+		RegistrationFee:           totalFee,
+		TxnStatus:                 models.PaymentPending,
+		ProductInfo:               prodInfo,
+		SeatsReleased:             1,
+		RegistrationFeeWithoutGst: pgtype.Int4{Int32: event.Price, Valid: true},
+		Metadata:                  metadataJson, // TODO: I need to set it as default data of the jsonb if not present
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

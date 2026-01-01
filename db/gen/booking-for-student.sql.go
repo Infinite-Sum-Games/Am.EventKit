@@ -21,20 +21,22 @@ INSERT INTO bookings (
   txn_status,
   product_info,
   seats_released,
-  metadata
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  metadata,
+  registration_fee_without_gst
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id
 `
 
 type CreateBookingParams struct {
-	EventID         uuid.UUID `json:"event_id"`
-	StudentID       uuid.UUID `json:"student_id"`
-	TxnID           string    `json:"txn_id"`
-	RegistrationFee int32     `json:"registration_fee"`
-	TxnStatus       string    `json:"txn_status"`
-	ProductInfo     string    `json:"product_info"`
-	SeatsReleased   int32     `json:"seats_released"`
-	Metadata        []byte    `json:"metadata"`
+	EventID                   uuid.UUID   `json:"event_id"`
+	StudentID                 uuid.UUID   `json:"student_id"`
+	TxnID                     string      `json:"txn_id"`
+	RegistrationFee           int32       `json:"registration_fee"`
+	TxnStatus                 string      `json:"txn_status"`
+	ProductInfo               string      `json:"product_info"`
+	SeatsReleased             int32       `json:"seats_released"`
+	Metadata                  []byte      `json:"metadata"`
+	RegistrationFeeWithoutGst pgtype.Int4 `json:"registration_fee_without_gst"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingParams) (uuid.UUID, error) {
@@ -47,6 +49,7 @@ func (q *Queries) CreateBooking(ctx context.Context, db DBTX, arg CreateBookingP
 		arg.ProductInfo,
 		arg.SeatsReleased,
 		arg.Metadata,
+		arg.RegistrationFeeWithoutGst,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -238,6 +241,19 @@ func (q *Queries) GetBookingByTxnID(ctx context.Context, db DBTX, txnID string) 
 	return i, err
 }
 
+const getDisputeIdFromTxnIdQuery = `-- name: GetDisputeIdFromTxnIdQuery :one
+SELECT d.id
+FROM dispute d
+WHERE d.txn_id = $1
+`
+
+func (q *Queries) GetDisputeIdFromTxnIdQuery(ctx context.Context, db DBTX, txnID string) (uuid.UUID, error) {
+	row := db.QueryRow(ctx, getDisputeIdFromTxnIdQuery, txnID)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getEmailByTxnId = `-- name: GetEmailByTxnId :one
 SELECT s.email
 FROM bookings b 
@@ -312,7 +328,6 @@ const getTeamIDByBooking = `-- name: GetTeamIDByBooking :one
 SELECT teams.id FROM teams 
 INNER JOIN bookings b
   ON teams.booking_id = b.id 
-  AND b.txn_status = 'SUCCESS'
 WHERE booking_id = $1
 `
 
@@ -329,7 +344,6 @@ INNER JOIN teams t
   ON team_members.team_id = t.id
 INNER JOIN bookings b 
   ON t.booking_id = b.id
-  AND b.txn_status = 'SUCCESS'
 WHERE team_id = $1
 `
 
