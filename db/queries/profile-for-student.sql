@@ -7,9 +7,24 @@ SELECT
   amrita_roll_number,
   college_name,
   college_city,
-  is_amrita_student,
-  (id IN (SELECT student_id FROM solo_event_participant) OR
-  id IN (SELECT student_id FROM team_events_attendance)) AS is_registered
+  (EXISTS(
+      SELECT 1
+      FROM solo_event_participant sep
+      JOIN event e ON sep.event_id = e.id
+      JOIN bookings b ON sep.event_id = e.id
+      WHERE sep.event_id = student.id
+        AND e.event_mode = 'OFFLINE'
+        AND b.txn_status = 'SUCCESS'
+  ) OR EXISTS (
+    SELECT 1
+    FROM team_members tm
+    JOIN teams t ON tm.team_id = t.id
+    JOIN event e ON t.event_id = e.id
+    JOIN bookings b ON t.booking_id = b.id
+    WHERE tm.student_Id = student.id
+      AND e.event_mode = 'OFFLINE'
+      AND b.txn_status = 'SUCCESS'
+  )) AS is_registered
 FROM student 
 WHERE account_status = 'VERIFIED' and email = $1;
 
