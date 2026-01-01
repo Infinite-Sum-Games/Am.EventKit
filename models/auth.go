@@ -11,7 +11,7 @@ type CheckEmailRequest struct {
 
 func (s CheckEmailRequest) Validate() error {
 	return v.ValidateStruct(&s,
-		v.Field(&s.Email, v.Required, is.Email),
+		v.Field(&s.Email, v.Required, is.Email, is.LowerCase),
 	)
 }
 
@@ -29,7 +29,7 @@ type StudentOnboardingRequest struct {
 func (s StudentOnboardingRequest) Validate() error {
 	return v.ValidateStruct(&s,
 		v.Field(&s.Name, v.Required, v.Length(3, 50)),
-		v.Field(&s.Email, v.Required, is.Email),
+		v.Field(&s.Email, v.Required, is.Email, is.LowerCase),
 		v.Field(&s.Password, v.Required, v.Length(8, 0)),
 		v.Field(&s.PhoneNumber, v.Required, v.Length(10, 10)),
 		v.Field(&s.CollegeName, v.Required, v.Length(3, 128)),
@@ -44,7 +44,7 @@ type LoginRequest struct {
 
 func (l LoginRequest) Validate() error {
 	return v.ValidateStruct(&l,
-		v.Field(&l.Email, v.Required, is.Email),
+		v.Field(&l.Email, v.Required, is.Email, is.LowerCase),
 		v.Field(&l.HashedPassword, v.Required))
 }
 
@@ -65,6 +65,6 @@ type ForgetPasswordRequest struct {
 
 func (f ForgetPasswordRequest) Validate() error {
 	return v.ValidateStruct(&f,
-		v.Field(&f.Email, v.Required, is.Email),
+		v.Field(&f.Email, v.Required, is.Email, is.LowerCase),
 		v.Field(&f.NewPassword, v.Required, v.Length(8, 0)))
 }

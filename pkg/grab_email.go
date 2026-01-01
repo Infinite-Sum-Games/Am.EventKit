@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +19,7 @@ func GrabEmail(c *gin.Context, route string) (string, bool) {
 
 		return "", false
 	}
+	emailLowercase := strings.ToLower(email)
 
-	return email, true
+	return emailLowercase, true
 }
