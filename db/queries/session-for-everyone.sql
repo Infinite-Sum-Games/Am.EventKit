@@ -34,6 +34,6 @@ SELECT
   name,
   email
 FROM
-  organizer
+  accomodation_personell
 WHERE
   email = $1;
