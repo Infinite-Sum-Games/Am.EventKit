@@ -17,24 +17,22 @@ INSERT INTO hostel_metadata (
   room_count,
   is_male,
   warden_email,
-  warden_password,
   latitude,
   longtitude,
   map_url,
   hostel_name)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 `
 
 type AddHostelQueryParams struct {
-	RoomCount      int32       `json:"room_count"`
-	IsMale         bool        `json:"is_male"`
-	WardenEmail    pgtype.Text `json:"warden_email"`
-	WardenPassword pgtype.Text `json:"warden_password"`
-	Latitude       pgtype.Text `json:"latitude"`
-	Longtitude     pgtype.Text `json:"longtitude"`
-	MapUrl         pgtype.Text `json:"map_url"`
-	HostelName     string      `json:"hostel_name"`
+	RoomCount   int32       `json:"room_count"`
+	IsMale      bool        `json:"is_male"`
+	WardenEmail pgtype.Text `json:"warden_email"`
+	Latitude    pgtype.Text `json:"latitude"`
+	Longtitude  pgtype.Text `json:"longtitude"`
+	MapUrl      pgtype.Text `json:"map_url"`
+	HostelName  string      `json:"hostel_name"`
 }
 
 func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQueryParams) (uuid.UUID, error) {
@@ -42,7 +40,6 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 		arg.RoomCount,
 		arg.IsMale,
 		arg.WardenEmail,
-		arg.WardenPassword,
 		arg.Latitude,
 		arg.Longtitude,
 		arg.MapUrl,

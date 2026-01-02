@@ -23,10 +23,9 @@ INSERT INTO hostel_metadata (
   room_count,
   is_male,
   warden_email,
-  warden_password,
   latitude,
   longtitude,
   map_url,
   hostel_name)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id;
