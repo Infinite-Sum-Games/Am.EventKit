@@ -8,7 +8,7 @@ import (
 func AccomodationRoutes(r *gin.RouterGroup) {
 	// Accomodation Panel
 	r.POST("/panel/login", AccomodationLogin)
-	r.POST("/panel/logout", AccomodationLogout)
+	r.POST("/panel/logout", mw.Auth, mw.CheckHospitality, AccomodationLogout)
 	r.GET("/panel/session", mw.Auth, mw.CheckHospitality, AccomodationSession)
 	r.GET("/panel", mw.Auth, mw.CheckHospitality, GetAllAccomodationRequests)
 
