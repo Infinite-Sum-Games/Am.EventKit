@@ -34,9 +34,10 @@ var (
 )
 
 type Roles struct {
-	IsUser      bool
-	IsOrganizer bool
-	IsAdmin     bool
+	IsUser        bool
+	IsOrganizer   bool
+	IsAdmin       bool
+	IsHospitality bool
 }
 
 func InitPaseto() error {
@@ -80,12 +81,12 @@ func CreateAuthToken(userId, email string, roles Roles) (string, error) {
 		Log.Error("[AUTH-ERROR]: Failed to set STUDENT-ROLE claim", err)
 		return "", err
 	}
-	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
-		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
-		return "", err
-	}
 	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
+		return "", err
+	}
+	if err := token.Set("HOSPITALITY-ROLE", roles.IsHospitality); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set HOSPITALITY-ROLE claim", err)
 		return "", err
 	}
 
@@ -116,6 +117,11 @@ func CreateRefreshToken(userId, email string, roles Roles) (string, error) {
 
 	if err := token.Set("ADMIN-ROLE", roles.IsAdmin); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
+		return "", err
+	}
+
+	if err := token.Set("HOSPITALITY-ROLE", roles.IsHospitality); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set HOSPITALITY-ROLE claim", err)
 		return "", err
 	}
 
@@ -171,8 +177,9 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c3 := authData["STUDENT-ROLE"] != refData["STUDENT-ROLE"]
 	c4 := authData["ORGANIZER-ROLE"] != refData["ORGANIZER-ROLE"]
 	c5 := authData["ADMIN-ROLE"] != refData["ADMIN-ROLE"]
+	c6 := authData["HOSPITALITY-ROLE"] != refData["HOSPITALITY-ROLE"]
 
-	if c1 || c2 || c3 || c4 || c5 {
+	if c1 || c2 || c3 || c4 || c5 || c6 {
 		return false
 	}
 
@@ -182,6 +189,7 @@ func VerifyTokens(c *gin.Context, authToken, refreshToken string) bool {
 	c.Set("STUDENT-ROLE", refData["STUDENT-ROLE"])
 	c.Set("ORGANIZER-ROLE", refData["ORGANIZER-ROLE"])
 	c.Set("ADMIN-ROLE", refData["ADMIN-ROLE"])
+	c.Set("HOSPITALITY-ROLE", refData["HOSPITALITY-ROLE"])
 
 	return true
 }
@@ -210,6 +218,7 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 	isStudent, _ := refreshClaims["STUDENT-ROLE"].(bool)
 	isOrganizer, _ := refreshClaims["ORGANIZER-ROLE"].(bool)
 	isAdmin, _ := refreshClaims["ADMIN-ROLE"].(bool)
+	isHospitality, _ := refreshClaims["HOSPITALITY-ROLE"].(bool)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -233,6 +242,8 @@ func VerifyRefreshToken(c *gin.Context, refreshToken string) (*paseto.Token, err
 		token, err = q.CheckOrganizerRefreshTokenQuery(ctx, conn, email)
 	} else if isAdmin {
 		token, err = q.CheckAdminRefreshTokenQuery(ctx, conn, email)
+	} else if isHospitality {
+		token, err = q.CheckHospitalityRefreshTokenQuery(ctx, conn, email)
 	}
 
 	if err != nil {
