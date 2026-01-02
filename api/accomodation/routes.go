@@ -6,8 +6,11 @@ import (
 )
 
 func AccomodationRoutes(r *gin.RouterGroup) {
-	// Admin Panel
-	// r.GET("/panel", GetAllAccomodationRequests)
+	// Accomodation Panel
+	r.POST("/panel/login", AccomodationLogin)
+	r.POST("/panel/logout", AccomodationLogout)
+	r.GET("/panel/session", mw.Auth, mw.CheckHospitality, AccomodationSession)
+	r.GET("/panel", mw.Auth, mw.CheckHospitality, GetAllAccomodationRequests)
 
 	// Website
 	r.GET("/check", mw.Auth, mw.CheckUser, AccomodationExists)
