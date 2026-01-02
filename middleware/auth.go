@@ -52,12 +52,14 @@ func Auth(c *gin.Context) {
 		isStudent, _ := refreshTokenClaims["STUDENT-ROLE"].(bool)
 		isOrganizer, _ := refreshTokenClaims["ORGANIZER-ROLE"].(bool)
 		isAdmin, _ := refreshTokenClaims["ADMIN-ROLE"].(bool)
+		isHospitality, _ := refreshTokenClaims["HOSPITALITY-ROLE"].(bool)
 
 		// Creating and setting auth token, so it can be used for future requests
 		authToken, err := pkg.CreateAuthToken(userId, email, pkg.Roles{
-			IsUser:      isStudent,
-			IsOrganizer: isOrganizer,
-			IsAdmin:     isAdmin,
+			IsUser:        isStudent,
+			IsOrganizer:   isOrganizer,
+			IsAdmin:       isAdmin,
+			IsHospitality: isHospitality,
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
