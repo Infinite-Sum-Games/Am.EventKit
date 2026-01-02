@@ -29,3 +29,13 @@ INSERT INTO hostel_metadata (
   hostel_name)
   VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id;
+
+-- name: UpdateHostelQuery :execrows
+UPDATE hostel_metadata
+SET 
+  room_count = $2,
+  warden_email = $3,
+  latitude = $4,
+  longtitude = $5,
+  map_url = $6
+  where id = $1;

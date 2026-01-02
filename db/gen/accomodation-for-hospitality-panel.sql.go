@@ -124,3 +124,38 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 	}
 	return items, nil
 }
+
+const updateHostelQuery = `-- name: UpdateHostelQuery :execrows
+UPDATE hostel_metadata
+SET 
+  room_count = $2,
+  warden_email = $3,
+  latitude = $4,
+  longtitude = $5,
+  map_url = $6
+  where id = $1
+`
+
+type UpdateHostelQueryParams struct {
+	ID          uuid.UUID   `json:"id"`
+	RoomCount   int32       `json:"room_count"`
+	WardenEmail pgtype.Text `json:"warden_email"`
+	Latitude    pgtype.Text `json:"latitude"`
+	Longtitude  pgtype.Text `json:"longtitude"`
+	MapUrl      pgtype.Text `json:"map_url"`
+}
+
+func (q *Queries) UpdateHostelQuery(ctx context.Context, db DBTX, arg UpdateHostelQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateHostelQuery,
+		arg.ID,
+		arg.RoomCount,
+		arg.WardenEmail,
+		arg.Latitude,
+		arg.Longtitude,
+		arg.MapUrl,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
