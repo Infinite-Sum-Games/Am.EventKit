@@ -50,6 +50,19 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 	return id, err
 }
 
+const deleteHostelQuery = `-- name: DeleteHostelQuery :execrows
+DELETE FROM hostel_metadata
+WHERE id = $1
+`
+
+func (q *Queries) DeleteHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteHostelQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getAllAccommodationRequestsQuery = `-- name: GetAllAccommodationRequestsQuery :many
 SELECT
   id,

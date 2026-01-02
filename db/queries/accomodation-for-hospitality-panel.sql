@@ -39,3 +39,7 @@ SET
   longtitude = $5,
   map_url = $6
   where id = $1;
+
+-- name: DeleteHostelQuery :execrows
+DELETE FROM hostel_metadata
+WHERE id = $1;
