@@ -1,0 +1,29 @@
+meta {
+  name: AddHostel
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/accommodation/panel/addHostel
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "room_count": 120,
+    "is_male": true,
+    "warden_email": "warden.raman@university.edu",
+    "latitude": "10.903451",
+    "longtitude": "76.902832",
+    "map_url": "https://maps.google.com/?q=10.903451,76.902832",
+    "hostel_name": "Agasthya Bhavanam"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

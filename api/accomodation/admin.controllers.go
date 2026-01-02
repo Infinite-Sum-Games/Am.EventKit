@@ -194,3 +194,44 @@ func AccomodationSession(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func AddHostel(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.AddHostelRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "ADD-HOSTEL") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	hostelId, err := q.AddHostelQuery(ctx, conn, db.AddHostelQueryParams{
+		RoomCount:   req.RoomCount,
+		IsMale:      req.IsMale,
+		WardenEmail: pkg.ToPgTextPtr(&req.WardenEmail),
+		Latitude:    pkg.ToPgTextPtr(&req.Latitude),
+		Longtitude:  pkg.ToPgTextPtr(&req.Longtitude),
+		MapUrl:      pkg.ToPgTextPtr(&req.MapUrl),
+		HostelName:  req.HostelName,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[ADD-HOSTEL-ERROR]: Failed to add new hostel", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Hostel added successfully",
+		"hostel_id": hostelId,
+	})
+	pkg.Log.SuccessCtx(c)
+}
