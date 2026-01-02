@@ -286,3 +286,43 @@ func UpdateHostel(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func DeleteHostel(c *gin.Context) {
+	hostelIdStr := c.Param("id")
+	hostelId, ok := pkg.GrabUuid(c, hostelIdStr, "DELETE-HOSTEL", "hostelID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "DELETE-HOSTEL") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	rows, err := q.DeleteHostelQuery(ctx, conn, hostelId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[DELETE-HOSTEL-ERROR]: Failed to delete hostel", err)
+		return
+	}
+	if rows == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Hostel not found",
+		})
+		pkg.Log.WarnCtx(c, "[DELETE-HOSTEL-WARN]: Hostel ID does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hostel deleted successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}

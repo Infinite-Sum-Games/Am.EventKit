@@ -1,0 +1,19 @@
+meta {
+  name: DeleteHostel
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/accommodation/panel/hostel/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+settings {
+  encodeUrl: true
+}
