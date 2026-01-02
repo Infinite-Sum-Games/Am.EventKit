@@ -21,7 +21,9 @@ WHERE id = 1;
 SELECT
     id,
     website_registration_split,
-    total_website_registrations
+    total_website_registrations,
+    website_registration_by_year,
+    event_registration_by_year
 FROM people_registration_analytics
 WHERE id = 1;
 
