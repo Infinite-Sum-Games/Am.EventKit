@@ -27,7 +27,7 @@ REDIS_PORT="${REDIS_PORT:-6379}"
 # Directory where Redis saves its dump.rdb (Check your redis.conf 'dir' setting)
 REDIS_DATA_DIR="${REDIS_DATA_DIR:-/var/lib/redis}"
 # Directory where you want to store backups
-BACKUP_DIR="${BACKUP_DIR:-$HOME/redis_backups}"
+BACKUP_DIR="./redis_backups"
 RETENTION_DAYS=7
 LOG_FILE="$BACKUP_DIR/backup.log"
 
