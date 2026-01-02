@@ -17,3 +17,16 @@ SELECT
   to_char(check_out, 'HH12:MI AM') as check_out_time
 FROM accomodation_details
 ORDER BY created_at DESC;
+
+-- name: AddHostelQuery :one
+INSERT INTO hostel_metadata (
+  room_count,
+  is_male,
+  warden_email,
+  warden_password,
+  latitude,
+  longtitude,
+  map_url,
+  hostel_name)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id;
