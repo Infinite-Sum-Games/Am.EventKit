@@ -26,3 +26,23 @@ func (r AddHostelRequest) Validate() error {
 		v.Field(&r.HostelName, v.Required),
 	)
 }
+
+type UpdateHostelRequest struct {
+	HostelID    string `json:"hostel_id"`
+	RoomCount   int32  `json:"room_count"`
+	WardenEmail string `json:"warden_email"`
+	Latitude    string `json:"latitude"`
+	Longtitude  string `json:"longtitude"`
+	MapUrl      string `json:"map_url"`
+}
+
+func (r UpdateHostelRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.HostelID, v.Required, is.UUID),
+		v.Field(&r.RoomCount, v.Min(1)),
+		v.Field(&r.WardenEmail, is.Email),
+		v.Field(&r.Latitude),
+		v.Field(&r.Longtitude),
+		v.Field(&r.MapUrl, is.URL),
+	)
+}
