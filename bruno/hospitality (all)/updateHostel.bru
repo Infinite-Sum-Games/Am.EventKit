@@ -1,0 +1,28 @@
+meta {
+  name: updateHostel
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/accommodation/panel/hostel
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "hostel_id": "37c933ba-b88e-4f09-b901-059eeaed55f5",
+    "room_count": 150,
+    "warden_email": "warden.updated@university.edu",
+    "latitude": "10.904321",
+    "longtitude": "76.901234",
+    "map_url": "https://maps.google.com/?q=10.904321,76.901234"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

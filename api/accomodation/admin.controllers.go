@@ -235,3 +235,54 @@ func AddHostel(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func UpdateHostel(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.UpdateHostelRequest](c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "UPDATE-HOSTEL") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	HostelUuid, ok := pkg.GrabUuid(c, req.HostelID, "UPDATE-HOSTEL", "hostelID")
+	if !ok {
+		return
+	}
+
+	rows, err := q.UpdateHostelQuery(ctx, conn, db.UpdateHostelQueryParams{
+		ID:          HostelUuid,
+		RoomCount:   req.RoomCount,
+		WardenEmail: pkg.ToPgTextPtr(&req.WardenEmail),
+		Latitude:    pkg.ToPgTextPtr(&req.Latitude),
+		Longtitude:  pkg.ToPgTextPtr(&req.Longtitude),
+		MapUrl:      pkg.ToPgTextPtr(&req.MapUrl),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[UPDATE-HOSTEL-ERROR]: Failed to update hostel details", err)
+		return
+	}
+	if rows == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Hostel not found",
+		})
+		pkg.Log.WarnCtx(c, "[UPDATE-HOSTEL-WARN]: Hostel ID does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hostel updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
