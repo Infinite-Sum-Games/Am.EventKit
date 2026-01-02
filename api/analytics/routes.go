@@ -6,7 +6,7 @@ import (
 )
 
 func AnalyticsRoutes(r *gin.RouterGroup) {
-	r.GET("/quick", mw.Auth, mw.CheckAdmin, GetQuickDashboard)
+	// r.GET("/quick", mw.Auth, mw.CheckAdmin, GetQuickDashboard)
 	r.GET("/revenue", mw.Auth, mw.CheckAdmin, GetRevenueAnalytics)
 	r.GET("/registrations", mw.Auth, mw.CheckAdmin, GetEventRegistrationAnalytics)
 	r.GET("/people", mw.Auth, mw.CheckAdmin, GetPeopleAnalytics)
