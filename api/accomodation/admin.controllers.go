@@ -60,7 +60,7 @@ func AccomodationLogin(c *gin.Context) {
 	result, err := q.LoginHospitalityQuery(ctx, tx, req.Email)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "User not found",
+			"message": "Hospitality user not found",
 		})
 		pkg.Log.WarnCtx(c, "[AUTH-WARN]: Email does not exist")
 		return
