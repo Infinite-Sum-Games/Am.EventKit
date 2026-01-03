@@ -329,9 +329,6 @@ type AccomodationDetail struct {
 	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
 }
 
-type AccomodationFormResp struct {
-}
-
 type AccomodationPersonell struct {
 	ID           uuid.UUID        `json:"id"`
 	Name         string           `json:"name"`
