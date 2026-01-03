@@ -85,6 +85,10 @@ func CreateAuthToken(userId, email string, roles Roles) (string, error) {
 		Log.Error("[AUTH-ERROR]: Failed to set ADMIN-ROLE claim", err)
 		return "", err
 	}
+	if err := token.Set("ORGANIZER-ROLE", roles.IsOrganizer); err != nil {
+		Log.Error("[AUTH-ERROR]: Failed to set ORGANIZER-ROLE claim", err)
+		return "", err
+	}
 	if err := token.Set("HOSPITALITY-ROLE", roles.IsHospitality); err != nil {
 		Log.Error("[AUTH-ERROR]: Failed to set HOSPITALITY-ROLE claim", err)
 		return "", err
