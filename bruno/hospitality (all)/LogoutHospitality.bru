@@ -1,11 +1,11 @@
 meta {
-  name: FetchAllAccomodationReq
+  name: LogoutHospitality
   type: http
-  seq: 6
+  seq: 5
 }
 
-get {
-  url: {{baseUrl}}/accommodation/panel
+post {
+  url: {{baseUrl}}/accommodation/panel/logout
   body: none
   auth: inherit
 }
