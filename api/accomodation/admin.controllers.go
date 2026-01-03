@@ -459,3 +459,43 @@ func AllotHostel(c *gin.Context) {
 	}
 
 }
+
+func AffirmAccommodationPayment(c *gin.Context) {
+	accommodationIdStr := c.Param("accommodationId")
+	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "AFFIRM-PAYMENT", "accommodationID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "AFFIRM-PAYMENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	rows, err := q.AffirmAccommodationPaymentQuery(ctx, conn, accommodationId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[AFFIRM-PAYMENT-ERROR]: Failed to affirm payment", err)
+		return
+	}
+	if rows == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[AFFIRM-PAYMENT-WARN]: Accommodation ID does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Accommodation payment affirmed successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}

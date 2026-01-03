@@ -309,6 +309,49 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type PaymentStatusEnum string
+
+const (
+	PaymentStatusEnumPENDING   PaymentStatusEnum = "PENDING"
+	PaymentStatusEnumCOMPLETED PaymentStatusEnum = "COMPLETED"
+	PaymentStatusEnumFAILED    PaymentStatusEnum = "FAILED"
+)
+
+func (e *PaymentStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatusEnum(s)
+	case string:
+		*e = PaymentStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatusEnum struct {
+	PaymentStatusEnum PaymentStatusEnum `json:"payment_status_enum"`
+	Valid             bool              `json:"valid"` // Valid is true if PaymentStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatusEnum), nil
+}
+
 type AccomodationDetail struct {
 	ID                uuid.UUID        `json:"id"`
 	StudentID         uuid.UUID        `json:"student_id"`
@@ -327,6 +370,8 @@ type AccomodationDetail struct {
 	CheckOut          pgtype.Timestamp `json:"check_out"`
 	CreatedAt         pgtype.Timestamp `json:"created_at"`
 	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
+	PaymentStatus     string           `json:"payment_status"`
+	PaymentExpires    pgtype.Timestamp `json:"payment_expires"`
 }
 
 type AccomodationPersonell struct {

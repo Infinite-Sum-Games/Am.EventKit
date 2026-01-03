@@ -4,16 +4,23 @@ meta {
   seq: 9
 }
 
-get {
-  url: {{baseUrl}}accommodation/panel/allot/:accommodationId
-  body: none
+post {
+  url: {{baseUrl}}/accommodation/panel/allot/:accommodationId
+  body: json
   auth: inherit
 }
 
 params:path {
-  accommodationId: 
+  accommodationId: 02ea0504-15c8-40b8-aba0-7d1017f8927a
+}
+
+body:json {
+  {
+    "hostel_id":"52f19f3a-e980-4096-a38e-279e38dbdce7"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

@@ -50,10 +50,30 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 	return id, err
 }
 
+const affirmAccommodationPaymentQuery = `-- name: AffirmAccommodationPaymentQuery :execrows
+UPDATE accomodation_details
+SET 
+  is_paid = TRUE,
+  payment_status = 'COMPLETED',
+  updated_at = NOW()
+  where id = $1
+`
+
+func (q *Queries) AffirmAccommodationPaymentQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, affirmAccommodationPaymentQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const allotHostelQuery = `-- name: AllotHostelQuery :execrows
 UPDATE accomodation_details
 SET 
-  hostel_id = $2
+  hostel_id = $2,
+  payment_expires = NOW() + INTERVAL '2 minutes',
+  payment_status = 'PENDING',
+  updated_at = NOW()
   where id = $1
 `
 
