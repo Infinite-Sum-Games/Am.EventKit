@@ -32,7 +32,7 @@ func CheckOrganizer(c *gin.Context) {
 		return
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"message": "Access denied.",
+		"message": "Organizer access denied.",
 	})
 }
 
@@ -42,6 +42,16 @@ func CheckOrgAndAdmin(c *gin.Context) {
 		return
 	}
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"message": "Admin denied.",
+		"message": "Admin access denied.",
+	})
+}
+
+func CheckHospitality(c *gin.Context) {
+	if c.GetBool("HOSPITALITY-ROLE") {
+		c.Next()
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"message": "Hospitality access denied.",
 	})
 }

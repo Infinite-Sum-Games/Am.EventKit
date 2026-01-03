@@ -37,6 +37,7 @@ GROUP BY
   s.college_name,
   s.college_city,
   s.email,
+  s.phone_number,
   s.is_amrita_student;
 
 

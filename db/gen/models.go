@@ -451,6 +451,7 @@ type HostelMetadatum struct {
 	Latitude           pgtype.Text `json:"latitude"`
 	Longtitude         pgtype.Text `json:"longtitude"`
 	MapUrl             pgtype.Text `json:"map_url"`
+	HostelName         string      `json:"hostel_name"`
 }
 
 type Organizer struct {
