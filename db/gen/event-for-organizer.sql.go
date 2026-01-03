@@ -72,7 +72,8 @@ SELECT
     s.college_name as college,
     s.college_city as city,
     s.email,
-    s.is_amrita_student 
+    s.is_amrita_student,
+    s.phone_number
 FROM
     teams AS t
 JOIN
@@ -93,6 +94,7 @@ type GetOrganizerGroupEventParticipantListQueryRow struct {
 	City            string      `json:"city"`
 	Email           string      `json:"email"`
 	IsAmritaStudent pgtype.Bool `json:"is_amrita_student"`
+	PhoneNumber     string      `json:"phone_number"`
 }
 
 func (q *Queries) GetOrganizerGroupEventParticipantListQuery(ctx context.Context, db DBTX, eventID uuid.UUID) ([]GetOrganizerGroupEventParticipantListQueryRow, error) {
@@ -111,6 +113,7 @@ func (q *Queries) GetOrganizerGroupEventParticipantListQuery(ctx context.Context
 			&i.City,
 			&i.Email,
 			&i.IsAmritaStudent,
+			&i.PhoneNumber,
 		); err != nil {
 			return nil, err
 		}
@@ -128,6 +131,7 @@ SELECT
     s.college_name as college,
     s.college_city as city,
     s.email,
+    s.phone_number,
     s.is_amrita_student
 FROM student s
 LEFT JOIN 
@@ -150,6 +154,7 @@ type GetOrganizerSoloEventParticipantListQueryRow struct {
 	College         string      `json:"college"`
 	City            string      `json:"city"`
 	Email           string      `json:"email"`
+	PhoneNumber     string      `json:"phone_number"`
 	IsAmritaStudent pgtype.Bool `json:"is_amrita_student"`
 }
 
@@ -167,6 +172,7 @@ func (q *Queries) GetOrganizerSoloEventParticipantListQuery(ctx context.Context,
 			&i.College,
 			&i.City,
 			&i.Email,
+			&i.PhoneNumber,
 			&i.IsAmritaStudent,
 		); err != nil {
 			return nil, err
