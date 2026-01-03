@@ -47,7 +47,18 @@ WHERE id = $1;
 -- name: AllotHostelQuery :execrows
 UPDATE accomodation_details
 SET 
-  hostel_id = $2
+  hostel_id = $2,
+  payment_expires = NOW() + INTERVAL '30 minutes',
+  payment_status = 'PENDING',
+  updated_at = NOW()
+  where id = $1;
+
+-- name: AffirmAccommodationPaymentQuery :execrows
+UPDATE accomodation_details
+SET 
+  is_paid = TRUE,
+  payment_status = 'COMPLETED',
+  updated_at = NOW()
   where id = $1;
 
 -- name: GetHostelQuery :one
