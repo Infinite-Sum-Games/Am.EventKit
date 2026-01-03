@@ -50,6 +50,42 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 	return id, err
 }
 
+const allotHostelQuery = `-- name: AllotHostelQuery :execrows
+UPDATE accomodation_details
+SET 
+  hostel_id = $2
+  where id = $1
+`
+
+type AllotHostelQueryParams struct {
+	ID       uuid.UUID   `json:"id"`
+	HostelID pgtype.UUID `json:"hostel_id"`
+}
+
+func (q *Queries) AllotHostelQuery(ctx context.Context, db DBTX, arg AllotHostelQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, allotHostelQuery, arg.ID, arg.HostelID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const decrementHostelRoomCountQuery = `-- name: DecrementHostelRoomCountQuery :execrows
+UPDATE hostel_metadata
+SET 
+  room_count = room_count - 1
+  where id = $1
+  AND room_count>0
+`
+
+func (q *Queries) DecrementHostelRoomCountQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, decrementHostelRoomCountQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteHostelQuery = `-- name: DeleteHostelQuery :execrows
 DELETE FROM hostel_metadata
 WHERE id = $1
@@ -61,6 +97,65 @@ func (q *Queries) DeleteHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const getAccommodationByIdQuery = `-- name: GetAccommodationByIdQuery :one
+SELECT
+  id,
+  student_id,
+  hostel_id,
+  name,
+  email,
+  phone_number,
+  is_male,
+  room_preference,
+  college_name,
+  college_roll_number,
+  is_hosteller,
+  is_amrita_campus,
+  check_in,
+  check_out
+FROM accomodation_details
+WHERE id = $1
+`
+
+type GetAccommodationByIdQueryRow struct {
+	ID                uuid.UUID        `json:"id"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	HostelID          pgtype.UUID      `json:"hostel_id"`
+	Name              string           `json:"name"`
+	Email             string           `json:"email"`
+	PhoneNumber       string           `json:"phone_number"`
+	IsMale            bool             `json:"is_male"`
+	RoomPreference    string           `json:"room_preference"`
+	CollegeName       string           `json:"college_name"`
+	CollegeRollNumber string           `json:"college_roll_number"`
+	IsHosteller       bool             `json:"is_hosteller"`
+	IsAmritaCampus    bool             `json:"is_amrita_campus"`
+	CheckIn           pgtype.Timestamp `json:"check_in"`
+	CheckOut          pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) GetAccommodationByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetAccommodationByIdQueryRow, error) {
+	row := db.QueryRow(ctx, getAccommodationByIdQuery, id)
+	var i GetAccommodationByIdQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.StudentID,
+		&i.HostelID,
+		&i.Name,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.IsMale,
+		&i.RoomPreference,
+		&i.CollegeName,
+		&i.CollegeRollNumber,
+		&i.IsHosteller,
+		&i.IsAmritaCampus,
+		&i.CheckIn,
+		&i.CheckOut,
+	)
+	return i, err
 }
 
 const getAllAccommodationRequestsQuery = `-- name: GetAllAccommodationRequestsQuery :many
@@ -136,6 +231,47 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getHostelQuery = `-- name: GetHostelQuery :one
+SELECT
+  id,
+  room_count,
+  is_male,
+  warden_email,
+  latitude,
+  longtitude,
+  map_url,
+  hostel_name
+FROM hostel_metadata
+WHERE id = $1
+`
+
+type GetHostelQueryRow struct {
+	ID          uuid.UUID   `json:"id"`
+	RoomCount   int32       `json:"room_count"`
+	IsMale      bool        `json:"is_male"`
+	WardenEmail pgtype.Text `json:"warden_email"`
+	Latitude    pgtype.Text `json:"latitude"`
+	Longtitude  pgtype.Text `json:"longtitude"`
+	MapUrl      pgtype.Text `json:"map_url"`
+	HostelName  string      `json:"hostel_name"`
+}
+
+func (q *Queries) GetHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetHostelQueryRow, error) {
+	row := db.QueryRow(ctx, getHostelQuery, id)
+	var i GetHostelQueryRow
+	err := row.Scan(
+		&i.ID,
+		&i.RoomCount,
+		&i.IsMale,
+		&i.WardenEmail,
+		&i.Latitude,
+		&i.Longtitude,
+		&i.MapUrl,
+		&i.HostelName,
+	)
+	return i, err
 }
 
 const updateHostelQuery = `-- name: UpdateHostelQuery :execrows

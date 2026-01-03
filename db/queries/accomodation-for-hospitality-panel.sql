@@ -43,3 +43,48 @@ SET
 -- name: DeleteHostelQuery :execrows
 DELETE FROM hostel_metadata
 WHERE id = $1;
+
+-- name: AllotHostelQuery :execrows
+UPDATE accomodation_details
+SET 
+  hostel_id = $2
+  where id = $1;
+
+-- name: GetHostelQuery :one
+SELECT
+  id,
+  room_count,
+  is_male,
+  warden_email,
+  latitude,
+  longtitude,
+  map_url,
+  hostel_name
+FROM hostel_metadata
+WHERE id = $1;
+
+-- name: DecrementHostelRoomCountQuery :execrows
+UPDATE hostel_metadata
+SET 
+  room_count = room_count - 1
+  where id = $1
+  AND room_count>0;
+
+-- name: GetAccommodationByIdQuery :one
+SELECT
+  id,
+  student_id,
+  hostel_id,
+  name,
+  email,
+  phone_number,
+  is_male,
+  room_preference,
+  college_name,
+  college_roll_number,
+  is_hosteller,
+  is_amrita_campus,
+  check_in,
+  check_out
+FROM accomodation_details
+WHERE id = $1;
