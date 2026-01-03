@@ -22,6 +22,7 @@ SELECT
     s.college_name as college,
     s.college_city as city,
     s.email,
+    s.phone_number,
     s.is_amrita_student
 FROM student s
 LEFT JOIN 
@@ -46,7 +47,8 @@ SELECT
     s.college_name as college,
     s.college_city as city,
     s.email,
-    s.is_amrita_student 
+    s.is_amrita_student,
+    s.phone_number
 FROM
     teams AS t
 JOIN
