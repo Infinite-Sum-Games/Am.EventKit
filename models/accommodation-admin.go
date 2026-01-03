@@ -46,3 +46,13 @@ func (r UpdateHostelRequest) Validate() error {
 		v.Field(&r.MapUrl, is.URL),
 	)
 }
+
+type AllotHostelRequest struct {
+	HostelID string `json:"hostel_id"`
+}
+
+func (r AllotHostelRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.HostelID, v.Required, is.UUID),
+	)
+}

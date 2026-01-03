@@ -326,3 +326,136 @@ func DeleteHostel(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func AllotHostel(c *gin.Context) {
+	accommodationIdStr := c.Param("accommodationId")
+	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "ALLOT-HOSTEL", "hostelID")
+	if !ok {
+		return
+	}
+
+	req, ok := pkg.ValidateRequest[models.AllotHostelRequest](c)
+	if !ok {
+		return
+	}
+
+	hostleIdPgUuid, err := pkg.ToPgUuidPtr(&req.HostelID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid hostel ID format",
+		})
+		pkg.Log.ErrorCtx(c, "[ALLOT-HOSTEL-WARN]: Invalid hostel ID format", err)
+		return
+	}
+
+	hostelIdUuid, ok := pkg.GrabUuid(c, req.HostelID, "ALLOT-HOSTEL", "hostelID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "ALLOT-HOSTEL") {
+		return
+	}
+	defer pkg.RollbackTx(c, tx, ctx, "ALLOT-HOSTEL")
+
+	q := db.New()
+
+	hostel, err := q.GetHostelQuery(ctx, tx, hostelIdUuid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c,
+			"[ALLOT-HOSTEL-ERROR]: Failed to fetch hostel room count", err)
+		return
+	}
+
+	accommodation, err := q.GetAccommodationByIdQuery(ctx, tx, accommodationId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c,
+			"[ALLOT-HOSTEL-ERROR]: Failed to fetch accommodation request", err)
+		return
+	}
+
+	if accommodation.HostelID.Valid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Accommodation request already has a hostel allotted",
+		})
+		pkg.Log.WarnCtx(c,
+			"[ALLOT-HOSTEL-WARN]: Accommodation request already has a hostel allotted")
+		return
+	}
+
+	if accommodation.IsMale != hostel.IsMale {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Hostel gender does not match with the accommodation request",
+		})
+		pkg.Log.WarnCtx(c,
+			"[ALLOT-HOSTEL-WARN]: Hostel gender does not match with the accommodation request")
+		return
+	}
+
+	if hostel.RoomCount > 0 {
+		row, err := q.DecrementHostelRoomCountQuery(ctx, tx, hostelIdUuid)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			pkg.Log.ErrorCtx(c,
+				"[ALLOT-HOSTEL-ERROR]: Failed to decrement hostel room count", err)
+			return
+		}
+		if row == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Hostel not found",
+			})
+			pkg.Log.ErrorCtx(c,
+				"[ALLOT-HOSTEL-ERROR]: Hostel ID does not exist", err)
+			return
+		}
+
+		row, err = q.AllotHostelQuery(ctx, tx, db.AllotHostelQueryParams{
+			ID:       accommodationId,
+			HostelID: hostleIdPgUuid,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			pkg.Log.ErrorCtx(c, "[ALLOT-HOSTEL-ERROR]: Failed to allot hostel", err)
+			return
+		}
+		if row == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Accommodation request or Hostel not found",
+			})
+			pkg.Log.ErrorCtx(c,
+				"[ALLOT-HOSTEL-ERROR]: Accommodation ID or Hostel ID does not exist", err)
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "ALLOT-HOSTEL") {
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Hostel allotted successfully",
+		})
+		pkg.Log.SuccessCtx(c)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "No rooms available in the selected hostel",
+		})
+		pkg.Log.WarnCtx(c,
+			"[ALLOT-HOSTEL-WARN]: No rooms available in the selected hostel")
+	}
+
+}

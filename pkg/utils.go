@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/segmentio/ksuid"
 )
@@ -80,4 +81,20 @@ func ToPgNumericFromFloat(f float64) (pgtype.Numeric, error) {
 func GenerateTxnID() string {
 	txnID := "TXN-ANK26-" + ksuid.New().String()
 	return txnID
+}
+
+func ToPgUuidPtr(s *string) (pgtype.UUID, error) {
+	if s == nil {
+		return pgtype.UUID{Valid: false}, nil
+	}
+
+	id, err := uuid.Parse(*s)
+	if err != nil {
+		return pgtype.UUID{}, err
+	}
+
+	return pgtype.UUID{
+		Bytes: id,
+		Valid: true,
+	}, nil
 }
