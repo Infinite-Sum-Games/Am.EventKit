@@ -21,7 +21,7 @@ import (
 
 const (
 	RefreshTokenValidTime = time.Hour * 24 * 90
-	AuthTokenValidTime    = time.Hour * 6
+	AuthTokenValidTime    = time.Hour * 1
 	TempTokenValidTime    = time.Minute * 5
 	CsrfTokenValidTime    = time.Minute * 10
 	privateKeyPath        = "app.rsa"
