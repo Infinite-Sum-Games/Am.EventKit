@@ -71,7 +71,7 @@ const allotHostelQuery = `-- name: AllotHostelQuery :execrows
 UPDATE accomodation_details
 SET 
   hostel_id = $2,
-  payment_expires = NOW() + INTERVAL '2 minutes',
+  payment_expires = NOW() + INTERVAL '30 minutes',
   payment_status = 'PENDING',
   updated_at = NOW()
   where id = $1
@@ -242,6 +242,56 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 			&i.CheckInTime,
 			&i.CheckOutDate,
 			&i.CheckOutTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllHostelsQuery = `-- name: GetAllHostelsQuery :many
+SELECT
+  id,
+  room_count,
+  is_male,
+  hostel_name,
+  latitude,
+  longtitude,
+  map_url
+FROM hostel_metadata
+`
+
+type GetAllHostelsQueryRow struct {
+	ID         uuid.UUID   `json:"id"`
+	RoomCount  int32       `json:"room_count"`
+	IsMale     bool        `json:"is_male"`
+	HostelName string      `json:"hostel_name"`
+	Latitude   pgtype.Text `json:"latitude"`
+	Longtitude pgtype.Text `json:"longtitude"`
+	MapUrl     pgtype.Text `json:"map_url"`
+}
+
+func (q *Queries) GetAllHostelsQuery(ctx context.Context, db DBTX) ([]GetAllHostelsQueryRow, error) {
+	rows, err := db.Query(ctx, getAllHostelsQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllHostelsQueryRow
+	for rows.Next() {
+		var i GetAllHostelsQueryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoomCount,
+			&i.IsMale,
+			&i.HostelName,
+			&i.Latitude,
+			&i.Longtitude,
+			&i.MapUrl,
 		); err != nil {
 			return nil, err
 		}

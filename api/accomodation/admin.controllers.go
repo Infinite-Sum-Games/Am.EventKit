@@ -499,3 +499,72 @@ func AffirmAccommodationPayment(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func GetAccommodationById(c *gin.Context) {
+	accommodationIdStr := c.Param("accommodationId")
+	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "GET-ACCOMMODATION", "accommodationID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GET-ACCOMMODATION") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	accommodation, err := q.GetAccommodationByIdQuery(ctx, conn, accommodationId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[GET-ACCOMMODATION-WARN]: Accommodation ID does not exist")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[GET-ACCOMMODATION-ERROR]: Failed to fetch accommodation request", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "Accommodation request fetched successfully",
+		"accommodation": accommodation,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GetAllHostels(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GET-HOSTELS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	hostels, err := q.GetAllHostelsQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[GET-HOSTELS-ERROR]: Failed to fetch hostels", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hostels fetched successfully",
+		"hostels": hostels,
+	})
+	pkg.Log.SuccessCtx(c)
+}

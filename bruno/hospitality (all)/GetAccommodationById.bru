@@ -1,0 +1,45 @@
+meta {
+  name: GetAccommodationById
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/accommodation/panel/:accommodationId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  accommodationId: 02ea0504-15c8-40b8-aba0-7d1017f8927a
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+docs {
+  ## Response:
+  ```
+  {
+    "accommodation": {
+      "id": "02ea0504-15c8-40b8-aba0-7d1017f8927a",
+      "student_id": "9f7add04-3f86-421f-aa95-a3038ac4b015",
+      "hostel_id": "52f19f3a-e980-4096-a38e-279e38dbdce7",
+      "name": "Navneet ",
+      "email": "navneetnanda12@gmail.com",
+      "phone_number": "8807314484",
+      "is_male": true,
+      "room_preference": "single",
+      "college_name": "Amrita Vishwa Vidyapeetham - Chennai",
+      "college_roll_number": "CH.SC.U4CYS24039",
+      "is_hosteller": true,
+      "is_amrita_campus": true,
+      "check_in": "2026-01-07T07:00:00",
+      "check_out": "2026-01-09T20:30:00"
+    },
+    "message": "Accommodation request fetched successfully"
+  }
+  ```
+}

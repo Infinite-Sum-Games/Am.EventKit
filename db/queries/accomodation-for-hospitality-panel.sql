@@ -99,3 +99,14 @@ SELECT
   check_out
 FROM accomodation_details
 WHERE id = $1;
+
+-- name: GetAllHostelsQuery :many
+SELECT
+  id,
+  room_count,
+  is_male,
+  hostel_name,
+  latitude,
+  longtitude,
+  map_url
+FROM hostel_metadata;
