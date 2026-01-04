@@ -1,7 +1,7 @@
 -- +goose Up
 
 -- +goose StatementBegin
-ALTER TABLE students
+ALTER TABLE student
 ADD COLUMN hospitality_id TEXT;
 -- +goose StatementEnd
 
