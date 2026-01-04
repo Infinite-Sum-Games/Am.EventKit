@@ -110,3 +110,17 @@ SELECT
   longtitude,
   map_url
 FROM hostel_metadata;
+
+-- name: UpdateAccommodationByIdQuery :execrows
+UPDATE accomodation_details
+SET
+  is_male = $2,
+  is_hosteller = $3,
+  college_roll_number = $4,
+  college_name = $5,
+  room_preference = $6,
+  is_amrita_campus = $7,
+  check_in = $8,
+  check_out = $9,
+  updated_at = NOW()
+WHERE id = $1;

@@ -344,6 +344,51 @@ func (q *Queries) GetHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (Ge
 	return i, err
 }
 
+const updateAccommodationByIdQuery = `-- name: UpdateAccommodationByIdQuery :execrows
+UPDATE accomodation_details
+SET
+  is_male = $2,
+  is_hosteller = $3,
+  college_roll_number = $4,
+  college_name = $5,
+  room_preference = $6,
+  is_amrita_campus = $7,
+  check_in = $8,
+  check_out = $9,
+  updated_at = NOW()
+WHERE id = $1
+`
+
+type UpdateAccommodationByIdQueryParams struct {
+	ID                uuid.UUID        `json:"id"`
+	IsMale            bool             `json:"is_male"`
+	IsHosteller       bool             `json:"is_hosteller"`
+	CollegeRollNumber string           `json:"college_roll_number"`
+	CollegeName       string           `json:"college_name"`
+	RoomPreference    string           `json:"room_preference"`
+	IsAmritaCampus    bool             `json:"is_amrita_campus"`
+	CheckIn           pgtype.Timestamp `json:"check_in"`
+	CheckOut          pgtype.Timestamp `json:"check_out"`
+}
+
+func (q *Queries) UpdateAccommodationByIdQuery(ctx context.Context, db DBTX, arg UpdateAccommodationByIdQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, updateAccommodationByIdQuery,
+		arg.ID,
+		arg.IsMale,
+		arg.IsHosteller,
+		arg.CollegeRollNumber,
+		arg.CollegeName,
+		arg.RoomPreference,
+		arg.IsAmritaCampus,
+		arg.CheckIn,
+		arg.CheckOut,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateHostelQuery = `-- name: UpdateHostelQuery :execrows
 UPDATE hostel_metadata
 SET 
