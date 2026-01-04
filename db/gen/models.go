@@ -365,13 +365,13 @@ type AccomodationDetail struct {
 	CollegeName       string           `json:"college_name"`
 	RoomPreference    string           `json:"room_preference"`
 	IsAmritaCampus    bool             `json:"is_amrita_campus"`
-	IsPaid            bool             `json:"is_paid"`
 	CheckIn           pgtype.Timestamp `json:"check_in"`
 	CheckOut          pgtype.Timestamp `json:"check_out"`
 	CreatedAt         pgtype.Timestamp `json:"created_at"`
 	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
 	PaymentStatus     string           `json:"payment_status"`
 	PaymentExpires    pgtype.Timestamp `json:"payment_expires"`
+	DayCount          int32            `json:"day_count"`
 }
 
 type AccomodationPersonell struct {
@@ -484,6 +484,8 @@ type HostelMetadatum struct {
 	Longtitude         pgtype.Text `json:"longtitude"`
 	MapUrl             pgtype.Text `json:"map_url"`
 	HostelName         string      `json:"hostel_name"`
+	Price              int32       `json:"price"`
+	RoomFilled         int32       `json:"room_filled"`
 }
 
 type Organizer struct {

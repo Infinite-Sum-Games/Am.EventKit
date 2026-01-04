@@ -8,7 +8,7 @@ SELECT
   college_roll_number,
   is_male,
   room_preference,
-  is_paid,
+  payment_status,
   'RESERVED' AS check_in_status,
   'No Hostel Allotted' AS hostel,
   check_in::date as check_in_date,
@@ -60,7 +60,6 @@ SET
 -- name: AffirmAccommodationPaymentQuery :execrows
 UPDATE accomodation_details
 SET 
-  is_paid = TRUE,
   payment_status = 'COMPLETED',
   updated_at = NOW()
   where id = $1;
@@ -136,3 +135,18 @@ RETURNING
     FROM accomodation_details
     WHERE student_id = $1
   ) AS has_opted_accommodation;
+
+-- name: GetFinanceDetailsByHospitalityIdQuery :one
+SELECT
+  ad.id AS accommodation_id,
+  ad.name AS name,
+  ad.email AS email,
+  ad.day_count AS day_count,
+  ad.payment_status AS payment_status,
+  ad.is_amrita_campus AS is_amrita_campus,
+  ad.is_hosteller AS is_hosteller,
+  hm.hostel_name AS hostel_name
+FROM accomodation_details ad
+INNER JOIN student s ON s.id = ad.student_id
+INNER JOIN hostel_metadata hm ON hm.id = ad.hostel_id
+WHERE s.hospitality_id = $1;

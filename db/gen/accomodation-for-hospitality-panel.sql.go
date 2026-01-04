@@ -53,7 +53,6 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 const affirmAccommodationPaymentQuery = `-- name: AffirmAccommodationPaymentQuery :execrows
 UPDATE accomodation_details
 SET 
-  is_paid = TRUE,
   payment_status = 'COMPLETED',
   updated_at = NOW()
   where id = $1
@@ -189,7 +188,7 @@ SELECT
   college_roll_number,
   is_male,
   room_preference,
-  is_paid,
+  payment_status,
   'RESERVED' AS check_in_status,
   'No Hostel Allotted' AS hostel,
   check_in::date as check_in_date,
@@ -209,7 +208,7 @@ type GetAllAccommodationRequestsQueryRow struct {
 	CollegeRollNumber string      `json:"college_roll_number"`
 	IsMale            bool        `json:"is_male"`
 	RoomPreference    string      `json:"room_preference"`
-	IsPaid            bool        `json:"is_paid"`
+	PaymentStatus     string      `json:"payment_status"`
 	CheckInStatus     string      `json:"check_in_status"`
 	Hostel            string      `json:"hostel"`
 	CheckInDate       pgtype.Date `json:"check_in_date"`
@@ -236,7 +235,7 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 			&i.CollegeRollNumber,
 			&i.IsMale,
 			&i.RoomPreference,
-			&i.IsPaid,
+			&i.PaymentStatus,
 			&i.CheckInStatus,
 			&i.Hostel,
 			&i.CheckInDate,
@@ -293,6 +292,49 @@ func (q *Queries) GetAllHostelsQuery(ctx context.Context, db DBTX) ([]GetAllHost
 		return nil, err
 	}
 	return items, nil
+}
+
+const getFinanceDetailsByHospitalityIdQuery = `-- name: GetFinanceDetailsByHospitalityIdQuery :one
+SELECT
+  ad.id AS accommodation_id,
+  ad.name AS name,
+  ad.email AS email,
+  ad.day_count AS day_count,
+  ad.payment_status AS payment_status,
+  ad.is_amrita_campus AS is_amrita_campus,
+  ad.is_hosteller AS is_hosteller,
+  hm.hostel_name AS hostel_name
+FROM accomodation_details ad
+INNER JOIN student s ON s.id = ad.student_id
+INNER JOIN hostel_metadata hm ON hm.id = ad.hostel_id
+WHERE s.hospitality_id = $1
+`
+
+type GetFinanceDetailsByHospitalityIdQueryRow struct {
+	AccommodationID uuid.UUID `json:"accommodation_id"`
+	Name            string    `json:"name"`
+	Email           string    `json:"email"`
+	DayCount        int32     `json:"day_count"`
+	PaymentStatus   string    `json:"payment_status"`
+	IsAmritaCampus  bool      `json:"is_amrita_campus"`
+	IsHosteller     bool      `json:"is_hosteller"`
+	HostelName      string    `json:"hostel_name"`
+}
+
+func (q *Queries) GetFinanceDetailsByHospitalityIdQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GetFinanceDetailsByHospitalityIdQueryRow, error) {
+	row := db.QueryRow(ctx, getFinanceDetailsByHospitalityIdQuery, hospitalityID)
+	var i GetFinanceDetailsByHospitalityIdQueryRow
+	err := row.Scan(
+		&i.AccommodationID,
+		&i.Name,
+		&i.Email,
+		&i.DayCount,
+		&i.PaymentStatus,
+		&i.IsAmritaCampus,
+		&i.IsHosteller,
+		&i.HostelName,
+	)
+	return i, err
 }
 
 const getHostelQuery = `-- name: GetHostelQuery :one

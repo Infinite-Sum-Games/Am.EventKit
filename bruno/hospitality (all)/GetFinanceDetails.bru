@@ -1,0 +1,19 @@
+meta {
+  name: GetFinanceDetails
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}/accommodation/panel/financeDetails/:hospitalityId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospitalityId: 
+}
+
+settings {
+  encodeUrl: true
+}

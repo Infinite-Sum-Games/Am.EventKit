@@ -6,14 +6,31 @@ meta {
 
 put {
   url: {{baseUrl}}/accommodation/panel/:accommodationId
-  body: none
+  body: json
   auth: inherit
 }
 
 params:path {
-  accommodationId: 
+  accommodationId: 02ea0504-15c8-40b8-aba0-7d1017f8927a
+}
+
+body:json {
+  {
+    "is_male": true,
+    "is_hosteller": true,
+    "college_roll_number": "CB.SC.U4CSE23634",
+    "college_name": "Amrita School of Engineering",
+    "room_preference": "Single",
+    "is_amrita_campus": true,
+    "check_in_date": "2026-01-10",
+    "check_in_time": "02:00 PM",
+    "check_out_date": "2026-01-15",
+    "check_out_time": "11:00 AM"
+  }
+  
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
