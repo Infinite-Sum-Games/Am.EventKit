@@ -83,7 +83,7 @@ SET
 
 -- name: GetAccommodationByIdQuery :one
 SELECT
-  id,
+  id AS accommodation_id,
   student_id,
   hostel_id,
   name,
@@ -95,21 +95,20 @@ SELECT
   college_roll_number,
   is_hosteller,
   is_amrita_campus,
-  check_in,
-  check_out
+  check_in::date as check_in_date,
+  to_char(check_in, 'HH12:MI AM') as check_in_time,
+  check_out::date as check_out_date,
+  to_char(check_out, 'HH12:MI AM') as check_out_time
 FROM accomodation_details
 WHERE id = $1;
 
 -- name: GetAllHostelsQuery :many
 SELECT
-  id,
+  id AS hostel_id,
   room_count,
   is_male,
-  hostel_name,
-  latitude,
-  longtitude,
-  map_url
-FROM hostel_metadata;
+  hostel_name
+  FROM hostel_metadata;
 
 -- name: UpdateAccommodationByIdQuery :execrows
 UPDATE accomodation_details

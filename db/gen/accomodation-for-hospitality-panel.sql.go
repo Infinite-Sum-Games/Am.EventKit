@@ -121,7 +121,7 @@ func (q *Queries) DeleteHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 
 const getAccommodationByIdQuery = `-- name: GetAccommodationByIdQuery :one
 SELECT
-  id,
+  id AS accommodation_id,
   student_id,
   hostel_id,
   name,
@@ -133,34 +133,38 @@ SELECT
   college_roll_number,
   is_hosteller,
   is_amrita_campus,
-  check_in,
-  check_out
+  check_in::date as check_in_date,
+  to_char(check_in, 'HH12:MI AM') as check_in_time,
+  check_out::date as check_out_date,
+  to_char(check_out, 'HH12:MI AM') as check_out_time
 FROM accomodation_details
 WHERE id = $1
 `
 
 type GetAccommodationByIdQueryRow struct {
-	ID                uuid.UUID        `json:"id"`
-	StudentID         uuid.UUID        `json:"student_id"`
-	HostelID          pgtype.UUID      `json:"hostel_id"`
-	Name              string           `json:"name"`
-	Email             string           `json:"email"`
-	PhoneNumber       string           `json:"phone_number"`
-	IsMale            bool             `json:"is_male"`
-	RoomPreference    string           `json:"room_preference"`
-	CollegeName       string           `json:"college_name"`
-	CollegeRollNumber string           `json:"college_roll_number"`
-	IsHosteller       bool             `json:"is_hosteller"`
-	IsAmritaCampus    bool             `json:"is_amrita_campus"`
-	CheckIn           pgtype.Timestamp `json:"check_in"`
-	CheckOut          pgtype.Timestamp `json:"check_out"`
+	AccommodationID   uuid.UUID   `json:"accommodation_id"`
+	StudentID         uuid.UUID   `json:"student_id"`
+	HostelID          pgtype.UUID `json:"hostel_id"`
+	Name              string      `json:"name"`
+	Email             string      `json:"email"`
+	PhoneNumber       string      `json:"phone_number"`
+	IsMale            bool        `json:"is_male"`
+	RoomPreference    string      `json:"room_preference"`
+	CollegeName       string      `json:"college_name"`
+	CollegeRollNumber string      `json:"college_roll_number"`
+	IsHosteller       bool        `json:"is_hosteller"`
+	IsAmritaCampus    bool        `json:"is_amrita_campus"`
+	CheckInDate       pgtype.Date `json:"check_in_date"`
+	CheckInTime       string      `json:"check_in_time"`
+	CheckOutDate      pgtype.Date `json:"check_out_date"`
+	CheckOutTime      string      `json:"check_out_time"`
 }
 
 func (q *Queries) GetAccommodationByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (GetAccommodationByIdQueryRow, error) {
 	row := db.QueryRow(ctx, getAccommodationByIdQuery, id)
 	var i GetAccommodationByIdQueryRow
 	err := row.Scan(
-		&i.ID,
+		&i.AccommodationID,
 		&i.StudentID,
 		&i.HostelID,
 		&i.Name,
@@ -172,8 +176,10 @@ func (q *Queries) GetAccommodationByIdQuery(ctx context.Context, db DBTX, id uui
 		&i.CollegeRollNumber,
 		&i.IsHosteller,
 		&i.IsAmritaCampus,
-		&i.CheckIn,
-		&i.CheckOut,
+		&i.CheckInDate,
+		&i.CheckInTime,
+		&i.CheckOutDate,
+		&i.CheckOutTime,
 	)
 	return i, err
 }
@@ -255,24 +261,18 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 
 const getAllHostelsQuery = `-- name: GetAllHostelsQuery :many
 SELECT
-  id,
+  id AS hostel_id,
   room_count,
   is_male,
-  hostel_name,
-  latitude,
-  longtitude,
-  map_url
-FROM hostel_metadata
+  hostel_name
+  FROM hostel_metadata
 `
 
 type GetAllHostelsQueryRow struct {
-	ID         uuid.UUID   `json:"id"`
-	RoomCount  int32       `json:"room_count"`
-	IsMale     bool        `json:"is_male"`
-	HostelName string      `json:"hostel_name"`
-	Latitude   pgtype.Text `json:"latitude"`
-	Longtitude pgtype.Text `json:"longtitude"`
-	MapUrl     pgtype.Text `json:"map_url"`
+	HostelID   uuid.UUID `json:"hostel_id"`
+	RoomCount  int32     `json:"room_count"`
+	IsMale     bool      `json:"is_male"`
+	HostelName string    `json:"hostel_name"`
 }
 
 func (q *Queries) GetAllHostelsQuery(ctx context.Context, db DBTX) ([]GetAllHostelsQueryRow, error) {
@@ -285,13 +285,10 @@ func (q *Queries) GetAllHostelsQuery(ctx context.Context, db DBTX) ([]GetAllHost
 	for rows.Next() {
 		var i GetAllHostelsQueryRow
 		if err := rows.Scan(
-			&i.ID,
+			&i.HostelID,
 			&i.RoomCount,
 			&i.IsMale,
 			&i.HostelName,
-			&i.Latitude,
-			&i.Longtitude,
-			&i.MapUrl,
 		); err != nil {
 			return nil, err
 		}
