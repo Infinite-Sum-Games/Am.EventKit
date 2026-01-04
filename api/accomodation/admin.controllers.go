@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -554,22 +555,32 @@ func UpdateAccommodationById(c *gin.Context) {
 	if !ok {
 		return
 	}
-	checkIn, err := pkg.ToPgTimestamp(req.CheckIn)
+
+	checkIn, err := pkg.ParseDateTime(req.CheckInDate, req.CheckInTime)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid check-in timestamp format",
+			"message": "Invalid check-in date or time format",
 		})
-		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-in timestamp format", err)
+		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-in date or time format", err)
 		return
 	}
-	checkOut, err := pkg.ToPgTimestamp(req.CheckOut)
+
+	fmt.Println("CHECK IN:", checkIn)
+
+	checkInPgTimestamp := pkg.ToPgTimestamp(checkIn)
+	fmt.Println("CHECK IN PG:", checkInPgTimestamp)
+	checkOut, err := pkg.ParseDateTime(req.CheckOutDate, req.CheckOutTime)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid check-out timestamp format",
+			"message": "Invalid check-out date or time format",
 		})
-		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-out timestamp format", err)
+		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-out date or time format", err)
 		return
 	}
+	fmt.Println("CHECK OUT:", checkOut)
+
+	checkOutPgTimestamp := pkg.ToPgTimestamp(checkOut)
+	fmt.Println("CHECK OUT PG:", checkOutPgTimestamp)
 
 	accommodationIdStr := c.Param("accommodationId")
 	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "UPDATE-ACCOMMODATION", "accommodationID")
@@ -596,8 +607,8 @@ func UpdateAccommodationById(c *gin.Context) {
 		CollegeName:       req.CollegeName,
 		RoomPreference:    req.RoomPreference,
 		IsAmritaCampus:    req.IsAmritaCampus,
-		CheckIn:           checkIn,
-		CheckOut:          checkOut,
+		CheckIn:           pkg.ToPgTimestamp(checkIn),
+		CheckOut:          pkg.ToPgTimestamp(checkOut),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

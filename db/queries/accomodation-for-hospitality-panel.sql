@@ -87,9 +87,6 @@ SET
 
 -- name: GetAccommodationByIdQuery :one
 SELECT
-  id AS accommodation_id,
-  student_id,
-  hostel_id,
   name,
   email,
   phone_number,

@@ -88,8 +88,10 @@ type UpdateAccommodationByIdRequest struct {
 	CollegeName       string `json:"college_name"`
 	RoomPreference    string `json:"room_preference"`
 	IsAmritaCampus    bool   `json:"is_amrita_campus"`
-	CheckIn           string `json:"check_in"`
-	CheckOut          string `json:"check_out"`
+	CheckInDate       string `json:"check_in_date"`
+	CheckInTime       string `json:"check_in_time"`
+	CheckOutDate      string `json:"check_out_date"`
+	CheckOutTime      string `json:"check_out_time"`
 }
 
 func (r UpdateAccommodationByIdRequest) Validate() error {
@@ -100,8 +102,10 @@ func (r UpdateAccommodationByIdRequest) Validate() error {
 		v.Field(&r.CollegeName),
 		v.Field(&r.RoomPreference),
 		v.Field(&r.IsAmritaCampus),
-		v.Field(&r.CheckIn),
-		v.Field(&r.CheckOut),
+		v.Field(&r.CheckInDate),
+		v.Field(&r.CheckInTime),
+		v.Field(&r.CheckOutDate),
+		v.Field(&r.CheckOutTime),
 	)
 }
 

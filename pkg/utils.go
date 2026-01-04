@@ -99,18 +99,20 @@ func ToPgUuidPtr(s *string) (pgtype.UUID, error) {
 	}, nil
 }
 
-func ToPgTimestamp(s string) (pgtype.Timestamp, error) {
-	if s == "" {
-		return pgtype.Timestamp{Valid: false}, nil
-	}
-
-	t, err := time.Parse(time.RFC3339, s)
+// 1️⃣ Combine date + time into time.Time
+func ParseDateTime(dateStr, timeStr string) (time.Time, error) {
+	combined := fmt.Sprintf("%s %s", dateStr, timeStr)
+	t, err := time.Parse("2006-01-02 03:04 PM", combined)
 	if err != nil {
-		return pgtype.Timestamp{}, err
+		return time.Time{}, fmt.Errorf("invalid date/time format: %w", err)
 	}
+	return t, nil
+}
 
+// Convert time.Time to pgtype.Timestamp
+func ToPgTimestamp(t time.Time) pgtype.Timestamp {
 	return pgtype.Timestamp{
 		Time:  t,
 		Valid: true,
-	}, nil
+	}
 }

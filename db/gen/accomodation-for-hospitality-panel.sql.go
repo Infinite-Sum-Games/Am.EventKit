@@ -125,9 +125,6 @@ func (q *Queries) DeleteHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) 
 
 const getAccommodationByIdQuery = `-- name: GetAccommodationByIdQuery :one
 SELECT
-  id AS accommodation_id,
-  student_id,
-  hostel_id,
   name,
   email,
   phone_number,
@@ -146,9 +143,6 @@ WHERE id = $1
 `
 
 type GetAccommodationByIdQueryRow struct {
-	AccommodationID   uuid.UUID   `json:"accommodation_id"`
-	StudentID         uuid.UUID   `json:"student_id"`
-	HostelID          pgtype.UUID `json:"hostel_id"`
 	Name              string      `json:"name"`
 	Email             string      `json:"email"`
 	PhoneNumber       string      `json:"phone_number"`
@@ -168,9 +162,6 @@ func (q *Queries) GetAccommodationByIdQuery(ctx context.Context, db DBTX, id uui
 	row := db.QueryRow(ctx, getAccommodationByIdQuery, id)
 	var i GetAccommodationByIdQueryRow
 	err := row.Scan(
-		&i.AccommodationID,
-		&i.StudentID,
-		&i.HostelID,
 		&i.Name,
 		&i.Email,
 		&i.PhoneNumber,
