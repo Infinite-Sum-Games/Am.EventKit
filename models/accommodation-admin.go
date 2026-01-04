@@ -56,3 +56,27 @@ func (r AllotHostelRequest) Validate() error {
 		v.Field(&r.HostelID, v.Required, is.UUID),
 	)
 }
+
+type UpdateAccommodationByIdRequest struct {
+	IsMale            bool   `json:"is_male"`
+	IsHosteller       bool   `json:"is_hosteller"`
+	CollegeRollNumber string `json:"college_roll_number"`
+	CollegeName       string `json:"college_name"`
+	RoomPreference    string `json:"room_preference"`
+	IsAmritaCampus    bool   `json:"is_amrita_campus"`
+	CheckIn           string `json:"check_in"`
+	CheckOut          string `json:"check_out"`
+}
+
+func (r UpdateAccommodationByIdRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.IsMale),
+		v.Field(&r.IsHosteller),
+		v.Field(&r.CollegeRollNumber),
+		v.Field(&r.CollegeName),
+		v.Field(&r.RoomPreference),
+		v.Field(&r.IsAmritaCampus),
+		v.Field(&r.CheckIn),
+		v.Field(&r.CheckOut),
+	)
+}

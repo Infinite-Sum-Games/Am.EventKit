@@ -568,3 +568,74 @@ func GetAllHostels(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func UpdateAccommodationById(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.UpdateAccommodationByIdRequest](c)
+	if !ok {
+		return
+	}
+	checkIn, err := pkg.ToPgTimestamp(req.CheckIn)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid check-in timestamp format",
+		})
+		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-in timestamp format", err)
+		return
+	}
+	checkOut, err := pkg.ToPgTimestamp(req.CheckOut)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid check-out timestamp format",
+		})
+		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Invalid check-out timestamp format", err)
+		return
+	}
+
+	accommodationIdStr := c.Param("accommodationId")
+	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "UPDATE-ACCOMMODATION", "accommodationID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "UPDATE-ACCOMMODATION") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	row, err := q.UpdateAccommodationByIdQuery(ctx, conn, db.UpdateAccommodationByIdQueryParams{
+		ID:                accommodationId,
+		IsMale:            req.IsMale,
+		IsHosteller:       req.IsHosteller,
+		CollegeRollNumber: req.CollegeRollNumber,
+		CollegeName:       req.CollegeName,
+		RoomPreference:    req.RoomPreference,
+		IsAmritaCampus:    req.IsAmritaCampus,
+		CheckIn:           checkIn,
+		CheckOut:          checkOut,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[UPDATE-ACCOMMODATION-ERROR]: Failed to update accommodation request", err)
+		return
+	}
+	if row == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[UPDATE-ACCOMMODATION-WARN]: Accommodation ID does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Accommodation request updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}

@@ -1,0 +1,19 @@
+meta {
+  name: UpdateAccommodationById
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/accommodation/panel/:accommodationId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  accommodationId: 
+}
+
+settings {
+  encodeUrl: true
+}
