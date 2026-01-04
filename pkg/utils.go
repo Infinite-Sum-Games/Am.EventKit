@@ -116,3 +116,18 @@ func ToPgTimestamp(t time.Time) pgtype.Timestamp {
 		Valid: true,
 	}
 }
+
+func ExtractRoomType(s string) string {
+	parts := strings.Split(s, "-")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	// Take part after "-"
+	roomType := strings.TrimSpace(parts[1])
+
+	// Remove all spaces
+	roomType = strings.ReplaceAll(roomType, " ", "")
+
+	return roomType
+}
