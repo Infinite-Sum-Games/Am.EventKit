@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS gate_management (
     FOREIGN KEY (personell_id)
     REFERENCES accomodation_personell(id)
       ON DELETE RESTRICT
-      ON UPDATE CASCADE,
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
