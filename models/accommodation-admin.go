@@ -1,6 +1,8 @@
 package models
 
 import (
+	"regexp"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -19,11 +21,21 @@ func (r AddHostelRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.RoomCount, v.Required, v.Min(1)),
 		v.Field(&r.IsMale),
-		v.Field(&r.WardenEmail, is.Email),
+		v.Field(&r.WardenEmail, v.Required, is.Email),
 		v.Field(&r.Latitude),
 		v.Field(&r.Longtitude),
 		v.Field(&r.MapUrl, is.URL),
-		v.Field(&r.HostelName, v.Required),
+		v.Field(
+			&r.HostelName,
+			v.Required,
+			v.Match(
+				regexp.MustCompile(
+					`^[A-Z0-9 ]+ BHAVANAM - (SINGLE|DORM|4 SHARING)$`,
+				),
+			).Error(
+				"hostel_name must be uppercase and end with 'BHAVANAM - SINGLE', 'BHAVANAM - DORM', or 'BHAVANAM - 4 SHARING'",
+			),
+		),
 	)
 }
 
@@ -37,12 +49,24 @@ type UpdateHostelRequest struct {
 }
 
 func (r UpdateHostelRequest) Validate() error {
+	decimalRegex := regexp.MustCompile(`^-?\d+(\.\d+)?$`)
+
 	return v.ValidateStruct(&r,
 		v.Field(&r.HostelID, v.Required, is.UUID),
-		v.Field(&r.RoomCount, v.Min(1)),
+		v.Field(&r.RoomCount, v.Min(0)),
 		v.Field(&r.WardenEmail, is.Email),
-		v.Field(&r.Latitude),
-		v.Field(&r.Longtitude),
+		v.Field(
+			&r.Latitude,
+			v.When(r.Latitude != "",
+				v.Match(decimalRegex),
+			).Else(v.Nil),
+		),
+		v.Field(
+			&r.Longtitude,
+			v.When(r.Longtitude != "",
+				v.Match(decimalRegex),
+			).Else(v.Nil),
+		),
 		v.Field(&r.MapUrl, is.URL),
 	)
 }
