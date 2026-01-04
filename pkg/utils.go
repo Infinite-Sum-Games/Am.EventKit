@@ -98,3 +98,19 @@ func ToPgUuidPtr(s *string) (pgtype.UUID, error) {
 		Valid: true,
 	}, nil
 }
+
+func ToPgTimestamp(s string) (pgtype.Timestamp, error) {
+	if s == "" {
+		return pgtype.Timestamp{Valid: false}, nil
+	}
+
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return pgtype.Timestamp{}, err
+	}
+
+	return pgtype.Timestamp{
+		Time:  t,
+		Valid: true,
+	}, nil
+}
