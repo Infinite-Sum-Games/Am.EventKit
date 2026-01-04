@@ -10,6 +10,7 @@ import (
 	"github.com/Thanus-Kumaar/anokha-2025-backend/models"
 	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -641,7 +642,7 @@ func MapQrStudentId(c *gin.Context) {
 
 	q := db.New()
 
-	row, err := q.MapQrStudentIdQuery(ctx, conn, db.MapQrStudentIdQueryParams{
+	res, err := q.MapQrStudentIdQuery(ctx, conn, db.MapQrStudentIdQueryParams{
 		ID:            studentId,
 		HospitalityID: pkg.ToPgText(req.HospitalityId),
 	})
@@ -652,16 +653,20 @@ func MapQrStudentId(c *gin.Context) {
 		pkg.Log.ErrorCtx(c, "[MAP-QR-STUDENT-ERROR]: Failed to map QR code to student ID", err)
 		return
 	}
-	if row == 0 {
+
+	// Check if accommodation exists (can be NULL if student hasn't opted)
+	if res.AccommodationID == uuid.Nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "QR code or Student ID not found",
+			"message": "Student has not opted for accommodation",
 		})
-		pkg.Log.ErrorCtx(c, "[MAP-QR-STUDENT-Error]: QR code ID or Student College ID does not exist", err)
+		pkg.Log.WarnCtx(c, "[MAP-QR-STUDENT-WARN]: Student has no accommodation opted")
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "QR code mapped to student ID successfully",
+		"message":                 "QR code mapped successfully",
+		"accommodation_id":        res.AccommodationID,
+		"has_opted_accommodation": res.HasOptedAccommodation,
 	})
 	pkg.Log.SuccessCtx(c)
 }

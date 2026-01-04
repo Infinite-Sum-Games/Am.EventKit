@@ -128,7 +128,14 @@ SET
   updated_at = NOW()
 WHERE id = $1;
 
--- name: MapQrStudentIdQuery :execrows
+-- name: MapQrStudentIdQuery :one
 UPDATE student
 SET hospitality_id = $2
-WHERE id = $1;
+WHERE student.id = $1
+RETURNING
+  (SELECT id FROM accomodation_details WHERE student_id = $1 LIMIT 1) AS accommodation_id,
+  EXISTS (
+    SELECT 1
+    FROM accomodation_details
+    WHERE student_id = $1
+  ) AS has_opted_accommodation;

@@ -345,10 +345,17 @@ func (q *Queries) GetHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (Ge
 	return i, err
 }
 
-const mapQrStudentIdQuery = `-- name: MapQrStudentIdQuery :execrows
+const mapQrStudentIdQuery = `-- name: MapQrStudentIdQuery :one
 UPDATE student
 SET hospitality_id = $2
-WHERE id = $1
+WHERE student.id = $1
+RETURNING
+  (SELECT id FROM accomodation_details WHERE student_id = $1 LIMIT 1) AS accommodation_id,
+  EXISTS (
+    SELECT 1
+    FROM accomodation_details
+    WHERE student_id = $1
+  ) AS has_opted_accommodation
 `
 
 type MapQrStudentIdQueryParams struct {
@@ -356,12 +363,16 @@ type MapQrStudentIdQueryParams struct {
 	HospitalityID pgtype.Text `json:"hospitality_id"`
 }
 
-func (q *Queries) MapQrStudentIdQuery(ctx context.Context, db DBTX, arg MapQrStudentIdQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, mapQrStudentIdQuery, arg.ID, arg.HospitalityID)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+type MapQrStudentIdQueryRow struct {
+	AccommodationID       uuid.UUID `json:"accommodation_id"`
+	HasOptedAccommodation bool      `json:"has_opted_accommodation"`
+}
+
+func (q *Queries) MapQrStudentIdQuery(ctx context.Context, db DBTX, arg MapQrStudentIdQueryParams) (MapQrStudentIdQueryRow, error) {
+	row := db.QueryRow(ctx, mapQrStudentIdQuery, arg.ID, arg.HospitalityID)
+	var i MapQrStudentIdQueryRow
+	err := row.Scan(&i.AccommodationID, &i.HasOptedAccommodation)
+	return i, err
 }
 
 const updateAccommodationByIdQuery = `-- name: UpdateAccommodationByIdQuery :execrows
