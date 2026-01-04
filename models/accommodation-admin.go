@@ -104,3 +104,20 @@ func (r UpdateAccommodationByIdRequest) Validate() error {
 		v.Field(&r.CheckOut),
 	)
 }
+
+type MapQrStudentIdRequest struct {
+	StudentID     string `json:"student_id"`
+	HospitalityId string `json:"hospitality_id"`
+}
+
+func (r MapQrStudentIdRequest) Validate() error {
+	return v.ValidateStruct(&r,
+		v.Field(&r.StudentID, v.Required, is.UUID),
+		v.Field(
+			&r.HospitalityId,
+			v.Required,
+			v.Match(regexp.MustCompile(`^A\d{4}CBE$`)).
+				Error("hospitality_id must be in the format A1234CBE"),
+		),
+	)
+}

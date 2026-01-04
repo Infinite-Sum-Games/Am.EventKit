@@ -74,7 +74,11 @@ SET
   payment_expires = NOW() + INTERVAL '30 minutes',
   payment_status = 'PENDING',
   updated_at = NOW()
-  where id = $1
+  where accomodation_details.id = $1
+  AND hostel_id IS NULL
+  AND is_male = (
+    SELECT is_male FROM hostel_metadata WHERE hostel_metadata.id = $2
+  )
 `
 
 type AllotHostelQueryParams struct {
@@ -339,6 +343,25 @@ func (q *Queries) GetHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (Ge
 		&i.HostelName,
 	)
 	return i, err
+}
+
+const mapQrStudentIdQuery = `-- name: MapQrStudentIdQuery :execrows
+UPDATE student
+SET hospitality_id = $2
+WHERE id = $1
+`
+
+type MapQrStudentIdQueryParams struct {
+	ID            uuid.UUID   `json:"id"`
+	HospitalityID pgtype.Text `json:"hospitality_id"`
+}
+
+func (q *Queries) MapQrStudentIdQuery(ctx context.Context, db DBTX, arg MapQrStudentIdQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, mapQrStudentIdQuery, arg.ID, arg.HospitalityID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const updateAccommodationByIdQuery = `-- name: UpdateAccommodationByIdQuery :execrows

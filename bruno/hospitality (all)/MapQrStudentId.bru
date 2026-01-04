@@ -1,0 +1,24 @@
+meta {
+  name: MapQrStudentId
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/accommodation/panel/mapQrStudent
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "student_id": "003bd435-ce2d-4f75-8634-93141d178915",
+    "hospitality_id": "A1234CBE"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -618,3 +618,50 @@ func UpdateAccommodationById(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func MapQrStudentId(c *gin.Context) {
+	req, ok := pkg.ValidateRequest[models.MapQrStudentIdRequest](c)
+	if !ok {
+		return
+	}
+
+	studentId, ok := pkg.GrabUuid(c, req.StudentID, "MAP-QR-STUDENT", "studentID")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "MAP-QR-STUDENT") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	row, err := q.MapQrStudentIdQuery(ctx, conn, db.MapQrStudentIdQueryParams{
+		ID:            studentId,
+		HospitalityID: pkg.ToPgText(req.HospitalityId),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[MAP-QR-STUDENT-ERROR]: Failed to map QR code to student ID", err)
+		return
+	}
+	if row == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "QR code or Student ID not found",
+		})
+		pkg.Log.ErrorCtx(c, "[MAP-QR-STUDENT-Error]: QR code ID or Student College ID does not exist", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "QR code mapped to student ID successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}

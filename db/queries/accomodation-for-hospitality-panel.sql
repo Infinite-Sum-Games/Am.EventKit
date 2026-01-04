@@ -51,10 +51,10 @@ SET
   payment_expires = NOW() + INTERVAL '30 minutes',
   payment_status = 'PENDING',
   updated_at = NOW()
-  where id = $1
+  where accomodation_details.id = $1
   AND hostel_id IS NULL
   AND is_male = (
-    SELECT is_male FROM hostel_metadata WHERE id = $2
+    SELECT is_male FROM hostel_metadata WHERE hostel_metadata.id = $2
   );
 
 -- name: AffirmAccommodationPaymentQuery :execrows
@@ -126,4 +126,9 @@ SET
   check_in = $8,
   check_out = $9,
   updated_at = NOW()
+WHERE id = $1;
+
+-- name: MapQrStudentIdQuery :execrows
+UPDATE student
+SET hospitality_id = $2
 WHERE id = $1;
