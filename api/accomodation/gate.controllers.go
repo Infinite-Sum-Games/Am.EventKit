@@ -302,6 +302,8 @@ func GateCheckOut(c *gin.Context) {
 }
 
 func GateStatus(c *gin.Context) {
+	hospId := c.Param("hospId")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -311,13 +313,27 @@ func GateStatus(c *gin.Context) {
 	}
 	defer conn.Release()
 
-	_ = db.New()
+	q := db.New()
 
-	// If has accommodation, check entry time and show exit time
-	// If does not have accommodation, show list of logs
+	resp, err := q.HostelGateStatusQuery(ctx, conn, pgtype.Text{
+		String: hospId,
+		Valid:  true,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[GATE-ERROR]: Failed to check gate status", err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Student accomodation status fetched successfully",
+		"message":         "Student accomodation status fetched successfully",
+		"student_name":    resp.StudentName,
+		"student_email":   resp.StudentEmail,
+		"single_check_in": resp.SingleCheckIn,
+		"last_check_in":   resp.LastCheckIn,
+		"last_check_out":  resp.LastCheckOut,
 	})
 	pkg.Log.SuccessCtx(c)
 }

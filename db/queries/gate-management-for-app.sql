@@ -34,3 +34,39 @@ SET
   checked_in_by = $2
 WHERE
   accomodation_id = $1;
+
+-- name: HostelGateStatusQuery :one
+WITH student_info AS (
+    SELECT
+        s.id as student_id,
+        s.name as student_name,
+        s.email as student_email,
+        EXISTS (
+            SELECT 1
+            FROM accomodation_details ad
+            WHERE ad.student_id = s.id AND ad.payment_status = 'COMPLETED'
+        ) as has_accommodation
+    FROM student s
+    WHERE s.hospitality_id = $1
+),
+gate_logs AS (
+    SELECT
+        direction,
+        logged_at
+    FROM gate_management
+    WHERE student_id = (SELECT student_id FROM student_info)
+    ORDER BY logged_at DESC
+),
+last_check_in AS (
+    SELECT logged_at FROM gate_logs WHERE direction = 'IN' LIMIT 1
+),
+last_check_out AS (
+    SELECT logged_at FROM gate_logs WHERE direction = 'OUT' LIMIT 1
+)
+SELECT
+    si.student_name,
+    si.student_email,
+    si.has_accommodation AS single_check_in,
+    (SELECT logged_at FROM last_check_in) AS last_check_in,
+    (SELECT logged_at FROM last_check_out) AS last_check_out
+FROM student_info si;

@@ -102,3 +102,61 @@ func (q *Queries) HostelCheckInQuery(ctx context.Context, db DBTX, arg HostelChe
 	}
 	return result.RowsAffected(), nil
 }
+
+const hostelGateStatusQuery = `-- name: HostelGateStatusQuery :one
+WITH student_info AS (
+    SELECT
+        s.id as student_id,
+        s.name as student_name,
+        s.email as student_email,
+        EXISTS (
+            SELECT 1
+            FROM accomodation_details ad
+            WHERE ad.student_id = s.id AND ad.payment_status = 'COMPLETED'
+        ) as has_accommodation
+    FROM student s
+    WHERE s.hospitality_id = $1
+),
+gate_logs AS (
+    SELECT
+        direction,
+        logged_at
+    FROM gate_management
+    WHERE student_id = (SELECT student_id FROM student_info)
+    ORDER BY logged_at DESC
+),
+last_check_in AS (
+    SELECT logged_at FROM gate_logs WHERE direction = 'IN' LIMIT 1
+),
+last_check_out AS (
+    SELECT logged_at FROM gate_logs WHERE direction = 'OUT' LIMIT 1
+)
+SELECT
+    si.student_name,
+    si.student_email,
+    si.has_accommodation AS single_check_in,
+    (SELECT logged_at FROM last_check_in) AS last_check_in,
+    (SELECT logged_at FROM last_check_out) AS last_check_out
+FROM student_info si
+`
+
+type HostelGateStatusQueryRow struct {
+	StudentName   string           `json:"student_name"`
+	StudentEmail  string           `json:"student_email"`
+	SingleCheckIn bool             `json:"single_check_in"`
+	LastCheckIn   pgtype.Timestamp `json:"last_check_in"`
+	LastCheckOut  pgtype.Timestamp `json:"last_check_out"`
+}
+
+func (q *Queries) HostelGateStatusQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (HostelGateStatusQueryRow, error) {
+	row := db.QueryRow(ctx, hostelGateStatusQuery, hospitalityID)
+	var i HostelGateStatusQueryRow
+	err := row.Scan(
+		&i.StudentName,
+		&i.StudentEmail,
+		&i.SingleCheckIn,
+		&i.LastCheckIn,
+		&i.LastCheckOut,
+	)
+	return i, err
+}
