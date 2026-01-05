@@ -22,25 +22,28 @@ func AccomodationPanelRoutes(r *gin.RouterGroup) {
 	r.POST("/panel/hostel", mw.Auth, mw.CheckHospitality, AddHostel)
 	r.PUT("/panel/hostel", mw.Auth, mw.CheckHospitality, UpdateHostel)
 	r.DELETE("/panel/hostel/:id", mw.Auth, mw.CheckHospitality, DeleteHostel)
-	r.POST("/panel/allot/:accommodationId", mw.Auth, mw.CheckHospitality, AllotHostel)
+	r.POST("/panel/allot/:accId", mw.Auth, mw.CheckHospitality, AllotHostel)
+
+	r.GET("/panel/gate/logs", mw.Auth, mw.CheckHospitality, GateLogsSink)
+	r.GET("/panel/hostel/logs", mw.Auth, mw.CheckHospitality, HostelLogsSink)
 }
 
 func FinanceRoutes(r *gin.RouterGroup) {
 	r.GET("/app/pay/:hospitalityId", mw.Auth, mw.CheckHospitality, GetFinanceDetailsByHospitalityId)
-	r.POST("/app/pay/confirm/:accommodationId", mw.Auth, mw.CheckHospitality, mw.CheckFinance, AffirmAccommodationPayment)
+	r.POST("/app/pay/confirm/:accId", mw.Auth, mw.CheckHospitality, mw.CheckFinance, AffirmAccommodationPayment)
 }
 
 func GateRoutes(r *gin.RouterGroup) {
 	r.GET("/app/hostels", mw.Auth, mw.CheckHospitality, mw.CheckGate, GetAllHostels)
 	r.POST("/app/map", mw.Auth, mw.CheckHospitality, mw.CheckGate, MapQrStudentId)
-	r.GET("/app/:accommodationId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GetAccommodationById)
-	r.PUT("/app/:accommodationId", mw.Auth, mw.CheckHospitality, mw.CheckGate, UpdateAccommodationById)
+	r.GET("/app/:accId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GetAccommodationById)
+	r.PUT("/app/:accId", mw.Auth, mw.CheckHospitality, mw.CheckGate, UpdateAccommodationById)
 
-	r.POST("/app/gate/check-in/:accomodationId")
-	r.POST("/app/gate/status/:accomodationId")
-	r.POST("/app/gate/check-out/:hospitalityId")
+	r.POST("/app/gate/check-in/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckIn)
+	r.GET("/app/gate/status/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateStatus)
+	r.POST("/app/gate/check-out/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckOut)
 }
 
 func SecurityRoutes(r *gin.RouterGroup) {
-	r.GET("/app/security/:hospitalityId", mw.Auth, mw.CheckHospitality, mw.CheckSecurity, GetStudentDetailsForSecurity)
+	r.GET("/app/security/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckSecurity, SecurityCheck)
 }

@@ -173,8 +173,8 @@ func DeleteHostel(c *gin.Context) {
 }
 
 func AllotHostel(c *gin.Context) {
-	accommodationIdStr := c.Param("accommodationId")
-	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "ALLOT-HOSTEL", "hostelID")
+	accIdStr := c.Param("accId")
+	accommodationId, ok := pkg.GrabUuid(c, accIdStr, "ALLOT-HOSTEL", "Accommodation")
 	if !ok {
 		return
 	}
@@ -193,7 +193,7 @@ func AllotHostel(c *gin.Context) {
 		return
 	}
 
-	hostelIdUuid, ok := pkg.GrabUuid(c, req.HostelID, "ALLOT-HOSTEL", "hostelID")
+	hostelIdUuid, ok := pkg.GrabUuid(c, req.HostelID, "ALLOT-HOSTEL", "Hostel")
 	if !ok {
 		return
 	}

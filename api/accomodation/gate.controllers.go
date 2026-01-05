@@ -95,8 +95,8 @@ func MapQrStudentId(c *gin.Context) {
 }
 
 func GetAccommodationById(c *gin.Context) {
-	accommodationIdStr := c.Param("accommodationId")
-	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "GET-ACCOMMODATION", "accommodationID")
+	accIdStr := c.Param("accId")
+	accommodationId, ok := pkg.GrabUuid(c, accIdStr, "GET-ACCOMMODATION", "Accommodation")
 	if !ok {
 		return
 	}
@@ -212,6 +212,63 @@ func UpdateAccommodationById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Accommodation request updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateCheckIn(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "GATE") {
+		return
+	}
+	defer pkg.RollbackTx(c, tx, ctx, "GATE")
+
+	_ = db.New()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Student checked-in successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateCheckOut(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "GATE") {
+		return
+	}
+	defer pkg.RollbackTx(c, tx, ctx, "GATE")
+
+	_ = db.New()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Student checked-out successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateStatus(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GATE") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	// If has accommodation, check entry time and show exit time
+	// If does not have accommodation, show list of logs
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Student accomodation status fetched successfully",
 	})
 	pkg.Log.SuccessCtx(c)
 }

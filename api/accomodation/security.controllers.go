@@ -12,8 +12,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func GetStudentDetailsForSecurity(c *gin.Context) {
-	hospitslityId := c.Param("hospitalityId")
+func SecurityCheck(c *gin.Context) {
+	hospId := c.Param("hospId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -26,7 +26,7 @@ func GetStudentDetailsForSecurity(c *gin.Context) {
 
 	q := db.New()
 
-	studentDetails, err := q.GetStudentDetailsForSecurityQuery(ctx, conn, pkg.ToPgText(hospitslityId))
+	studentDetails, err := q.GetStudentDetailsForSecurityQuery(ctx, conn, pkg.ToPgText(hospId))
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Accommodation request not found",
