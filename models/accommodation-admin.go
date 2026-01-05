@@ -61,13 +61,13 @@ func (r UpdateHostelRequest) Validate() error {
 			&r.Latitude,
 			v.When(r.Latitude != "",
 				v.Match(decimalRegex),
-			).Else(v.Nil),
+			),
 		),
 		v.Field(
 			&r.Longtitude,
 			v.When(r.Longtitude != "",
 				v.Match(decimalRegex),
-			).Else(v.Nil),
+			),
 		),
 		v.Field(&r.MapUrl, is.URL),
 	)
