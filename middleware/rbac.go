@@ -76,3 +76,57 @@ func CheckGate(c *gin.Context) {
 		})
 	}
 }
+
+func CheckFinance(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "FINANCE-AUTH")
+	if !ok {
+		return
+	}
+
+	// Normalize just in case
+	email = strings.ToLower(email)
+
+	financeEmailRegex := regexp.MustCompile(`^[a-z]+\.finance@amrita\.edu$`)
+
+	if !financeEmailRegex.MatchString(email) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "Unauthorized finance email.",
+		})
+	}
+}
+
+func CheckSecurity(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "SECURITY-AUTH")
+	if !ok {
+		return
+	}
+
+	// Normalize just in case
+	email = strings.ToLower(email)
+
+	securityEmailRegex := regexp.MustCompile(`^[a-z]+\.security@amrita\.edu$`)
+
+	if !securityEmailRegex.MatchString(email) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "Unauthorized security email.",
+		})
+	}
+}
+
+func CheckHostel(c *gin.Context) {
+	email, ok := pkg.GrabEmail(c, "HOSTEL-AUTH")
+	if !ok {
+		return
+	}
+
+	// Normalize just in case
+	email = strings.ToLower(email)
+
+	hostelEmailRegex := regexp.MustCompile(`^[a-z]+\.hostel@amrita\.edu$`)
+
+	if !hostelEmailRegex.MatchString(email) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"message": "Unauthorized hostel email.",
+		})
+	}
+}
