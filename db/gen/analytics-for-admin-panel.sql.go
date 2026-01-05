@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 )
@@ -15,26 +14,19 @@ import (
 const getEventRegistrationAnalytics = `-- name: GetEventRegistrationAnalytics :one
 SELECT
     id,
-    total_event_participants,
+    total_event_registrations,
     participant_split,
     event_registration_stats
-FROM participants_analytics
+FROM event_registration_analytics
 WHERE id = 1
 `
 
-type GetEventRegistrationAnalyticsRow struct {
-	ID                     int32           `json:"id"`
-	TotalEventParticipants int64           `json:"total_event_participants"`
-	ParticipantSplit       json.RawMessage `json:"participant_split"`
-	EventRegistrationStats json.RawMessage `json:"event_registration_stats"`
-}
-
-func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (GetEventRegistrationAnalyticsRow, error) {
+func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (EventRegistrationAnalytic, error) {
 	row := db.QueryRow(ctx, getEventRegistrationAnalytics)
-	var i GetEventRegistrationAnalyticsRow
+	var i EventRegistrationAnalytic
 	err := row.Scan(
 		&i.ID,
-		&i.TotalEventParticipants,
+		&i.TotalEventRegistrations,
 		&i.ParticipantSplit,
 		&i.EventRegistrationStats,
 	)

@@ -444,6 +444,13 @@ type Event struct {
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
+type EventRegistrationAnalytic struct {
+	ID                      int32           `json:"id"`
+	TotalEventRegistrations int64           `json:"total_event_registrations"`
+	ParticipantSplit        json.RawMessage `json:"participant_split"`
+	EventRegistrationStats  json.RawMessage `json:"event_registration_stats"`
+}
+
 type EventSchedule struct {
 	ID        uuid.UUID        `json:"id"`
 	EventID   uuid.UUID        `json:"event_id"`
@@ -474,18 +481,19 @@ type Favourite struct {
 }
 
 type HostelMetadatum struct {
-	ID                 uuid.UUID   `json:"id"`
-	RoomCount          int32       `json:"room_count"`
-	IsMale             bool        `json:"is_male"`
-	WardenEmail        pgtype.Text `json:"warden_email"`
-	WardenPassword     pgtype.Text `json:"warden_password"`
-	WardenRefreshToken pgtype.Text `json:"warden_refresh_token"`
-	Latitude           pgtype.Text `json:"latitude"`
-	Longtitude         pgtype.Text `json:"longtitude"`
-	MapUrl             pgtype.Text `json:"map_url"`
-	HostelName         string      `json:"hostel_name"`
-	Price              int32       `json:"price"`
-	RoomFilled         int32       `json:"room_filled"`
+	ID                    uuid.UUID   `json:"id"`
+	RoomCount             int32       `json:"room_count"`
+	IsMale                bool        `json:"is_male"`
+	WardenEmail           pgtype.Text `json:"warden_email"`
+	WardenPassword        pgtype.Text `json:"warden_password"`
+	WardenRefreshToken    pgtype.Text `json:"warden_refresh_token"`
+	Latitude              pgtype.Text `json:"latitude"`
+	Longtitude            pgtype.Text `json:"longtitude"`
+	MapUrl                pgtype.Text `json:"map_url"`
+	HostelName            string      `json:"hostel_name"`
+	AmritaDayscholarPrice int32       `json:"amrita_dayscholar_price"`
+	RoomFilled            int32       `json:"room_filled"`
+	NonAmritaPrice        int32       `json:"non_amrita_price"`
 }
 
 type Organizer struct {
@@ -500,14 +508,6 @@ type Organizer struct {
 	RefreshToken  pgtype.Text       `json:"refresh_token"`
 	CreatedAt     pgtype.Timestamp  `json:"created_at"`
 	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
-}
-
-type ParticipantsAnalytic struct {
-	ID                     int32           `json:"id"`
-	TotalEventParticipants int64           `json:"total_event_participants"`
-	ParticipantSplit       json.RawMessage `json:"participant_split"`
-	AmritaNonAmritaSplit   json.RawMessage `json:"amrita_non_amrita_split"`
-	EventRegistrationStats json.RawMessage `json:"event_registration_stats"`
 }
 
 type PasswordReset struct {

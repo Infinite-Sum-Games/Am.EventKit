@@ -11,10 +11,10 @@ WHERE id = 1;
 -- name: GetEventRegistrationAnalytics :one
 SELECT
     id,
-    total_event_participants,
+    total_event_registrations,
     participant_split,
     event_registration_stats
-FROM participants_analytics
+FROM event_registration_analytics
 WHERE id = 1;
 
 -- name: GetPeopleRegistrationAnalytics :one

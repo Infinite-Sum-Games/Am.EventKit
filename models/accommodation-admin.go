@@ -8,13 +8,15 @@ import (
 )
 
 type AddHostelRequest struct {
-	RoomCount   int32  `json:"room_count"`
-	IsMale      bool   `json:"is_male"`
-	WardenEmail string `json:"warden_email"`
-	Latitude    string `json:"latitude"`
-	Longtitude  string `json:"longtitude"`
-	MapUrl      string `json:"map_url"`
-	HostelName  string `json:"hostel_name"`
+	RoomCount       int32  `json:"room_count"`
+	IsMale          bool   `json:"is_male"`
+	WardenEmail     string `json:"warden_email"`
+	Latitude        string `json:"latitude"`
+	Longtitude      string `json:"longtitude"`
+	MapUrl          string `json:"map_url"`
+	HostelName      string `json:"hostel_name"`
+	DayScholarPrice int32  `json:"day_scholar_price"`
+	OutsiderPrice   int32  `json:"outsider_price"`
 }
 
 func (r AddHostelRequest) Validate() error {
@@ -36,17 +38,21 @@ func (r AddHostelRequest) Validate() error {
 				"hostel_name must be uppercase and end with 'BHAVANAM - SINGLE', 'BHAVANAM - DORM', or 'BHAVANAM - 4 SHARING'",
 			),
 		),
+		v.Field(&r.DayScholarPrice, v.Required, v.Min(0)),
+		v.Field(&r.OutsiderPrice, v.Required, v.Min(0)),
 	)
 }
 
 type UpdateHostelRequest struct {
-	HostelID    string `json:"hostel_id"`
-	RoomCount   int32  `json:"room_count"`
-	IsMale      bool   `json:"is_male"`
-	WardenEmail string `json:"warden_email"`
-	Latitude    string `json:"latitude"`
-	Longtitude  string `json:"longtitude"`
-	MapUrl      string `json:"map_url"`
+	HostelID        string `json:"hostel_id"`
+	RoomCount       int32  `json:"room_count"`
+	IsMale          bool   `json:"is_male"`
+	WardenEmail     string `json:"warden_email"`
+	Latitude        string `json:"latitude"`
+	Longtitude      string `json:"longtitude"`
+	MapUrl          string `json:"map_url"`
+	DayScholarPrice int32  `json:"day_scholar_price"`
+	OutsiderPrice   int32  `json:"outsider_price"`
 }
 
 func (r UpdateHostelRequest) Validate() error {
@@ -70,6 +76,8 @@ func (r UpdateHostelRequest) Validate() error {
 			),
 		),
 		v.Field(&r.MapUrl, is.URL),
+		v.Field(&r.DayScholarPrice, v.Min(0)),
+		v.Field(&r.OutsiderPrice, v.Min(0)),
 	)
 }
 
