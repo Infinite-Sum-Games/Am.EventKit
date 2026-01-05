@@ -88,7 +88,13 @@ func SetupRouter(mailerSvc *mail.MailerService) *gin.Engine {
 	apiBooking.BookingRoutes(eventRouter)
 	apiAnalytics.AnalyticsRoutes(analyticsRouter)
 	apiDispute.DisputeRoutes(disputeRouter)
-	apiAccomodation.AccomodationRoutes(accomodationRouter)
+
+	apiAccomodation.AccomodationFormRoutes(accomodationRouter)
+	apiAccomodation.AccomodationAuthRoutes(accomodationRouter)
+	apiAccomodation.AccomodationPanelRoutes(accomodationRouter)
+	apiAccomodation.FinanceRoutes(accomodationRouter)
+	apiAccomodation.GateRoutes(accomodationRouter)
+	apiAccomodation.SecurityRoutes(accomodationRouter)
 
 	return r
 }
