@@ -1,0 +1,20 @@
+meta {
+  name: AffirmPayment
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/accommodation/panel/affirmPayment/:accommodationId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  accommodationId: 02ea0504-15c8-40b8-aba0-7d1017f8927a
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

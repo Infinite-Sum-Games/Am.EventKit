@@ -1,0 +1,16 @@
+meta {
+  name: GetAllHostels
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/accommodation/panel/hostels
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

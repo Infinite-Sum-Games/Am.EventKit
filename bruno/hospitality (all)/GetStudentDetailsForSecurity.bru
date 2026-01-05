@@ -1,0 +1,19 @@
+meta {
+  name: GetStudentDetailsForSecurity
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/accommodation/panel/security/:hospitalityId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospitalityId: 
+}
+
+settings {
+  encodeUrl: true
+}

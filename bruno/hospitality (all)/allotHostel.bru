@@ -1,0 +1,26 @@
+meta {
+  name: allotHostel
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/accommodation/panel/allot/:accommodationId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  accommodationId: 0b86e8a0-4da1-422d-ac58-e8c88f1f50c3
+}
+
+body:json {
+  {
+    "hostel_id":"52f19f3a-e980-4096-a38e-279e38dbdce7"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

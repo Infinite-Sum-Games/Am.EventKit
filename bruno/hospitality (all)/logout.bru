@@ -1,0 +1,16 @@
+meta {
+  name: logout
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/accommodation/panel/logout
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

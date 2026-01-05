@@ -382,7 +382,7 @@ func (q *Queries) GetSchedulesByEventID(ctx context.Context, db DBTX, eventID uu
 }
 
 const getStudentByEmail = `-- name: GetStudentByEmail :one
-SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at FROM student
+SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at, hospitality_id FROM student
 WHERE email = $1
 `
 
@@ -403,12 +403,13 @@ func (q *Queries) GetStudentByEmail(ctx context.Context, db DBTX, email string) 
 		&i.RefreshToken,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HospitalityID,
 	)
 	return i, err
 }
 
 const getStudentsByEmails = `-- name: GetStudentsByEmails :many
-SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at FROM student
+SELECT id, name, email, password, phone_number, is_amrita_student, amrita_roll_number, college_name, college_city, account_status, refresh_token, created_at, updated_at, hospitality_id FROM student
 WHERE email = ANY($1::text[])
 `
 
@@ -435,6 +436,7 @@ func (q *Queries) GetStudentsByEmails(ctx context.Context, db DBTX, dollar_1 []s
 			&i.RefreshToken,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.HospitalityID,
 		); err != nil {
 			return nil, err
 		}

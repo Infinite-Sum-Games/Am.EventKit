@@ -14,33 +14,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func GetAllAccomodationRequests(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "ACCOMODATION") {
-		return
-	}
-	defer conn.Release()
-
-	q := db.New()
-	requests, err := q.GetAllAccommodationRequestsQuery(ctx, conn)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[ACCOMMODATION-ERROR]: Failed to fetch accomodation requests", err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "Accommodation requests returned successfully",
-		"requests": requests,
-	})
-	pkg.Log.SuccessCtx(c)
-}
-
 func AccomodationLogin(c *gin.Context) {
 	req, ok := pkg.ValidateRequest[models.LoginRequest](c)
 	if !ok {

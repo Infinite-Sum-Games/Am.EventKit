@@ -309,6 +309,49 @@ func (ns NullOrganizerTypeEnum) Value() (driver.Value, error) {
 	return string(ns.OrganizerTypeEnum), nil
 }
 
+type PaymentStatusEnum string
+
+const (
+	PaymentStatusEnumPENDING   PaymentStatusEnum = "PENDING"
+	PaymentStatusEnumCOMPLETED PaymentStatusEnum = "COMPLETED"
+	PaymentStatusEnumFAILED    PaymentStatusEnum = "FAILED"
+)
+
+func (e *PaymentStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatusEnum(s)
+	case string:
+		*e = PaymentStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatusEnum struct {
+	PaymentStatusEnum PaymentStatusEnum `json:"payment_status_enum"`
+	Valid             bool              `json:"valid"` // Valid is true if PaymentStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatusEnum), nil
+}
+
 type AccomodationDetail struct {
 	ID                uuid.UUID        `json:"id"`
 	StudentID         uuid.UUID        `json:"student_id"`
@@ -322,11 +365,13 @@ type AccomodationDetail struct {
 	CollegeName       string           `json:"college_name"`
 	RoomPreference    string           `json:"room_preference"`
 	IsAmritaCampus    bool             `json:"is_amrita_campus"`
-	IsPaid            bool             `json:"is_paid"`
 	CheckIn           pgtype.Timestamp `json:"check_in"`
 	CheckOut          pgtype.Timestamp `json:"check_out"`
 	CreatedAt         pgtype.Timestamp `json:"created_at"`
 	UpdatedAt         pgtype.Timestamp `json:"updated_at"`
+	PaymentStatus     string           `json:"payment_status"`
+	PaymentExpires    pgtype.Timestamp `json:"payment_expires"`
+	DayCount          int32            `json:"day_count"`
 }
 
 type AccomodationPersonell struct {
@@ -399,13 +444,6 @@ type Event struct {
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
-type EventRegistrationAnalytic struct {
-	ID                      int32           `json:"id"`
-	TotalEventRegistrations int64           `json:"total_event_registrations"`
-	ParticipantSplit        json.RawMessage `json:"participant_split"`
-	EventRegistrationStats  json.RawMessage `json:"event_registration_stats"`
-}
-
 type EventSchedule struct {
 	ID        uuid.UUID        `json:"id"`
 	EventID   uuid.UUID        `json:"event_id"`
@@ -435,12 +473,6 @@ type Favourite struct {
 	EventID uuid.UUID `json:"event_id"`
 }
 
-type GateManagement struct {
-}
-
-type HostelCheckIn struct {
-}
-
 type HostelMetadatum struct {
 	ID                 uuid.UUID   `json:"id"`
 	RoomCount          int32       `json:"room_count"`
@@ -452,6 +484,8 @@ type HostelMetadatum struct {
 	Longtitude         pgtype.Text `json:"longtitude"`
 	MapUrl             pgtype.Text `json:"map_url"`
 	HostelName         string      `json:"hostel_name"`
+	Price              int32       `json:"price"`
+	RoomFilled         int32       `json:"room_filled"`
 }
 
 type Organizer struct {
@@ -466,6 +500,14 @@ type Organizer struct {
 	RefreshToken  pgtype.Text       `json:"refresh_token"`
 	CreatedAt     pgtype.Timestamp  `json:"created_at"`
 	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
+}
+
+type ParticipantsAnalytic struct {
+	ID                     int32           `json:"id"`
+	TotalEventParticipants int64           `json:"total_event_participants"`
+	ParticipantSplit       json.RawMessage `json:"participant_split"`
+	AmritaNonAmritaSplit   json.RawMessage `json:"amrita_non_amrita_split"`
+	EventRegistrationStats json.RawMessage `json:"event_registration_stats"`
 }
 
 type PasswordReset struct {
@@ -533,6 +575,7 @@ type Student struct {
 	RefreshToken     pgtype.Text           `json:"refresh_token"`
 	CreatedAt        pgtype.Timestamp      `json:"created_at"`
 	UpdatedAt        pgtype.Timestamp      `json:"updated_at"`
+	HospitalityID    pgtype.Text           `json:"hospitality_id"`
 }
 
 type StudentOnboarding struct {
