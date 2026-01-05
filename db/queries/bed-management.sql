@@ -8,7 +8,10 @@ SELECT
   s.phone_number
 FROM accomodation_details ad
 LEFT JOIN hostel_metadata hm ON ad.hostel_id = hm.id
-LEFT JOIN student s ON ad.student_id = s.id;
+LEFT JOIN student s ON ad.student_id = s.id
+WHERE
+  accomodation_details.payment_status = "PENDING";
+  
 
 -- name: DeleteUnclaimedBedQuery :execrows
 WITH updated_accommodation AS (
