@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS gate_management (
 );
 -- +goose StatementEnd
 
+-- +goose Down
 -- +goose StatementBegin
 DROP TABLE IF EXISTS gate_management;
 DROP TABLE IF EXISTS hostel_check_in;
