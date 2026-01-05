@@ -12,9 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const gateCheckInQuery = `-- name: GateCheckInQuery :one
-
-
+const fetchStudentGateLogs = `-- name: FetchStudentGateLogs :many
 SELECT
   gm.direction,
   gm.logged_at
@@ -24,16 +22,63 @@ WHERE
   s.hospitality_id = $1
 `
 
-type GateCheckInQueryRow struct {
+type FetchStudentGateLogsRow struct {
 	Direction GateLogDirectionEnum `json:"direction"`
 	LoggedAt  pgtype.Timestamp     `json:"logged_at"`
 }
 
-func (q *Queries) GateCheckInQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GateCheckInQueryRow, error) {
-	row := db.QueryRow(ctx, gateCheckInQuery, hospitalityID)
-	var i GateCheckInQueryRow
-	err := row.Scan(&i.Direction, &i.LoggedAt)
-	return i, err
+func (q *Queries) FetchStudentGateLogs(ctx context.Context, db DBTX, hospitalityID pgtype.Text) ([]FetchStudentGateLogsRow, error) {
+	rows, err := db.Query(ctx, fetchStudentGateLogs, hospitalityID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchStudentGateLogsRow
+	for rows.Next() {
+		var i FetchStudentGateLogsRow
+		if err := rows.Scan(&i.Direction, &i.LoggedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const gateCheckInOutQuery = `-- name: GateCheckInOutQuery :one
+WITH student_lookup AS (
+    SELECT id AS found_student_id
+    FROM student
+    WHERE hospitality_id = $1
+)
+INSERT INTO gate_management (
+    student_id,
+    direction,
+    logged_at,
+    personell_id
+) 
+SELECT 
+    found_student_id, 
+    $2,
+    NOW(), 
+    $3
+FROM student_lookup
+RETURNING direction
+`
+
+type GateCheckInOutQueryParams struct {
+	HospitalityID pgtype.Text          `json:"hospitality_id"`
+	Direction     GateLogDirectionEnum `json:"direction"`
+	PersonellID   uuid.UUID            `json:"personell_id"`
+}
+
+func (q *Queries) GateCheckInOutQuery(ctx context.Context, db DBTX, arg GateCheckInOutQueryParams) (GateLogDirectionEnum, error) {
+	row := db.QueryRow(ctx, gateCheckInOutQuery, arg.HospitalityID, arg.Direction, arg.PersonellID)
+	var direction GateLogDirectionEnum
+	err := row.Scan(&direction)
+	return direction, err
 }
 
 const hostelCheckInQuery = `-- name: HostelCheckInQuery :execrows

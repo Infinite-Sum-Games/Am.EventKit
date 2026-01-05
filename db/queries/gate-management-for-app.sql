@@ -1,6 +1,22 @@
--- name: GateCheckInQuery :one
-
--- name: GateCheckOutQuery :one
+-- name: GateCheckInOutQuery :one
+WITH student_lookup AS (
+    SELECT id AS found_student_id
+    FROM student
+    WHERE hospitality_id = $1
+)
+INSERT INTO gate_management (
+    student_id,
+    direction,
+    logged_at,
+    personell_id
+) 
+SELECT 
+    found_student_id, 
+    $2,
+    NOW(), 
+    $3
+FROM student_lookup
+RETURNING direction;
 
 -- name: FetchStudentGateLogs :many
 SELECT
