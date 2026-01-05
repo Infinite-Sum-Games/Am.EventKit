@@ -42,6 +42,7 @@ func (r AddHostelRequest) Validate() error {
 type UpdateHostelRequest struct {
 	HostelID    string `json:"hostel_id"`
 	RoomCount   int32  `json:"room_count"`
+	IsMale      bool   `json:"is_male"`
 	WardenEmail string `json:"warden_email"`
 	Latitude    string `json:"latitude"`
 	Longtitude  string `json:"longtitude"`
@@ -54,6 +55,7 @@ func (r UpdateHostelRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.HostelID, v.Required, is.UUID),
 		v.Field(&r.RoomCount, v.Min(0)),
+		v.Field(&r.IsMale),
 		v.Field(&r.WardenEmail, is.Email),
 		v.Field(
 			&r.Latitude,

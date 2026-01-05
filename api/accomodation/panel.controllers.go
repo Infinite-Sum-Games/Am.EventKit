@@ -110,6 +110,7 @@ func UpdateHostel(c *gin.Context) {
 		Latitude:    pkg.ToPgTextPtr(&req.Latitude),
 		Longtitude:  pkg.ToPgTextPtr(&req.Longtitude),
 		MapUrl:      pkg.ToPgTextPtr(&req.MapUrl),
+		IsMale:      req.IsMale,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -320,6 +321,34 @@ func AffirmAccommodationPayment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Accommodation payment affirmed successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GetAllHostelDetails(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GET-HOSTELS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	hostels, err := q.GetAllHostelDetailsQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[GET-HOSTELS-ERROR]: Failed to fetch hostel details", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hostel details fetched successfully",
+		"hostels": hostels,
 	})
 	pkg.Log.SuccessCtx(c)
 }

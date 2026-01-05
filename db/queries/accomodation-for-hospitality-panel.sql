@@ -37,7 +37,8 @@ SET
   warden_email = $3,
   latitude = $4,
   longtitude = $5,
-  map_url = $6
+  map_url = $6,
+  is_male = $7
   where id = $1;
 
 -- name: DeleteHostelQuery :execrows
@@ -195,3 +196,16 @@ LEFT JOIN hostel_metadata hm
     ON hm.id = ad.hostel_id
 WHERE s.hospitality_id = $1;
 
+-- name: GetAllHostelDetailsQuery :many
+SELECT
+  hm.id AS hostel_id,
+  hm.hostel_name AS hostel_name,
+  hm.room_count AS available_rooms,
+  hm.is_male AS is_male,
+  hm.latitude AS latitude,
+  hm.longtitude AS longtitude,
+  hm.map_url AS map_url,
+  hm.warden_email AS warden_email,
+  hm.room_filled AS room_filled
+FROM hostel_metadata hm;
+  
