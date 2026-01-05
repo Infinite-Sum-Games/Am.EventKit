@@ -24,6 +24,11 @@ func AccomodationPanelRoutes(r *gin.RouterGroup) {
 	r.DELETE("/panel/hostel/:id", mw.Auth, mw.CheckHospitality, DeleteHostel)
 	r.POST("/panel/allot/:accId", mw.Auth, mw.CheckHospitality, AllotHostel)
 
+	// Beds
+	r.GET("/panel/beds/unclaimed", mw.Auth, mw.CheckHospitality, FetchUnclaimedBeds)
+	r.DELETE("/panel/beds/unclaimed/:bedId", mw.Auth, mw.CheckHospitality, DeleteUnclaimedBed)
+
+	// Logs
 	r.GET("/panel/gate/logs", mw.Auth, mw.CheckHospitality, GateLogsSink)
 	r.GET("/panel/hostel/logs", mw.Auth, mw.CheckHospitality, HostelLogsSink)
 }
