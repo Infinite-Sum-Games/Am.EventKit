@@ -69,6 +69,11 @@ CREATE TABLE IF NOT EXISTS gate_management (
 
 -- +goose Down
 -- +goose StatementBegin
+ALTER TABLE
+DROP COLUMN hospitality_id;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
 DROP TABLE IF EXISTS gate_management;
 DROP TABLE IF EXISTS hostel_check_in;
 DROP TYPE IF EXISTS gate_log_direction_enum;

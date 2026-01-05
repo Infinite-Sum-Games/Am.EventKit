@@ -9,13 +9,13 @@ FROM revenue_analytics
 WHERE id = 1;
 
 -- name: GetEventRegistrationAnalytics :one
-SELECT
-    id,
-    total_event_participants,
-    participant_split,
-    event_registration_stats
-FROM participants_analytics
-WHERE id = 1;
+-- SELECT
+--     id,
+--     total_event_participants,
+--     participant_split,
+--     event_registration_stats
+-- FROM participants_analytics
+-- WHERE id = 1;
 
 -- name: GetPeopleRegistrationAnalytics :one
 SELECT

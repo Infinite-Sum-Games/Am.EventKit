@@ -267,6 +267,48 @@ func (ns NullEventTypeEnum) Value() (driver.Value, error) {
 	return string(ns.EventTypeEnum), nil
 }
 
+type GateLogDirectionEnum string
+
+const (
+	GateLogDirectionEnumIN  GateLogDirectionEnum = "IN"
+	GateLogDirectionEnumOUT GateLogDirectionEnum = "OUT"
+)
+
+func (e *GateLogDirectionEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = GateLogDirectionEnum(s)
+	case string:
+		*e = GateLogDirectionEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for GateLogDirectionEnum: %T", src)
+	}
+	return nil
+}
+
+type NullGateLogDirectionEnum struct {
+	GateLogDirectionEnum GateLogDirectionEnum `json:"gate_log_direction_enum"`
+	Valid                bool                 `json:"valid"` // Valid is true if GateLogDirectionEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGateLogDirectionEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.GateLogDirectionEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.GateLogDirectionEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGateLogDirectionEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.GateLogDirectionEnum), nil
+}
+
 type OrganizerTypeEnum string
 
 const (
@@ -444,6 +486,13 @@ type Event struct {
 	IsTechnical    pgtype.Bool        `json:"is_technical"`
 }
 
+type EventRegistrationAnalytic struct {
+	ID                      int32           `json:"id"`
+	TotalEventRegistrations int64           `json:"total_event_registrations"`
+	ParticipantSplit        json.RawMessage `json:"participant_split"`
+	EventRegistrationStats  json.RawMessage `json:"event_registration_stats"`
+}
+
 type EventSchedule struct {
 	ID        uuid.UUID        `json:"id"`
 	EventID   uuid.UUID        `json:"event_id"`
@@ -473,6 +522,23 @@ type Favourite struct {
 	EventID uuid.UUID `json:"event_id"`
 }
 
+type GateManagement struct {
+	ID          uuid.UUID            `json:"id"`
+	Direction   GateLogDirectionEnum `json:"direction"`
+	LoggedAt    pgtype.Timestamp     `json:"logged_at"`
+	PersonellID uuid.UUID            `json:"personell_id"`
+	StudentID   uuid.UUID            `json:"student_id"`
+}
+
+type HostelCheckIn struct {
+	ID             uuid.UUID        `json:"id"`
+	AccomodationID uuid.UUID        `json:"accomodation_id"`
+	CheckedInAt    pgtype.Timestamp `json:"checked_in_at"`
+	CheckedOutAt   pgtype.Timestamp `json:"checked_out_at"`
+	CheckedInBy    uuid.UUID        `json:"checked_in_by"`
+	CheckedOutBy   pgtype.UUID      `json:"checked_out_by"`
+}
+
 type HostelMetadatum struct {
 	ID                 uuid.UUID   `json:"id"`
 	RoomCount          int32       `json:"room_count"`
@@ -500,14 +566,6 @@ type Organizer struct {
 	RefreshToken  pgtype.Text       `json:"refresh_token"`
 	CreatedAt     pgtype.Timestamp  `json:"created_at"`
 	UpdatedAt     pgtype.Timestamp  `json:"updated_at"`
-}
-
-type ParticipantsAnalytic struct {
-	ID                     int32           `json:"id"`
-	TotalEventParticipants int64           `json:"total_event_participants"`
-	ParticipantSplit       json.RawMessage `json:"participant_split"`
-	AmritaNonAmritaSplit   json.RawMessage `json:"amrita_non_amrita_split"`
-	EventRegistrationStats json.RawMessage `json:"event_registration_stats"`
 }
 
 type PasswordReset struct {

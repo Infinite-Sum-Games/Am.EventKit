@@ -7,41 +7,12 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 )
 
 const getEventRegistrationAnalytics = `-- name: GetEventRegistrationAnalytics :one
-SELECT
-    id,
-    total_event_participants,
-    participant_split,
-    event_registration_stats
-FROM participants_analytics
-WHERE id = 1
-`
 
-type GetEventRegistrationAnalyticsRow struct {
-	ID                     int32           `json:"id"`
-	TotalEventParticipants int64           `json:"total_event_participants"`
-	ParticipantSplit       json.RawMessage `json:"participant_split"`
-	EventRegistrationStats json.RawMessage `json:"event_registration_stats"`
-}
-
-func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (GetEventRegistrationAnalyticsRow, error) {
-	row := db.QueryRow(ctx, getEventRegistrationAnalytics)
-	var i GetEventRegistrationAnalyticsRow
-	err := row.Scan(
-		&i.ID,
-		&i.TotalEventParticipants,
-		&i.ParticipantSplit,
-		&i.EventRegistrationStats,
-	)
-	return i, err
-}
-
-const getPeopleRegistrationAnalytics = `-- name: GetPeopleRegistrationAnalytics :one
 SELECT
     id,
     website_registration_split,
@@ -50,8 +21,17 @@ FROM people_registration_analytics
 WHERE id = 1
 `
 
-func (q *Queries) GetPeopleRegistrationAnalytics(ctx context.Context, db DBTX) (PeopleRegistrationAnalytic, error) {
-	row := db.QueryRow(ctx, getPeopleRegistrationAnalytics)
+// SELECT
+//
+//	id,
+//	total_event_participants,
+//	participant_split,
+//	event_registration_stats
+//
+// FROM participants_analytics
+// WHERE id = 1;
+func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (PeopleRegistrationAnalytic, error) {
+	row := db.QueryRow(ctx, getEventRegistrationAnalytics)
 	var i PeopleRegistrationAnalytic
 	err := row.Scan(&i.ID, &i.WebsiteRegistrationSplit, &i.TotalWebsiteRegistrations)
 	return i, err
