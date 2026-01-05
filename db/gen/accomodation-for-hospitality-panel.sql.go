@@ -253,6 +253,62 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 	return items, nil
 }
 
+const getAllHostelDetailsQuery = `-- name: GetAllHostelDetailsQuery :many
+SELECT
+  hm.id AS hostel_id,
+  hm.hostel_name AS hostel_name,
+  hm.room_count AS available_rooms,
+  hm.is_male AS is_male,
+  hm.latitude AS latitude,
+  hm.longtitude AS longtitude,
+  hm.map_url AS map_url,
+  hm.warden_email AS warden_email,
+  hm.room_filled AS room_filled
+FROM hostel_metadata hm
+`
+
+type GetAllHostelDetailsQueryRow struct {
+	HostelID       uuid.UUID   `json:"hostel_id"`
+	HostelName     string      `json:"hostel_name"`
+	AvailableRooms int32       `json:"available_rooms"`
+	IsMale         bool        `json:"is_male"`
+	Latitude       pgtype.Text `json:"latitude"`
+	Longtitude     pgtype.Text `json:"longtitude"`
+	MapUrl         pgtype.Text `json:"map_url"`
+	WardenEmail    pgtype.Text `json:"warden_email"`
+	RoomFilled     int32       `json:"room_filled"`
+}
+
+func (q *Queries) GetAllHostelDetailsQuery(ctx context.Context, db DBTX) ([]GetAllHostelDetailsQueryRow, error) {
+	rows, err := db.Query(ctx, getAllHostelDetailsQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllHostelDetailsQueryRow
+	for rows.Next() {
+		var i GetAllHostelDetailsQueryRow
+		if err := rows.Scan(
+			&i.HostelID,
+			&i.HostelName,
+			&i.AvailableRooms,
+			&i.IsMale,
+			&i.Latitude,
+			&i.Longtitude,
+			&i.MapUrl,
+			&i.WardenEmail,
+			&i.RoomFilled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllHostelsQuery = `-- name: GetAllHostelsQuery :many
 SELECT
   id AS hostel_id,
@@ -536,7 +592,8 @@ SET
   warden_email = $3,
   latitude = $4,
   longtitude = $5,
-  map_url = $6
+  map_url = $6,
+  is_male = $7
   where id = $1
 `
 
@@ -547,6 +604,7 @@ type UpdateHostelQueryParams struct {
 	Latitude    pgtype.Text `json:"latitude"`
 	Longtitude  pgtype.Text `json:"longtitude"`
 	MapUrl      pgtype.Text `json:"map_url"`
+	IsMale      bool        `json:"is_male"`
 }
 
 func (q *Queries) UpdateHostelQuery(ctx context.Context, db DBTX, arg UpdateHostelQueryParams) (int64, error) {
@@ -557,6 +615,7 @@ func (q *Queries) UpdateHostelQuery(ctx context.Context, db DBTX, arg UpdateHost
 		arg.Latitude,
 		arg.Longtitude,
 		arg.MapUrl,
+		arg.IsMale,
 	)
 	if err != nil {
 		return 0, err
