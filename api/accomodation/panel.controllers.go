@@ -210,6 +210,22 @@ func AllotHostel(c *gin.Context) {
 
 	q := db.New()
 
+	accommodation, err := q.GetAccommodationByIdQuery(ctx, tx, accommodationId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[ALLOT-HOSTEL-WARN]: Accommodation ID does not exist")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[ALLOT-HOSTEL-ERROR]: Failed to fetch accommodation request", err)
+		return
+	}
+
 	hostel, err := q.GetHostelQuery(ctx, tx, hostelIdUuid)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -223,6 +239,15 @@ func AllotHostel(c *gin.Context) {
 			"message": "Oops! Something happened. Please try again later.",
 		})
 		pkg.Log.ErrorCtx(c, "[ALLOT-HOSTEL-ERROR]: Failed to fetch hostel details", err)
+		return
+	}
+
+	if accommodation.IsMale != hostel.IsMale {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Hostel gender does not match student gender",
+		})
+		pkg.Log.WarnCtx(c,
+			"[ALLOT-HOSTEL-WARN]: Hostel gender does not match student gender")
 		return
 	}
 
@@ -256,6 +281,7 @@ func AllotHostel(c *gin.Context) {
 	row, err = q.AllotHostelQuery(ctx, tx, db.AllotHostelQueryParams{
 		ID:       accommodationId,
 		HostelID: hostleIdPgUuid,
+		DayCount: req.DayCount,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

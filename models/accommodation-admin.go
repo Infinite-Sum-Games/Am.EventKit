@@ -75,11 +75,13 @@ func (r UpdateHostelRequest) Validate() error {
 
 type AllotHostelRequest struct {
 	HostelID string `json:"hostel_id"`
+	DayCount int32  `json:"day_count"`
 }
 
 func (r AllotHostelRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.HostelID, v.Required, is.UUID),
+		v.Field(&r.DayCount, v.Required, v.Min(1), v.Max(4)),
 	)
 }
 
