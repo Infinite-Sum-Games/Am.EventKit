@@ -33,7 +33,7 @@ func FetchUnclaimedBeds(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Fetched all unclaimed beds",
-		"beds":       beds,
+		"beds":    beds,
 	})
 	pkg.Log.SuccessCtx(c)
 }
