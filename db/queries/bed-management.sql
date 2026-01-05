@@ -10,8 +10,9 @@ FROM accomodation_details ad
 LEFT JOIN hostel_metadata hm ON ad.hostel_id = hm.id
 LEFT JOIN student s ON ad.student_id = s.id
 WHERE
-  accomodation_details.payment_status = "PENDING";
-  
+  ad.payment_status = 'PENDING'
+  AND hm.id IS NOT NULL
+  AND ad.updated_at > NOW() - INTERVAL '30 minutes';
 
 -- name: DeleteUnclaimedBedQuery :execrows
 WITH updated_accommodation AS (
