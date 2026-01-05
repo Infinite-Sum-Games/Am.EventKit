@@ -26,8 +26,11 @@ INSERT INTO hostel_metadata (
   latitude,
   longtitude,
   map_url,
-  hostel_name)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  hostel_name,
+  amrita_dayscholar_price,
+  non_amrita_price
+)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id;
 
 -- name: UpdateHostelQuery :execrows
@@ -37,7 +40,10 @@ SET
   warden_email = $3,
   latitude = $4,
   longtitude = $5,
-  map_url = $6
+  map_url = $6,
+  is_male = $7,
+  amrita_dayscholar_price = $8,
+  non_amrita_price = $9
   where id = $1;
 
 -- name: DeleteHostelQuery :execrows
@@ -45,17 +51,37 @@ DELETE FROM hostel_metadata
 WHERE id = $1;
 
 -- name: AllotHostelQuery :execrows
+WITH current AS (
+    SELECT id, hostel_id
+    FROM accomodation_details
+    WHERE id = $1
+    FOR UPDATE
+),
+decrement_old AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled - 1
+    WHERE id = (SELECT hostel_id FROM current)
+      AND (SELECT hostel_id FROM current) IS NOT NULL
+),
+increment_new AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled + 1
+    WHERE id = $2
+      AND is_male = (
+        SELECT is_male
+        FROM accomodation_details
+        WHERE id = $1
+      )
+      AND room_filled < room_count
+)
 UPDATE accomodation_details
-SET 
-  hostel_id = $2,
-  payment_expires = NOW() + INTERVAL '30 minutes',
-  payment_status = 'PENDING',
-  updated_at = NOW()
-  where accomodation_details.id = $1
-  AND hostel_id IS NULL
-  AND is_male = (
-    SELECT is_male FROM hostel_metadata WHERE hostel_metadata.id = $2
-  );
+SET
+    hostel_id = $2,
+    day_count = $3,
+    payment_expires = NOW() + INTERVAL '30 minutes',
+    payment_status = 'PENDING',
+    updated_at = NOW()
+WHERE accomodation_details.id = $1;
 
 -- name: AffirmAccommodationPaymentQuery :execrows
 UPDATE accomodation_details
@@ -77,12 +103,13 @@ SELECT
 FROM hostel_metadata
 WHERE id = $1;
 
--- name: DecrementHostelRoomCountQuery :execrows
+-- name: IncrementHostelRoomFilledQuery :execrows
 UPDATE hostel_metadata
 SET 
-  room_count = room_count - 1
+  room_filled = room_filled + 1
   where id = $1
-  AND room_count>0;
+  AND room_count>0
+  AND room_filled <= room_count;
 
 -- name: GetAccommodationByIdQuery :one
 SELECT
@@ -145,7 +172,9 @@ SELECT
   ad.payment_status AS payment_status,
   ad.is_amrita_campus AS is_amrita_campus,
   ad.is_hosteller AS is_hosteller,
-  hm.hostel_name AS hostel_name
+  hm.hostel_name AS hostel_name,
+  hm.amrita_dayscholar_price AS day_scholar_price,
+  hm.non_amrita_price AS outsider_price
 FROM accomodation_details ad
 INNER JOIN student s ON s.id = ad.student_id
 INNER JOIN hostel_metadata hm ON hm.id = ad.hostel_id
@@ -195,3 +224,53 @@ LEFT JOIN hostel_metadata hm
     ON hm.id = ad.hostel_id
 WHERE s.hospitality_id = $1;
 
+-- name: GetAllHostelDetailsQuery :many
+SELECT
+  hm.id AS hostel_id,
+  hm.hostel_name AS hostel_name,
+  hm.room_count AS room_count,
+  hm.is_male AS is_male,
+  hm.latitude AS latitude,
+  hm.longtitude AS longtitude,
+  hm.map_url AS map_url,
+  hm.warden_email AS warden_email,
+  hm.room_filled AS room_filled,
+  hm.amrita_dayscholar_price as day_scholar_price,
+  hm.non_amrita_price as outsider_price
+FROM hostel_metadata hm;
+
+-- name: AffirmAccommodationAndPaymentQuery :execrows
+WITH current AS (
+    SELECT id, hostel_id, is_male
+    FROM accomodation_details
+    WHERE accomodation_details.id = $1
+    FOR UPDATE
+),
+increment_new AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled + 1
+    WHERE hostel_metadata.id = $2
+      AND room_filled < room_count
+      AND is_male = (SELECT is_male FROM current)
+      AND ((SELECT hostel_id FROM current) IS NULL OR id <> (SELECT hostel_id FROM current))
+    RETURNING id
+),
+decrement_old AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled - 1
+    WHERE id = (SELECT hostel_id FROM current)
+      AND (SELECT hostel_id FROM current) IS NOT NULL
+      AND EXISTS (SELECT 1 FROM increment_new)
+),
+final_update AS (
+    UPDATE accomodation_details
+    SET
+        hostel_id = $2,
+        day_count = $3,
+        payment_status = 'COMPLETED',
+        updated_at = NOW()
+    WHERE id = $1
+      AND EXISTS (SELECT 1 FROM increment_new)
+    RETURNING 1
+)
+SELECT COUNT(*) FROM final_update;

@@ -34,52 +34,29 @@ func GetFinanceDetailsByHospitalityId(c *gin.Context) {
 		return
 	}
 
-	roomType := pkg.ExtractRoomType(financeDetails.HostelName)
-
-	if roomType == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
-		})
-		pkg.Log.ErrorCtx(c, "[GET-FINANCE-DETAILS-ERROR]: Failed to extract room type from hostel name", err)
-		return
-	}
-
-	var amount int32
-	var paymentStatus bool
-
 	if financeDetails.PaymentStatus == "COMPLETED" {
-		paymentStatus = true
-	} else {
-		paymentStatus = false
-	}
-
-	if !financeDetails.IsAmritaCampus {
-		if roomType == "SINGLE" {
-			amount = 340
-		} else {
-			amount = 230
-		}
-	} else {
-		if financeDetails.IsHosteller {
-			paymentStatus = true
-			amount = 0
-		} else {
-			if roomType == "SINGLE" {
-				amount = 300
-			} else {
-				amount = 200
-			}
-		}
-	}
-
-	if paymentStatus {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Ammount already paid or is a hosteller",
-			"amount":  0,
+			"message":         "Ammount already paid or is a hosteller",
+			"accommodationId": financeDetails.AccommodationID,
+			"name":            financeDetails.Name,
+			"email":           financeDetails.Email,
+			"num_days":        financeDetails.DayCount,
+			"amount":          0,
+			"paymentStatus":   true,
 		})
 		pkg.Log.SuccessCtx(c)
 		return
 	}
+
+	var amount int32
+	var paymentStatus = false
+
+	if !financeDetails.IsAmritaCampus {
+		amount = financeDetails.OutsiderPrice
+	} else {
+		amount = financeDetails.DayScholarPrice
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Finance details fetched successfully",
 		"accommodationId": financeDetails.AccommodationID,

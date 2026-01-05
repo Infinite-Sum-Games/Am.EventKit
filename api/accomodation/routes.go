@@ -19,6 +19,7 @@ func AccomodationAuthRoutes(r *gin.RouterGroup) {
 
 func AccomodationPanelRoutes(r *gin.RouterGroup) {
 	r.GET("/panel", mw.Auth, mw.CheckHospitality, GetAllAccomodationRequests)
+	r.GET("/panel/hostel", mw.Auth, mw.CheckHospitality, GetAllHostelDetails)
 	r.POST("/panel/hostel", mw.Auth, mw.CheckHospitality, AddHostel)
 	r.PUT("/panel/hostel", mw.Auth, mw.CheckHospitality, UpdateHostel)
 	r.DELETE("/panel/hostel/:id", mw.Auth, mw.CheckHospitality, DeleteHostel)

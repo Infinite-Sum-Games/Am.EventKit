@@ -20,19 +20,24 @@ INSERT INTO hostel_metadata (
   latitude,
   longtitude,
   map_url,
-  hostel_name)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  hostel_name,
+  amrita_dayscholar_price,
+  non_amrita_price
+)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id
 `
 
 type AddHostelQueryParams struct {
-	RoomCount   int32       `json:"room_count"`
-	IsMale      bool        `json:"is_male"`
-	WardenEmail pgtype.Text `json:"warden_email"`
-	Latitude    pgtype.Text `json:"latitude"`
-	Longtitude  pgtype.Text `json:"longtitude"`
-	MapUrl      pgtype.Text `json:"map_url"`
-	HostelName  string      `json:"hostel_name"`
+	RoomCount             int32       `json:"room_count"`
+	IsMale                bool        `json:"is_male"`
+	WardenEmail           pgtype.Text `json:"warden_email"`
+	Latitude              pgtype.Text `json:"latitude"`
+	Longtitude            pgtype.Text `json:"longtitude"`
+	MapUrl                pgtype.Text `json:"map_url"`
+	HostelName            string      `json:"hostel_name"`
+	AmritaDayscholarPrice int32       `json:"amrita_dayscholar_price"`
+	NonAmritaPrice        int32       `json:"non_amrita_price"`
 }
 
 func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQueryParams) (uuid.UUID, error) {
@@ -44,10 +49,63 @@ func (q *Queries) AddHostelQuery(ctx context.Context, db DBTX, arg AddHostelQuer
 		arg.Longtitude,
 		arg.MapUrl,
 		arg.HostelName,
+		arg.AmritaDayscholarPrice,
+		arg.NonAmritaPrice,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
 	return id, err
+}
+
+const affirmAccommodationAndPaymentQuery = `-- name: AffirmAccommodationAndPaymentQuery :execrows
+WITH current AS (
+    SELECT id, hostel_id, is_male
+    FROM accomodation_details
+    WHERE accomodation_details.id = $1
+    FOR UPDATE
+),
+increment_new AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled + 1
+    WHERE hostel_metadata.id = $2
+      AND room_filled < room_count
+      AND is_male = (SELECT is_male FROM current)
+      AND ((SELECT hostel_id FROM current) IS NULL OR id <> (SELECT hostel_id FROM current))
+    RETURNING id
+),
+decrement_old AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled - 1
+    WHERE id = (SELECT hostel_id FROM current)
+      AND (SELECT hostel_id FROM current) IS NOT NULL
+      AND EXISTS (SELECT 1 FROM increment_new)
+),
+final_update AS (
+    UPDATE accomodation_details
+    SET
+        hostel_id = $2,
+        day_count = $3,
+        payment_status = 'COMPLETED',
+        updated_at = NOW()
+    WHERE id = $1
+      AND EXISTS (SELECT 1 FROM increment_new)
+    RETURNING 1
+)
+SELECT COUNT(*) FROM final_update
+`
+
+type AffirmAccommodationAndPaymentQueryParams struct {
+	ID       uuid.UUID `json:"id"`
+	ID_2     uuid.UUID `json:"id_2"`
+	DayCount int32     `json:"day_count"`
+}
+
+func (q *Queries) AffirmAccommodationAndPaymentQuery(ctx context.Context, db DBTX, arg AffirmAccommodationAndPaymentQueryParams) (int64, error) {
+	result, err := db.Exec(ctx, affirmAccommodationAndPaymentQuery, arg.ID, arg.ID_2, arg.DayCount)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const affirmAccommodationPaymentQuery = `-- name: AffirmAccommodationPaymentQuery :execrows
@@ -67,42 +125,47 @@ func (q *Queries) AffirmAccommodationPaymentQuery(ctx context.Context, db DBTX, 
 }
 
 const allotHostelQuery = `-- name: AllotHostelQuery :execrows
+WITH current AS (
+    SELECT id, hostel_id
+    FROM accomodation_details
+    WHERE id = $1
+    FOR UPDATE
+),
+decrement_old AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled - 1
+    WHERE id = (SELECT hostel_id FROM current)
+      AND (SELECT hostel_id FROM current) IS NOT NULL
+),
+increment_new AS (
+    UPDATE hostel_metadata
+    SET room_filled = room_filled + 1
+    WHERE id = $2
+      AND is_male = (
+        SELECT is_male
+        FROM accomodation_details
+        WHERE id = $1
+      )
+      AND room_filled < room_count
+)
 UPDATE accomodation_details
-SET 
-  hostel_id = $2,
-  payment_expires = NOW() + INTERVAL '30 minutes',
-  payment_status = 'PENDING',
-  updated_at = NOW()
-  where accomodation_details.id = $1
-  AND hostel_id IS NULL
-  AND is_male = (
-    SELECT is_male FROM hostel_metadata WHERE hostel_metadata.id = $2
-  )
+SET
+    hostel_id = $2,
+    day_count = $3,
+    payment_expires = NOW() + INTERVAL '30 minutes',
+    payment_status = 'PENDING',
+    updated_at = NOW()
+WHERE accomodation_details.id = $1
 `
 
 type AllotHostelQueryParams struct {
 	ID       uuid.UUID   `json:"id"`
 	HostelID pgtype.UUID `json:"hostel_id"`
+	DayCount int32       `json:"day_count"`
 }
 
 func (q *Queries) AllotHostelQuery(ctx context.Context, db DBTX, arg AllotHostelQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, allotHostelQuery, arg.ID, arg.HostelID)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
-}
-
-const decrementHostelRoomCountQuery = `-- name: DecrementHostelRoomCountQuery :execrows
-UPDATE hostel_metadata
-SET 
-  room_count = room_count - 1
-  where id = $1
-  AND room_count>0
-`
-
-func (q *Queries) DecrementHostelRoomCountQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
-	result, err := db.Exec(ctx, decrementHostelRoomCountQuery, id)
+	result, err := db.Exec(ctx, allotHostelQuery, arg.ID, arg.HostelID, arg.DayCount)
 	if err != nil {
 		return 0, err
 	}
@@ -253,6 +316,68 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 	return items, nil
 }
 
+const getAllHostelDetailsQuery = `-- name: GetAllHostelDetailsQuery :many
+SELECT
+  hm.id AS hostel_id,
+  hm.hostel_name AS hostel_name,
+  hm.room_count AS room_count,
+  hm.is_male AS is_male,
+  hm.latitude AS latitude,
+  hm.longtitude AS longtitude,
+  hm.map_url AS map_url,
+  hm.warden_email AS warden_email,
+  hm.room_filled AS room_filled,
+  hm.amrita_dayscholar_price as day_scholar_price,
+  hm.non_amrita_price as outsider_price
+FROM hostel_metadata hm
+`
+
+type GetAllHostelDetailsQueryRow struct {
+	HostelID        uuid.UUID   `json:"hostel_id"`
+	HostelName      string      `json:"hostel_name"`
+	RoomCount       int32       `json:"room_count"`
+	IsMale          bool        `json:"is_male"`
+	Latitude        pgtype.Text `json:"latitude"`
+	Longtitude      pgtype.Text `json:"longtitude"`
+	MapUrl          pgtype.Text `json:"map_url"`
+	WardenEmail     pgtype.Text `json:"warden_email"`
+	RoomFilled      int32       `json:"room_filled"`
+	DayScholarPrice int32       `json:"day_scholar_price"`
+	OutsiderPrice   int32       `json:"outsider_price"`
+}
+
+func (q *Queries) GetAllHostelDetailsQuery(ctx context.Context, db DBTX) ([]GetAllHostelDetailsQueryRow, error) {
+	rows, err := db.Query(ctx, getAllHostelDetailsQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllHostelDetailsQueryRow
+	for rows.Next() {
+		var i GetAllHostelDetailsQueryRow
+		if err := rows.Scan(
+			&i.HostelID,
+			&i.HostelName,
+			&i.RoomCount,
+			&i.IsMale,
+			&i.Latitude,
+			&i.Longtitude,
+			&i.MapUrl,
+			&i.WardenEmail,
+			&i.RoomFilled,
+			&i.DayScholarPrice,
+			&i.OutsiderPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllHostelsQuery = `-- name: GetAllHostelsQuery :many
 SELECT
   id AS hostel_id,
@@ -303,7 +428,9 @@ SELECT
   ad.payment_status AS payment_status,
   ad.is_amrita_campus AS is_amrita_campus,
   ad.is_hosteller AS is_hosteller,
-  hm.hostel_name AS hostel_name
+  hm.hostel_name AS hostel_name,
+  hm.amrita_dayscholar_price AS day_scholar_price,
+  hm.non_amrita_price AS outsider_price
 FROM accomodation_details ad
 INNER JOIN student s ON s.id = ad.student_id
 INNER JOIN hostel_metadata hm ON hm.id = ad.hostel_id
@@ -319,6 +446,8 @@ type GetFinanceDetailsByHospitalityIdQueryRow struct {
 	IsAmritaCampus  bool      `json:"is_amrita_campus"`
 	IsHosteller     bool      `json:"is_hosteller"`
 	HostelName      string    `json:"hostel_name"`
+	DayScholarPrice int32     `json:"day_scholar_price"`
+	OutsiderPrice   int32     `json:"outsider_price"`
 }
 
 func (q *Queries) GetFinanceDetailsByHospitalityIdQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GetFinanceDetailsByHospitalityIdQueryRow, error) {
@@ -333,6 +462,8 @@ func (q *Queries) GetFinanceDetailsByHospitalityIdQuery(ctx context.Context, db 
 		&i.IsAmritaCampus,
 		&i.IsHosteller,
 		&i.HostelName,
+		&i.DayScholarPrice,
+		&i.OutsiderPrice,
 	)
 	return i, err
 }
@@ -454,6 +585,23 @@ func (q *Queries) GetStudentDetailsForSecurityQuery(ctx context.Context, db DBTX
 	return i, err
 }
 
+const incrementHostelRoomFilledQuery = `-- name: IncrementHostelRoomFilledQuery :execrows
+UPDATE hostel_metadata
+SET 
+  room_filled = room_filled + 1
+  where id = $1
+  AND room_count>0
+  AND room_filled <= room_count
+`
+
+func (q *Queries) IncrementHostelRoomFilledQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, incrementHostelRoomFilledQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const mapQrStudentIdQuery = `-- name: MapQrStudentIdQuery :one
 UPDATE student
 SET hospitality_id = $2
@@ -536,17 +684,23 @@ SET
   warden_email = $3,
   latitude = $4,
   longtitude = $5,
-  map_url = $6
+  map_url = $6,
+  is_male = $7,
+  amrita_dayscholar_price = $8,
+  non_amrita_price = $9
   where id = $1
 `
 
 type UpdateHostelQueryParams struct {
-	ID          uuid.UUID   `json:"id"`
-	RoomCount   int32       `json:"room_count"`
-	WardenEmail pgtype.Text `json:"warden_email"`
-	Latitude    pgtype.Text `json:"latitude"`
-	Longtitude  pgtype.Text `json:"longtitude"`
-	MapUrl      pgtype.Text `json:"map_url"`
+	ID                    uuid.UUID   `json:"id"`
+	RoomCount             int32       `json:"room_count"`
+	WardenEmail           pgtype.Text `json:"warden_email"`
+	Latitude              pgtype.Text `json:"latitude"`
+	Longtitude            pgtype.Text `json:"longtitude"`
+	MapUrl                pgtype.Text `json:"map_url"`
+	IsMale                bool        `json:"is_male"`
+	AmritaDayscholarPrice int32       `json:"amrita_dayscholar_price"`
+	NonAmritaPrice        int32       `json:"non_amrita_price"`
 }
 
 func (q *Queries) UpdateHostelQuery(ctx context.Context, db DBTX, arg UpdateHostelQueryParams) (int64, error) {
@@ -557,6 +711,9 @@ func (q *Queries) UpdateHostelQuery(ctx context.Context, db DBTX, arg UpdateHost
 		arg.Latitude,
 		arg.Longtitude,
 		arg.MapUrl,
+		arg.IsMale,
+		arg.AmritaDayscholarPrice,
+		arg.NonAmritaPrice,
 	)
 	if err != nil {
 		return 0, err

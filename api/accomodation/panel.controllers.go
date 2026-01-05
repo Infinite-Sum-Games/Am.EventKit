@@ -58,13 +58,15 @@ func AddHostel(c *gin.Context) {
 	q := db.New()
 
 	hostelId, err := q.AddHostelQuery(ctx, conn, db.AddHostelQueryParams{
-		RoomCount:   req.RoomCount,
-		IsMale:      req.IsMale,
-		WardenEmail: pkg.ToPgTextPtr(&req.WardenEmail),
-		Latitude:    pkg.ToPgTextPtr(&req.Latitude),
-		Longtitude:  pkg.ToPgTextPtr(&req.Longtitude),
-		MapUrl:      pkg.ToPgTextPtr(&req.MapUrl),
-		HostelName:  req.HostelName,
+		RoomCount:             req.RoomCount,
+		IsMale:                req.IsMale,
+		WardenEmail:           pkg.ToPgTextPtr(&req.WardenEmail),
+		Latitude:              pkg.ToPgTextPtr(&req.Latitude),
+		Longtitude:            pkg.ToPgTextPtr(&req.Longtitude),
+		MapUrl:                pkg.ToPgTextPtr(&req.MapUrl),
+		HostelName:            req.HostelName,
+		AmritaDayscholarPrice: req.DayScholarPrice,
+		NonAmritaPrice:        req.OutsiderPrice,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -104,12 +106,15 @@ func UpdateHostel(c *gin.Context) {
 	}
 
 	rows, err := q.UpdateHostelQuery(ctx, conn, db.UpdateHostelQueryParams{
-		ID:          HostelUuid,
-		RoomCount:   req.RoomCount,
-		WardenEmail: pkg.ToPgTextPtr(&req.WardenEmail),
-		Latitude:    pkg.ToPgTextPtr(&req.Latitude),
-		Longtitude:  pkg.ToPgTextPtr(&req.Longtitude),
-		MapUrl:      pkg.ToPgTextPtr(&req.MapUrl),
+		ID:                    HostelUuid,
+		RoomCount:             req.RoomCount,
+		WardenEmail:           pkg.ToPgTextPtr(&req.WardenEmail),
+		Latitude:              pkg.ToPgTextPtr(&req.Latitude),
+		Longtitude:            pkg.ToPgTextPtr(&req.Longtitude),
+		MapUrl:                pkg.ToPgTextPtr(&req.MapUrl),
+		IsMale:                req.IsMale,
+		AmritaDayscholarPrice: req.DayScholarPrice,
+		NonAmritaPrice:        req.OutsiderPrice,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -209,6 +214,22 @@ func AllotHostel(c *gin.Context) {
 
 	q := db.New()
 
+	accommodation, err := q.GetAccommodationByIdQuery(ctx, tx, accommodationId)
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[ALLOT-HOSTEL-WARN]: Accommodation ID does not exist")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[ALLOT-HOSTEL-ERROR]: Failed to fetch accommodation request", err)
+		return
+	}
+
 	hostel, err := q.GetHostelQuery(ctx, tx, hostelIdUuid)
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -225,6 +246,15 @@ func AllotHostel(c *gin.Context) {
 		return
 	}
 
+	if accommodation.IsMale != hostel.IsMale {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Hostel gender does not match student gender",
+		})
+		pkg.Log.WarnCtx(c,
+			"[ALLOT-HOSTEL-WARN]: Hostel gender does not match student gender")
+		return
+	}
+
 	if hostel.RoomCount <= 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "No rooms available in the selected hostel",
@@ -234,27 +264,46 @@ func AllotHostel(c *gin.Context) {
 		return
 	}
 
-	row, err := q.DecrementHostelRoomCountQuery(ctx, tx, hostelIdUuid)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later.",
+	if accommodation.IsHosteller && accommodation.IsAmritaCampus {
+		row, err := q.AffirmAccommodationAndPaymentQuery(ctx, tx,
+			db.AffirmAccommodationAndPaymentQueryParams{
+				ID:       accommodationId,
+				ID_2:     hostelIdUuid,
+				DayCount: req.DayCount,
+			})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Oops! Something happened. Please try again later.",
+			})
+			pkg.Log.ErrorCtx(c,
+				"[ALLOT-HOSTEL-ERROR]: Failed to affirm accommodation and payment for amrita hostellers", err)
+			return
+		}
+		if row == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Accommodation request not found",
+			})
+			pkg.Log.ErrorCtx(c,
+				"[ALLOT-HOSTEL-ERROR]: Accommodation ID does not exist", err)
+			return
+		}
+
+		err = tx.Commit(ctx)
+		if pkg.HandleDbTxnCommitErr(c, err, "ALLOT-HOSTEL") {
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Hostel allotted and payment confirmed for Amrita hosteller successfully",
 		})
-		pkg.Log.ErrorCtx(c,
-			"[ALLOT-HOSTEL-ERROR]: Failed to decrement hostel room count", err)
-		return
-	}
-	if row == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Hostel not found",
-		})
-		pkg.Log.ErrorCtx(c,
-			"[ALLOT-HOSTEL-ERROR]: Hostel ID does not exist", err)
+		pkg.Log.SuccessCtx(c)
 		return
 	}
 
-	row, err = q.AllotHostelQuery(ctx, tx, db.AllotHostelQueryParams{
+	row, err := q.AllotHostelQuery(ctx, tx, db.AllotHostelQueryParams{
 		ID:       accommodationId,
 		HostelID: hostleIdPgUuid,
+		DayCount: req.DayCount,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -320,6 +369,34 @@ func AffirmAccommodationPayment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Accommodation payment affirmed successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GetAllHostelDetails(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GET-HOSTELS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	hostels, err := q.GetAllHostelDetailsQuery(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[GET-HOSTELS-ERROR]: Failed to fetch hostel details", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Hostel details fetched successfully",
+		"hostels": hostels,
 	})
 	pkg.Log.SuccessCtx(c)
 }

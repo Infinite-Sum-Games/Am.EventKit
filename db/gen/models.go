@@ -540,18 +540,19 @@ type HostelCheckIn struct {
 }
 
 type HostelMetadatum struct {
-	ID                 uuid.UUID   `json:"id"`
-	RoomCount          int32       `json:"room_count"`
-	IsMale             bool        `json:"is_male"`
-	WardenEmail        pgtype.Text `json:"warden_email"`
-	WardenPassword     pgtype.Text `json:"warden_password"`
-	WardenRefreshToken pgtype.Text `json:"warden_refresh_token"`
-	Latitude           pgtype.Text `json:"latitude"`
-	Longtitude         pgtype.Text `json:"longtitude"`
-	MapUrl             pgtype.Text `json:"map_url"`
-	HostelName         string      `json:"hostel_name"`
-	Price              int32       `json:"price"`
-	RoomFilled         int32       `json:"room_filled"`
+	ID                    uuid.UUID   `json:"id"`
+	RoomCount             int32       `json:"room_count"`
+	IsMale                bool        `json:"is_male"`
+	WardenEmail           pgtype.Text `json:"warden_email"`
+	WardenPassword        pgtype.Text `json:"warden_password"`
+	WardenRefreshToken    pgtype.Text `json:"warden_refresh_token"`
+	Latitude              pgtype.Text `json:"latitude"`
+	Longtitude            pgtype.Text `json:"longtitude"`
+	MapUrl                pgtype.Text `json:"map_url"`
+	HostelName            string      `json:"hostel_name"`
+	AmritaDayscholarPrice int32       `json:"amrita_dayscholar_price"`
+	RoomFilled            int32       `json:"room_filled"`
+	NonAmritaPrice        int32       `json:"non_amrita_price"`
 }
 
 type Organizer struct {

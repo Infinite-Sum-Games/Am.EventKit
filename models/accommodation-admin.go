@@ -8,13 +8,15 @@ import (
 )
 
 type AddHostelRequest struct {
-	RoomCount   int32  `json:"room_count"`
-	IsMale      bool   `json:"is_male"`
-	WardenEmail string `json:"warden_email"`
-	Latitude    string `json:"latitude"`
-	Longtitude  string `json:"longtitude"`
-	MapUrl      string `json:"map_url"`
-	HostelName  string `json:"hostel_name"`
+	RoomCount       int32  `json:"room_count"`
+	IsMale          bool   `json:"is_male"`
+	WardenEmail     string `json:"warden_email"`
+	Latitude        string `json:"latitude"`
+	Longtitude      string `json:"longtitude"`
+	MapUrl          string `json:"map_url"`
+	HostelName      string `json:"hostel_name"`
+	DayScholarPrice int32  `json:"day_scholar_price"`
+	OutsiderPrice   int32  `json:"outsider_price"`
 }
 
 func (r AddHostelRequest) Validate() error {
@@ -36,16 +38,21 @@ func (r AddHostelRequest) Validate() error {
 				"hostel_name must be uppercase and end with 'BHAVANAM - SINGLE', 'BHAVANAM - DORM', or 'BHAVANAM - 4 SHARING'",
 			),
 		),
+		v.Field(&r.DayScholarPrice, v.Required, v.Min(0)),
+		v.Field(&r.OutsiderPrice, v.Required, v.Min(0)),
 	)
 }
 
 type UpdateHostelRequest struct {
-	HostelID    string `json:"hostel_id"`
-	RoomCount   int32  `json:"room_count"`
-	WardenEmail string `json:"warden_email"`
-	Latitude    string `json:"latitude"`
-	Longtitude  string `json:"longtitude"`
-	MapUrl      string `json:"map_url"`
+	HostelID        string `json:"hostel_id"`
+	RoomCount       int32  `json:"room_count"`
+	IsMale          bool   `json:"is_male"`
+	WardenEmail     string `json:"warden_email"`
+	Latitude        string `json:"latitude"`
+	Longtitude      string `json:"longtitude"`
+	MapUrl          string `json:"map_url"`
+	DayScholarPrice int32  `json:"day_scholar_price"`
+	OutsiderPrice   int32  `json:"outsider_price"`
 }
 
 func (r UpdateHostelRequest) Validate() error {
@@ -54,30 +61,35 @@ func (r UpdateHostelRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.HostelID, v.Required, is.UUID),
 		v.Field(&r.RoomCount, v.Min(0)),
+		v.Field(&r.IsMale),
 		v.Field(&r.WardenEmail, is.Email),
 		v.Field(
 			&r.Latitude,
 			v.When(r.Latitude != "",
 				v.Match(decimalRegex),
-			).Else(v.Nil),
+			),
 		),
 		v.Field(
 			&r.Longtitude,
 			v.When(r.Longtitude != "",
 				v.Match(decimalRegex),
-			).Else(v.Nil),
+			),
 		),
 		v.Field(&r.MapUrl, is.URL),
+		v.Field(&r.DayScholarPrice, v.Min(0)),
+		v.Field(&r.OutsiderPrice, v.Min(0)),
 	)
 }
 
 type AllotHostelRequest struct {
 	HostelID string `json:"hostel_id"`
+	DayCount int32  `json:"day_count"`
 }
 
 func (r AllotHostelRequest) Validate() error {
 	return v.ValidateStruct(&r,
 		v.Field(&r.HostelID, v.Required, is.UUID),
+		v.Field(&r.DayCount, v.Required, v.Min(1), v.Max(4)),
 	)
 }
 

@@ -80,8 +80,9 @@ func MapQrStudentId(c *gin.Context) {
 
 	// Check if accommodation exists (can be NULL if student hasn't opted)
 	if res.AccommodationID == uuid.Nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Student has not opted for accommodation",
+		c.JSON(http.StatusOK, gin.H{
+			"message":                 "Student has not opted for accommodation",
+			"has_opted_accommodation": res.HasOptedAccommodation,
 		})
 		pkg.Log.WarnCtx(c, "[MAP-QR-STUDENT-WARN]: Student has no accommodation opted")
 		return
