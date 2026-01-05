@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/accommodation/panel/security/:hospitalityId
+  url: {{baseUrl}}/accommodation/app/security/:hospitalityId
   body: none
   auth: inherit
 }
@@ -16,4 +16,5 @@ params:path {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
