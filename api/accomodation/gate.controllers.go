@@ -217,6 +217,8 @@ func UpdateAccommodationById(c *gin.Context) {
 }
 
 func GateCheckIn(c *gin.Context) {
+	_ = c.GetString("hospId")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -227,6 +229,11 @@ func GateCheckIn(c *gin.Context) {
 	defer pkg.RollbackTx(c, tx, ctx, "GATE")
 
 	_ = db.New()
+
+	// ok, err := q.GateCheckInQuery(tx, ctx, hospId)
+	// if err != nil {
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Student checked-in successfully",
@@ -262,7 +269,7 @@ func GateStatus(c *gin.Context) {
 	}
 	defer conn.Release()
 
-	q := db.New()
+	_ = db.New()
 
 	// If has accommodation, check entry time and show exit time
 	// If does not have accommodation, show list of logs
