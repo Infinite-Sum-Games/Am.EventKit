@@ -70,6 +70,7 @@ const allotHostelQuery = `-- name: AllotHostelQuery :execrows
 UPDATE accomodation_details
 SET 
   hostel_id = $2,
+  day_count = $3,
   payment_expires = NOW() + INTERVAL '30 minutes',
   payment_status = 'PENDING',
   updated_at = NOW()
@@ -83,10 +84,11 @@ SET
 type AllotHostelQueryParams struct {
 	ID       uuid.UUID   `json:"id"`
 	HostelID pgtype.UUID `json:"hostel_id"`
+	DayCount int32       `json:"day_count"`
 }
 
 func (q *Queries) AllotHostelQuery(ctx context.Context, db DBTX, arg AllotHostelQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, allotHostelQuery, arg.ID, arg.HostelID)
+	result, err := db.Exec(ctx, allotHostelQuery, arg.ID, arg.HostelID, arg.DayCount)
 	if err != nil {
 		return 0, err
 	}
@@ -257,7 +259,7 @@ const getAllHostelDetailsQuery = `-- name: GetAllHostelDetailsQuery :many
 SELECT
   hm.id AS hostel_id,
   hm.hostel_name AS hostel_name,
-  hm.room_count AS available_rooms,
+  hm.room_count AS room_count,
   hm.is_male AS is_male,
   hm.latitude AS latitude,
   hm.longtitude AS longtitude,
@@ -268,15 +270,15 @@ FROM hostel_metadata hm
 `
 
 type GetAllHostelDetailsQueryRow struct {
-	HostelID       uuid.UUID   `json:"hostel_id"`
-	HostelName     string      `json:"hostel_name"`
-	AvailableRooms int32       `json:"available_rooms"`
-	IsMale         bool        `json:"is_male"`
-	Latitude       pgtype.Text `json:"latitude"`
-	Longtitude     pgtype.Text `json:"longtitude"`
-	MapUrl         pgtype.Text `json:"map_url"`
-	WardenEmail    pgtype.Text `json:"warden_email"`
-	RoomFilled     int32       `json:"room_filled"`
+	HostelID    uuid.UUID   `json:"hostel_id"`
+	HostelName  string      `json:"hostel_name"`
+	RoomCount   int32       `json:"room_count"`
+	IsMale      bool        `json:"is_male"`
+	Latitude    pgtype.Text `json:"latitude"`
+	Longtitude  pgtype.Text `json:"longtitude"`
+	MapUrl      pgtype.Text `json:"map_url"`
+	WardenEmail pgtype.Text `json:"warden_email"`
+	RoomFilled  int32       `json:"room_filled"`
 }
 
 func (q *Queries) GetAllHostelDetailsQuery(ctx context.Context, db DBTX) ([]GetAllHostelDetailsQueryRow, error) {
@@ -291,7 +293,7 @@ func (q *Queries) GetAllHostelDetailsQuery(ctx context.Context, db DBTX) ([]GetA
 		if err := rows.Scan(
 			&i.HostelID,
 			&i.HostelName,
-			&i.AvailableRooms,
+			&i.RoomCount,
 			&i.IsMale,
 			&i.Latitude,
 			&i.Longtitude,

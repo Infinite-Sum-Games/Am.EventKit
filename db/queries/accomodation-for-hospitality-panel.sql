@@ -49,6 +49,7 @@ WHERE id = $1;
 UPDATE accomodation_details
 SET 
   hostel_id = $2,
+  day_count = $3,
   payment_expires = NOW() + INTERVAL '30 minutes',
   payment_status = 'PENDING',
   updated_at = NOW()
@@ -200,7 +201,7 @@ WHERE s.hospitality_id = $1;
 SELECT
   hm.id AS hostel_id,
   hm.hostel_name AS hostel_name,
-  hm.room_count AS available_rooms,
+  hm.room_count AS room_count,
   hm.is_male AS is_male,
   hm.latitude AS latitude,
   hm.longtitude AS longtitude,
