@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func GetAllHostels(c *gin.Context) {
@@ -217,7 +218,16 @@ func UpdateAccommodationById(c *gin.Context) {
 }
 
 func GateCheckIn(c *gin.Context) {
-	_ = c.GetString("hospId")
+	personellIdStr, ok := pkg.GrabUserId(c, "GATE")
+	if !ok {
+		return
+	}
+	personellId, ok := pkg.GrabUuid(c, personellIdStr, "GATE", "Personell")
+	if !ok {
+		return
+	}
+
+	hospId := c.GetString("hospId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -228,20 +238,39 @@ func GateCheckIn(c *gin.Context) {
 	}
 	defer pkg.RollbackTx(c, tx, ctx, "GATE")
 
-	_ = db.New()
+	q := db.New()
 
-	// ok, err := q.GateCheckInQuery(tx, ctx, hospId)
-	// if err != nil {
-	// 	return
-	// }
+	direction, err := q.GateCheckInOutQuery(ctx, tx, db.GateCheckInOutQueryParams{
+		HospitalityID: pgtype.Text{
+			String: hospId,
+			Valid:  true,
+		},
+		Direction:   db.GateLogDirectionEnumIN,
+		PersonellID: personellId,
+	})
+	if err != nil {
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Student checked-in successfully",
+		"message":   "Student marked successfully",
+		"direction": direction,
 	})
 	pkg.Log.SuccessCtx(c)
 }
 
 func GateCheckOut(c *gin.Context) {
+	personellIdStr, ok := pkg.GrabUserId(c, "GATE")
+	if !ok {
+		return
+	}
+	personellId, ok := pkg.GrabUuid(c, personellIdStr, "GATE", "Personell")
+	if !ok {
+		return
+	}
+
+	hospId := c.GetString("hospId")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -251,10 +280,23 @@ func GateCheckOut(c *gin.Context) {
 	}
 	defer pkg.RollbackTx(c, tx, ctx, "GATE")
 
-	_ = db.New()
+	q := db.New()
+
+	direction, err := q.GateCheckInOutQuery(ctx, tx, db.GateCheckInOutQueryParams{
+		HospitalityID: pgtype.Text{
+			String: hospId,
+			Valid:  true,
+		},
+		Direction:   db.GateLogDirectionEnumOUT,
+		PersonellID: personellId,
+	})
+	if err != nil {
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Student checked-out successfully",
+		"message":   "Student marked successfully",
+		"direction": direction,
 	})
 	pkg.Log.SuccessCtx(c)
 }
