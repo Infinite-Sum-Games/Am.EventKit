@@ -150,3 +150,48 @@ FROM accomodation_details ad
 INNER JOIN student s ON s.id = ad.student_id
 INNER JOIN hostel_metadata hm ON hm.id = ad.hostel_id
 WHERE s.hospitality_id = $1;
+
+-- name: GetStudentDetailsForSecurityQuery :one
+SELECT 
+    s.name AS student_name,
+    s.email AS student_email,
+    s.phone_number AS student_phone_number,
+    s.college_name AS college_name,
+
+    CASE
+        WHEN ad.student_id IS NOT NULL THEN ad.college_roll_number
+        ELSE NULL
+    END AS college_roll_number,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN ad.check_in::date
+        ELSE NULL
+    END AS check_in_date,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN to_char(ad.check_in, 'HH12:MI AM')
+        ELSE NULL
+    END AS check_in_time,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN ad.check_out::date
+        ELSE NULL
+    END AS check_out_date,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN to_char(ad.check_out, 'HH12:MI AM')
+        ELSE NULL
+    END AS check_out_time,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN hm.hostel_name
+        ELSE NULL
+    END AS hostel_name
+
+FROM student s
+LEFT JOIN accomodation_details ad 
+    ON ad.student_id = s.id
+LEFT JOIN hostel_metadata hm 
+    ON hm.id = ad.hostel_id
+WHERE s.hospitality_id = $1;
+

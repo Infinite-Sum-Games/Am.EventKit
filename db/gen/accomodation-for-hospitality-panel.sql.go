@@ -378,6 +378,82 @@ func (q *Queries) GetHostelQuery(ctx context.Context, db DBTX, id uuid.UUID) (Ge
 	return i, err
 }
 
+const getStudentDetailsForSecurityQuery = `-- name: GetStudentDetailsForSecurityQuery :one
+SELECT 
+    s.name AS student_name,
+    s.email AS student_email,
+    s.phone_number AS student_phone_number,
+    s.college_name AS college_name,
+
+    CASE
+        WHEN ad.student_id IS NOT NULL THEN ad.college_roll_number
+        ELSE NULL
+    END AS college_roll_number,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN ad.check_in::date
+        ELSE NULL
+    END AS check_in_date,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN to_char(ad.check_in, 'HH12:MI AM')
+        ELSE NULL
+    END AS check_in_time,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN ad.check_out::date
+        ELSE NULL
+    END AS check_out_date,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN to_char(ad.check_out, 'HH12:MI AM')
+        ELSE NULL
+    END AS check_out_time,
+
+    CASE 
+        WHEN ad.student_id IS NOT NULL THEN hm.hostel_name
+        ELSE NULL
+    END AS hostel_name
+
+FROM student s
+LEFT JOIN accomodation_details ad 
+    ON ad.student_id = s.id
+LEFT JOIN hostel_metadata hm 
+    ON hm.id = ad.hostel_id
+WHERE s.hospitality_id = $1
+`
+
+type GetStudentDetailsForSecurityQueryRow struct {
+	StudentName        string      `json:"student_name"`
+	StudentEmail       string      `json:"student_email"`
+	StudentPhoneNumber string      `json:"student_phone_number"`
+	CollegeName        string      `json:"college_name"`
+	CollegeRollNumber  interface{} `json:"college_roll_number"`
+	CheckInDate        interface{} `json:"check_in_date"`
+	CheckInTime        interface{} `json:"check_in_time"`
+	CheckOutDate       interface{} `json:"check_out_date"`
+	CheckOutTime       interface{} `json:"check_out_time"`
+	HostelName         interface{} `json:"hostel_name"`
+}
+
+func (q *Queries) GetStudentDetailsForSecurityQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GetStudentDetailsForSecurityQueryRow, error) {
+	row := db.QueryRow(ctx, getStudentDetailsForSecurityQuery, hospitalityID)
+	var i GetStudentDetailsForSecurityQueryRow
+	err := row.Scan(
+		&i.StudentName,
+		&i.StudentEmail,
+		&i.StudentPhoneNumber,
+		&i.CollegeName,
+		&i.CollegeRollNumber,
+		&i.CheckInDate,
+		&i.CheckInTime,
+		&i.CheckOutDate,
+		&i.CheckOutTime,
+		&i.HostelName,
+	)
+	return i, err
+}
+
 const mapQrStudentIdQuery = `-- name: MapQrStudentIdQuery :one
 UPDATE student
 SET hospitality_id = $2
