@@ -70,6 +70,11 @@ func DeleteUnclaimedBed(c *gin.Context) {
 		return
 	}
 
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "BED") {
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Deleted unclaimed bed successfully",
 	})
