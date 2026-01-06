@@ -251,7 +251,10 @@ SELECT
   ad.college_roll_number,
   ad.is_male,
   ad.room_preference,
-  ad.payment_status,
+  CASE
+    WHEN ad.payment_status = 'COMPLETED' THEN true
+    ELSE false
+  END AS is_paid,
   CASE
     WHEN hci.checked_out_at IS NOT NULL THEN 'OUT'
     WHEN hci.checked_in_at IS NOT NULL THEN 'IN'
@@ -277,7 +280,7 @@ type GetAllAccommodationRequestsQueryRow struct {
 	CollegeRollNumber string      `json:"college_roll_number"`
 	IsMale            bool        `json:"is_male"`
 	RoomPreference    string      `json:"room_preference"`
-	PaymentStatus     string      `json:"payment_status"`
+	IsPaid            bool        `json:"is_paid"`
 	CheckInStatus     string      `json:"check_in_status"`
 	HostelName        string      `json:"hostel_name"`
 	CheckInDate       pgtype.Date `json:"check_in_date"`
@@ -304,7 +307,7 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 			&i.CollegeRollNumber,
 			&i.IsMale,
 			&i.RoomPreference,
-			&i.PaymentStatus,
+			&i.IsPaid,
 			&i.CheckInStatus,
 			&i.HostelName,
 			&i.CheckInDate,
