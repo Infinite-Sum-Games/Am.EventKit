@@ -410,7 +410,7 @@ func GateCheckInStatus(c *gin.Context) {
 	if hasAccomodation {
 		// Rule: Cannot check-in if already inside
 		// A person is inside if they have a valid check-in and either no valid checkout or check-in is after checkout.
-		isAlreadyInside := res.LastCheckIn.Valid && (!res.LastCheckOut.Valid || res.LastCheckIn.Time.After(res.LastCheckOut.Time))
+		isAlreadyInside := res.LastCheckIn.Valid && !res.LastCheckOut.Valid
 
 		if isAlreadyInside {
 			// Rule: Cannot check-in if already inside
@@ -419,6 +419,22 @@ func GateCheckInStatus(c *gin.Context) {
 				"message":      "Check-in status",
 				"allow":        false,
 				"reason":       "Already check-in.",
+				"name":         res.Name,
+				"email":        res.Email,
+				"college_name": res.CollegeName,
+			})
+			pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for accomodation holder (already inside)")
+			return
+		}
+
+		hasAlreadyLeft := res.LastCheckIn.Valid && res.LastCheckOut.Valid
+
+		if hasAlreadyLeft {
+			// Rule: Cannot check-in once left
+			c.JSON(http.StatusOK, gin.H{
+				"message":      "Check-in status",
+				"allow":        false,
+				"reason":       "Checked out once already.",
 				"name":         res.Name,
 				"email":        res.Email,
 				"college_name": res.CollegeName,
