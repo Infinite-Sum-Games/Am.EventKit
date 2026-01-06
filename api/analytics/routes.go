@@ -13,5 +13,6 @@ func AnalyticsRoutes(r *gin.RouterGroup) {
 	r.GET("/transactions", mw.Auth, mw.CheckAdmin, GetTransactionAnalytics)
 
 	// Hospitality Analytics
-	r.GET("/hospitality/inside", GetInsideCampusAnalytics)
+	r.GET("/hospitality/inside", mw.Auth, mw.CheckHospitality, GetInsideCampusAnalytics)
+	r.GET("/hospitality/beds", mw.Auth, mw.CheckHospitality, GetLiveBedsAnalytics)
 }
