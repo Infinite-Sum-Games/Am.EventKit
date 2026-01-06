@@ -97,15 +97,22 @@ SELECT
   s.email,
   ad.payment_status AS accomodation_status,
   (
-    SELECT MAX(logged_at)
+    SELECT logged_at
     FROM gate_management
-    WHERE student_id = s.id AND direction = 'IN'
+    WHERE 
+      student_id = s.id 
+      AND direction = 'IN'
+    ORDER BY logged_at DESC
+    LIMIT 1
   ) AS last_check_in,
   (
-    SELECT MAX(logged_at)
+    SELECT logged_at
     FROM gate_management
     WHERE
-      student_id = s.id AND direction = 'OUT'
+      student_id = s.id 
+      AND direction = 'OUT'
+    ORDER BY logged_at DESC
+    LIMIT 1
   ) AS last_check_out
 FROM student s
 LEFT JOIN accomodation_details ad ON s.id = ad.student_id
