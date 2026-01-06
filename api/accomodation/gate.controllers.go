@@ -228,7 +228,7 @@ func GateCheckIn(c *gin.Context) {
 		return
 	}
 
-	hospId := c.GetString("hospId")
+	hospId := c.Param("hospId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -257,6 +257,11 @@ func GateCheckIn(c *gin.Context) {
 		return
 	}
 
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "GATE") {
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "Student marked successfully",
 		"direction": direction,
@@ -274,7 +279,7 @@ func GateCheckOut(c *gin.Context) {
 		return
 	}
 
-	hospId := c.GetString("hospId")
+	hospId := c.Param("hospId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -300,6 +305,11 @@ func GateCheckOut(c *gin.Context) {
 			"message": "Oops! Something happened. Please try again later",
 		})
 		pkg.Log.ErrorCtx(c, "[GATE-ERROR]: Failed to check out", err)
+		return
+	}
+
+	err = tx.Commit(ctx)
+	if pkg.HandleDbTxnCommitErr(c, err, "GATE") {
 		return
 	}
 
