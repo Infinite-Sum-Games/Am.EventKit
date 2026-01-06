@@ -61,7 +61,7 @@ func CheckHospitality(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Hospitality access denied.",
 	})
-	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-panel role")
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality role")
 }
 
 func CheckGate(c *gin.Context) {

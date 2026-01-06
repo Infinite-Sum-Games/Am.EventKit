@@ -1,0 +1,20 @@
+meta {
+  name: checkInStatus
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/accommodation/app/gate/status/check-in/:hospId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

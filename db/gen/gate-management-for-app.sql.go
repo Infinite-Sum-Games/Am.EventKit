@@ -81,6 +81,59 @@ func (q *Queries) GateCheckInOutQuery(ctx context.Context, db DBTX, arg GateChec
 	return direction, err
 }
 
+const gateCheckStatusQuery = `-- name: GateCheckStatusQuery :one
+SELECT
+  s.name,
+  s.college_name,
+  s.email,
+  ad.payment_status AS accomodation_status,
+  (
+    SELECT logged_at
+    FROM gate_management
+    WHERE 
+      student_id = s.id 
+      AND direction = 'IN'
+    ORDER BY logged_at DESC
+    LIMIT 1
+  ) AS last_check_in,
+  (
+    SELECT logged_at
+    FROM gate_management
+    WHERE
+      student_id = s.id 
+      AND direction = 'OUT'
+    ORDER BY logged_at DESC
+    LIMIT 1
+  ) AS last_check_out
+FROM student s
+LEFT JOIN accomodation_details ad ON s.id = ad.student_id
+WHERE
+  s.hospitality_id = $1
+`
+
+type GateCheckStatusQueryRow struct {
+	Name               string           `json:"name"`
+	CollegeName        string           `json:"college_name"`
+	Email              string           `json:"email"`
+	AccomodationStatus pgtype.Text      `json:"accomodation_status"`
+	LastCheckIn        pgtype.Timestamp `json:"last_check_in"`
+	LastCheckOut       pgtype.Timestamp `json:"last_check_out"`
+}
+
+func (q *Queries) GateCheckStatusQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GateCheckStatusQueryRow, error) {
+	row := db.QueryRow(ctx, gateCheckStatusQuery, hospitalityID)
+	var i GateCheckStatusQueryRow
+	err := row.Scan(
+		&i.Name,
+		&i.CollegeName,
+		&i.Email,
+		&i.AccomodationStatus,
+		&i.LastCheckIn,
+		&i.LastCheckOut,
+	)
+	return i, err
+}
+
 const hostelCheckInQuery = `-- name: HostelCheckInQuery :one
 WITH student_lookup AS (
   SELECT id

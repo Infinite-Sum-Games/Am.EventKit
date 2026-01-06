@@ -356,3 +356,192 @@ func GateStatus(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+// If No Accomodation, then day scholar
+//   - Everyday One CheckIn.
+//
+// If Accomodation
+//   - LifeTime One CheckIn
+func GateCheckInStatus(c *gin.Context) {
+	hospId := c.Param("hospId")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GATE-CHECKIN-STATUS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	res, err := q.GateCheckStatusQuery(ctx, conn, pgtype.Text{
+		String: hospId,
+		Valid:  true,
+	})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message":      "Invalid hospitality ID",
+			"allow":        false,
+			"reason":       "Invalid hospitality ID provided.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
+		})
+		pkg.Log.WarnCtx(c, "[GATE-CHECKIN-WARN]: Invalid hospitality ID")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message":      "Oops! Something happened. Please try again later",
+			"allow":        false,
+			"reason":       "Server error.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
+		})
+		pkg.Log.ErrorCtx(c, "[GATE-CHECKIN-ERROR]: Failed to check gate status", err)
+		return
+	}
+
+	// hasAccomodation would be true if payment_status is not NULL or empty
+	hasAccomodation := res.AccomodationStatus.Valid && res.AccomodationStatus.String != ""
+
+	if hasAccomodation {
+		// Rule: Cannot check-in if already inside
+		// A person is inside if they have a valid check-in and either no valid checkout or check-in is after checkout.
+		isAlreadyInside := res.LastCheckIn.Valid && !res.LastCheckOut.Valid
+
+		if isAlreadyInside {
+			// Rule: Cannot check-in if already inside
+			// Already inside is defined as last_check_in > last_check_out
+			c.JSON(http.StatusOK, gin.H{
+				"message":      "Check-in status",
+				"allow":        false,
+				"reason":       "Already check-in.",
+				"name":         res.Name,
+				"email":        res.Email,
+				"college_name": res.CollegeName,
+			})
+			pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for accomodation holder (already inside)")
+			return
+		}
+
+		hasAlreadyLeft := res.LastCheckIn.Valid && res.LastCheckOut.Valid
+
+		if hasAlreadyLeft {
+			// Rule: Cannot check-in once left
+			c.JSON(http.StatusOK, gin.H{
+				"message":      "Check-in status",
+				"allow":        false,
+				"reason":       "Checked out once already.",
+				"name":         res.Name,
+				"email":        res.Email,
+				"college_name": res.CollegeName,
+			})
+			pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for accomodation holder (already inside)")
+			return
+		}
+		// If not inside then fall through to success case
+	} else { // does not have accomodation
+		// Rule: Day scholars can check-in once per day
+		if res.LastCheckIn.Valid {
+			now := time.Now()
+			lastCheckInTime := res.LastCheckIn.Time
+
+			if lastCheckInTime.Year() == now.Year() && lastCheckInTime.YearDay() == now.YearDay() {
+				c.JSON(http.StatusOK, gin.H{
+					"message":      "Check-in status",
+					"allow":        false,
+					"reason":       "Already checked in today",
+					"name":         res.Name,
+					"email":        res.Email,
+					"college_name": res.CollegeName,
+				})
+				pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for day scholar (already checked in today)")
+				return
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Checkin status sent successfully",
+		"allow":        true,
+		"reason":       "",
+		"name":         res.Name,
+		"email":        res.Email,
+		"college_name": res.CollegeName,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+// If No Accomodation, then day scholar
+//   - Everyday One CheckOut
+//
+// If Accomodation
+//   - LifeTime One CheckOut
+func GateCheckOutStatus(c *gin.Context) {
+	hospId := c.Param("hospId")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GATE-CHECKOUT-STATUS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	res, err := q.GateCheckStatusQuery(ctx, conn, pgtype.Text{
+		String: hospId,
+		Valid:  true,
+	})
+	if err == pgx.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message":      "Invalid hospitality ID",
+			"allow":        false,
+			"reason":       "Invalid hospitality ID provided",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
+		})
+		pkg.Log.WarnCtx(c, "[GATE-CHECKOUT-WARN]: Invalid hospitality ID")
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[GATE-CHECKOUT-ERROR]: Failed to check gate status", err)
+		return
+	}
+
+	// A user can checkout only if they are currently checked in. A user is
+	// inside if their last checkin is more recent that their last checkout
+	isCurrentlyInside := res.LastCheckIn.Valid && (!res.LastCheckOut.Valid || res.LastCheckIn.Time.After(res.LastCheckOut.Time))
+
+	if !isCurrentlyInside {
+		c.JSON(http.StatusOK, gin.H{
+			"message":      "Checkout status",
+			"allow":        false,
+			"reason":       "Not currently checked in.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
+		})
+		pkg.Log.InfoCtx(c, "[GATE-CHECKOUT-STATUS]: Denied checkout (not inside)")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Checkout status sent successfully",
+		"allow":        true,
+		"reason":       "",
+		"name":         res.Name,
+		"email":        res.Email,
+		"college_name": res.CollegeName,
+	})
+	pkg.Log.SuccessCtx(c)
+}
