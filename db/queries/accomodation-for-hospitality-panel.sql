@@ -8,7 +8,10 @@ SELECT
   ad.college_roll_number,
   ad.is_male,
   ad.room_preference,
-  ad.payment_status,
+  CASE
+    WHEN ad.payment_status = 'COMPLETED' THEN true
+    ELSE false
+  END AS is_paid,
   CASE
     WHEN hci.checked_out_at IS NOT NULL THEN 'OUT'
     WHEN hci.checked_in_at IS NOT NULL THEN 'IN'
