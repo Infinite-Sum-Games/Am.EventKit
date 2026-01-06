@@ -180,6 +180,7 @@ func LoginOrganizer(c *gin.Context) {
 			"message": "No organizer with given credentials exist",
 		})
 		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Password hash does not match", err)
+		return
 	}
 
 	// Check if there is a refreshToken already. If it exists, just mint an
