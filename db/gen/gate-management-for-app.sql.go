@@ -81,26 +81,46 @@ func (q *Queries) GateCheckInOutQuery(ctx context.Context, db DBTX, arg GateChec
 	return direction, err
 }
 
-const hostelCheckInQuery = `-- name: HostelCheckInQuery :execrows
-UPDATE hostel_check_in
-SET
-  checked_in_at = NOW(),
-  checked_in_by = $2
-WHERE
-  accomodation_id = $1
+const hostelCheckInQuery = `-- name: HostelCheckInQuery :one
+WITH student_lookup AS (
+  SELECT id
+  FROM student
+  WHERE hospitality_id = $1
+),
+accommodation_lookup AS (
+  SELECT id, name, hostel_id
+  FROM accomodation_details
+  WHERE student_id = (SELECT id FROM student_lookup)
+),
+new_check_in AS (
+  INSERT INTO hostel_check_in (accomodation_id, checked_in_by)
+  SELECT id, $2
+  FROM accommodation_lookup
+  RETURNING accomodation_id
+)
+SELECT
+  ad.name,
+  hm.hostel_name
+FROM new_check_in
+JOIN accomodation_details ad ON ad.id = new_check_in.accomodation_id
+JOIN hostel_metadata hm ON hm.id = ad.hostel_id
 `
 
 type HostelCheckInQueryParams struct {
-	AccomodationID uuid.UUID `json:"accomodation_id"`
-	CheckedInBy    uuid.UUID `json:"checked_in_by"`
+	HospitalityID pgtype.Text `json:"hospitality_id"`
+	CheckedInBy   uuid.UUID   `json:"checked_in_by"`
 }
 
-func (q *Queries) HostelCheckInQuery(ctx context.Context, db DBTX, arg HostelCheckInQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, hostelCheckInQuery, arg.AccomodationID, arg.CheckedInBy)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+type HostelCheckInQueryRow struct {
+	Name       string `json:"name"`
+	HostelName string `json:"hostel_name"`
+}
+
+func (q *Queries) HostelCheckInQuery(ctx context.Context, db DBTX, arg HostelCheckInQueryParams) (HostelCheckInQueryRow, error) {
+	row := db.QueryRow(ctx, hostelCheckInQuery, arg.HospitalityID, arg.CheckedInBy)
+	var i HostelCheckInQueryRow
+	err := row.Scan(&i.Name, &i.HostelName)
+	return i, err
 }
 
 const hostelGateStatusQuery = `-- name: HostelGateStatusQuery :one
