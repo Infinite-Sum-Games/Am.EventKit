@@ -1,0 +1,20 @@
+meta {
+  name: checkIn
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accommodation/app/gate/check-in/:hospId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,20 @@
+meta {
+  name: checkOut
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/accommodation/app/gate/check-out/:hospId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospId: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
