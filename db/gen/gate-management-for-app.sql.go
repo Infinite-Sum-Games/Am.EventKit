@@ -81,6 +81,39 @@ func (q *Queries) GateCheckInOutQuery(ctx context.Context, db DBTX, arg GateChec
 	return direction, err
 }
 
+const gateCheckStatusQuery = `-- name: GateCheckStatusQuery :one
+SELECT
+  ad.payment_status AS accomodation_status,
+  (
+    SELECT MAX(logged_out)
+    FROM gate_management
+    WHERE student_id = s.id AND direction = 'IN'
+  ) AS last_check_in,
+  (
+    SELECT MAX(logged_out)
+    FROM gate_management
+    WHERE
+      student_id = s.id AND direction = 'OUT'
+  ) AS last_check_out
+FROM student s
+LEFT JOIN accomodation_details ad ON s.id = ad.student_id
+WHERE
+  s.hospitality_id = $1
+`
+
+type GateCheckStatusQueryRow struct {
+	AccomodationStatus pgtype.Text `json:"accomodation_status"`
+	LastCheckIn        interface{} `json:"last_check_in"`
+	LastCheckOut       interface{} `json:"last_check_out"`
+}
+
+func (q *Queries) GateCheckStatusQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GateCheckStatusQueryRow, error) {
+	row := db.QueryRow(ctx, gateCheckStatusQuery, hospitalityID)
+	var i GateCheckStatusQueryRow
+	err := row.Scan(&i.AccomodationStatus, &i.LastCheckIn, &i.LastCheckOut)
+	return i, err
+}
+
 const hostelCheckInQuery = `-- name: HostelCheckInQuery :one
 WITH student_lookup AS (
   SELECT id

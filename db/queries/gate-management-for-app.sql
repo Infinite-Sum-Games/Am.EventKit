@@ -89,3 +89,22 @@ SELECT
     (SELECT logged_at FROM last_check_in) AS last_check_in,
     (SELECT logged_at FROM last_check_out) AS last_check_out
 FROM student_info si;
+
+-- name: GateCheckStatusQuery :one  
+SELECT
+  ad.payment_status AS accomodation_status,
+  (
+    SELECT MAX(logged_out)
+    FROM gate_management
+    WHERE student_id = s.id AND direction = 'IN'
+  ) AS last_check_in,
+  (
+    SELECT MAX(logged_out)
+    FROM gate_management
+    WHERE
+      student_id = s.id AND direction = 'OUT'
+  ) AS last_check_out
+FROM student s
+LEFT JOIN accomodation_details ad ON s.id = ad.student_id
+WHERE
+  s.hospitality_id = $1;
