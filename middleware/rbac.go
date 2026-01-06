@@ -17,6 +17,7 @@ func CheckUser(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Access denied.",
 	})
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have user role")
 }
 
 func CheckAdmin(c *gin.Context) {
@@ -27,6 +28,7 @@ func CheckAdmin(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Access denied.",
 	})
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have admin role")
 }
 
 func CheckOrganizer(c *gin.Context) {
@@ -37,6 +39,7 @@ func CheckOrganizer(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Organizer access denied.",
 	})
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have organizer role")
 }
 
 func CheckOrgAndAdmin(c *gin.Context) {
@@ -47,6 +50,7 @@ func CheckOrgAndAdmin(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Admin access denied.",
 	})
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have organizer and admin role")
 }
 
 func CheckHospitality(c *gin.Context) {
@@ -57,6 +61,7 @@ func CheckHospitality(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"message": "Hospitality access denied.",
 	})
+	pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-panel role")
 }
 
 func CheckGate(c *gin.Context) {
@@ -74,6 +79,7 @@ func CheckGate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "Unauthorized gate email.",
 		})
+		pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-gate role")
 	}
 }
 
@@ -92,6 +98,7 @@ func CheckFinance(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "Unauthorized finance email.",
 		})
+		pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-finance role")
 	}
 }
 
@@ -110,6 +117,7 @@ func CheckSecurity(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "Unauthorized security email.",
 		})
+		pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-security role")
 	}
 }
 
@@ -128,5 +136,6 @@ func CheckHostel(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "Unauthorized hostel email.",
 		})
+		pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality-hostel role")
 	}
 }
