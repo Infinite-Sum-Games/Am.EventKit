@@ -85,10 +85,10 @@ const hostelCheckInQuery = `-- name: HostelCheckInQuery :one
 WITH student_lookup AS (
   SELECT id
   FROM student
-  WHERE hospitality_id = $1
+  WHERE student.hospitality_id = $1
 ),
 accommodation_lookup AS (
-  SELECT id, name, hostel_id
+  SELECT id, hostel_id, student_id
   FROM accomodation_details
   WHERE student_id = (SELECT id FROM student_lookup)
 ),
@@ -99,11 +99,12 @@ new_check_in AS (
   RETURNING accomodation_id
 )
 SELECT
-  ad.name,
+  s.name,
   hm.hostel_name
 FROM new_check_in
 JOIN accomodation_details ad ON ad.id = new_check_in.accomodation_id
 JOIN hostel_metadata hm ON hm.id = ad.hostel_id
+JOIN student s ON s.id = ad.student_id
 `
 
 type HostelCheckInQueryParams struct {
