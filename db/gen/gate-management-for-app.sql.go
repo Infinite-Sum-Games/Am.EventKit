@@ -83,6 +83,9 @@ func (q *Queries) GateCheckInOutQuery(ctx context.Context, db DBTX, arg GateChec
 
 const gateCheckStatusQuery = `-- name: GateCheckStatusQuery :one
 SELECT
+  s.name,
+  s.college_name,
+  s.email,
   ad.payment_status AS accomodation_status,
   (
     SELECT MAX(logged_at)
@@ -102,6 +105,9 @@ WHERE
 `
 
 type GateCheckStatusQueryRow struct {
+	Name               string      `json:"name"`
+	CollegeName        string      `json:"college_name"`
+	Email              string      `json:"email"`
 	AccomodationStatus pgtype.Text `json:"accomodation_status"`
 	LastCheckIn        interface{} `json:"last_check_in"`
 	LastCheckOut       interface{} `json:"last_check_out"`
@@ -110,7 +116,14 @@ type GateCheckStatusQueryRow struct {
 func (q *Queries) GateCheckStatusQuery(ctx context.Context, db DBTX, hospitalityID pgtype.Text) (GateCheckStatusQueryRow, error) {
 	row := db.QueryRow(ctx, gateCheckStatusQuery, hospitalityID)
 	var i GateCheckStatusQueryRow
-	err := row.Scan(&i.AccomodationStatus, &i.LastCheckIn, &i.LastCheckOut)
+	err := row.Scan(
+		&i.Name,
+		&i.CollegeName,
+		&i.Email,
+		&i.AccomodationStatus,
+		&i.LastCheckIn,
+		&i.LastCheckOut,
+	)
 	return i, err
 }
 

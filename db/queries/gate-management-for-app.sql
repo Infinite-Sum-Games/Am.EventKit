@@ -92,6 +92,9 @@ FROM student_info si;
 
 -- name: GateCheckStatusQuery :one  
 SELECT
+  s.name,
+  s.college_name,
+  s.email,
   ad.payment_status AS accomodation_status,
   (
     SELECT MAX(logged_at)
