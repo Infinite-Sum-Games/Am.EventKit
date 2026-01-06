@@ -404,18 +404,13 @@ func GateCheckInStatus(c *gin.Context) {
 		return
 	}
 
-	// Type Assertions to handle interface issues
-	lastCheckIn, lastCheckInOK := res.LastCheckIn.(pgtype.Timestamp)
-	lastCheckOut, lastCheckOutOK := res.LastCheckOut.(pgtype.Timestamp)
-
 	// hasAccomodation would be true if payment_status is not NULL or empty
 	hasAccomodation := res.AccomodationStatus.Valid && res.AccomodationStatus.String != ""
 
 	if hasAccomodation {
 		// Rule: Cannot check-in if already inside
-		isValidCheckIn := lastCheckInOK && lastCheckIn.Valid
-		isValidCheckOut := (!lastCheckOutOK || !lastCheckOut.Valid || lastCheckIn.Time.After(lastCheckOut.Time))
-		isAlreadyInside := isValidCheckIn && isValidCheckOut
+		// A person is inside if they have a valid check-in and either no valid checkout or check-in is after checkout.
+		isAlreadyInside := res.LastCheckIn.Valid && (!res.LastCheckOut.Valid || res.LastCheckIn.Time.After(res.LastCheckOut.Time))
 
 		if isAlreadyInside {
 			// Rule: Cannot check-in if already inside
@@ -434,9 +429,9 @@ func GateCheckInStatus(c *gin.Context) {
 		// If not inside then fall through to success case
 	} else { // does not have accomodation
 		// Rule: Day scholars can check-in once per day
-		if lastCheckIn.Valid {
+		if res.LastCheckIn.Valid {
 			now := time.Now()
-			lastCheckInTime := lastCheckIn.Time
+			lastCheckInTime := res.LastCheckIn.Time
 
 			if lastCheckInTime.Year() == now.Year() && lastCheckInTime.YearDay() == now.YearDay() {
 				c.JSON(http.StatusOK, gin.H{
@@ -507,15 +502,9 @@ func GateCheckOutStatus(c *gin.Context) {
 		return
 	}
 
-	// Type assertions
-	lastCheckIn, lastCheckInOK := res.LastCheckIn.(pgtype.Timestamp)
-	lastCheckOut, lastCheckOutOK := res.LastCheckIn.(pgtype.Timestamp)
-
 	// A user can checkout only if they are currently checked in. A user is
 	// inside if their last checkin is more recent that their last checkout
-	isValidCheckIn := lastCheckInOK && lastCheckIn.Valid
-	isValidCheckOut := (!lastCheckOutOK || !lastCheckOut.Valid || !lastCheckIn.Time.After(lastCheckOut.Time))
-	isCurrentlyInside := isValidCheckIn && isValidCheckOut
+	isCurrentlyInside := res.LastCheckIn.Valid && (!res.LastCheckOut.Valid || res.LastCheckIn.Time.After(res.LastCheckOut.Time))
 
 	if !isCurrentlyInside {
 		c.JSON(http.StatusOK, gin.H{
