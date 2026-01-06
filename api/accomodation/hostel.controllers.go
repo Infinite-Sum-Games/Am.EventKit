@@ -38,6 +38,13 @@ func HostelCheckIn(c *gin.Context) {
 		HospitalityID: pgtype.Text{String: hospId, Valid: true},
 		CheckedInBy:   personellId,
 	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[HOSTEL-ERROR]: Failed to hostel check-in", err)
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Hostel check-in successful",
