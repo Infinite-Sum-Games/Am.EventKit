@@ -35,7 +35,7 @@ func AccomodationPanelRoutes(r *gin.RouterGroup) {
 }
 
 func FinanceRoutes(r *gin.RouterGroup) {
-	r.GET("/app/pay/:hospitalityId", mw.Auth, mw.CheckHospitality, mw.CheckFinance, GetFinanceDetailsByHospitalityId)
+	r.GET("/app/pay/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckFinance, GetFinanceDetailsByHospitalityId)
 	r.POST("/app/pay/confirm/:accId", mw.Auth, mw.CheckHospitality, mw.CheckFinance, AffirmAccommodationPayment)
 }
 

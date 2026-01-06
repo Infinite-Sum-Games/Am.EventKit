@@ -12,7 +12,7 @@ import (
 )
 
 func GetFinanceDetailsByHospitalityId(c *gin.Context) {
-	hospitalityId := c.Param("hospitalityId")
+	hospitalityId := c.Param("hospId")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

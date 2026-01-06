@@ -334,7 +334,7 @@ func AllotHostel(c *gin.Context) {
 }
 
 func AffirmAccommodationPayment(c *gin.Context) {
-	accommodationIdStr := c.Param("accommodationId")
+	accommodationIdStr := c.Param("accId")
 	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "AFFIRM-PAYMENT", "Accommodation")
 	if !ok {
 		return
