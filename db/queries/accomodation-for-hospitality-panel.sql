@@ -1,22 +1,28 @@
 -- name: GetAllAccommodationRequestsQuery :many
 SELECT
-  id,
-  name,
-  email,
-  phone_number,
-  college_name,
-  college_roll_number,
-  is_male,
-  room_preference,
-  payment_status,
-  'RESERVED' AS check_in_status,
-  'No Hostel Allotted' AS hostel,
-  check_in::date as check_in_date,
-  to_char(check_in, 'HH12:MI AM') as check_in_time,
-  check_out::date as check_out_date,
-  to_char(check_out, 'HH12:MI AM') as check_out_time
-FROM accomodation_details
-ORDER BY created_at DESC;
+  ad.id,
+  ad.name,
+  ad.email,
+  ad.phone_number,
+  ad.college_name,
+  ad.college_roll_number,
+  ad.is_male,
+  ad.room_preference,
+  ad.payment_status,
+  CASE
+    WHEN hci.checked_out_at IS NOT NULL THEN 'OUT'
+    WHEN hci.checked_in_at IS NOT NULL THEN 'IN'
+    ELSE 'RESERVED'
+  END AS check_in_status,
+  COALESCE(hm.hostel_name, 'No Hostel Allocated') AS hostel_name,
+  ad.check_in::date as check_in_date,
+  to_char(ad.check_in, 'HH12:MI AM') as check_in_time,
+  ad.check_out::date as check_out_date,
+  to_char(ad.check_out, 'HH12:MI AM') as check_out_time
+FROM accomodation_details ad
+LEFT JOIN hostel_check_in hci ON hci.accomodation_id = ad.id
+LEFT JOIN hostel_metadata hm ON ad.hostel_id = hm.id
+ORDER BY ad.created_at DESC;
 
 -- name: AddHostelQuery :one
 INSERT INTO hostel_metadata (
