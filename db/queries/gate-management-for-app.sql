@@ -27,13 +27,29 @@ LEFT JOIN student s ON s.id = gm.student_id
 WHERE
   s.hospitality_id = $1;
 
--- name: HostelCheckInQuery :execrows
-UPDATE hostel_check_in
-SET
-  checked_in_at = NOW(),
-  checked_in_by = $2
-WHERE
-  accomodation_id = $1;
+-- name: HostelCheckInQuery :one
+WITH student_lookup AS (
+  SELECT id
+  FROM student
+  WHERE hospitality_id = $1
+),
+accommodation_lookup AS (
+  SELECT id, name, hostel_id
+  FROM accomodation_details
+  WHERE student_id = (SELECT id FROM student_lookup)
+),
+new_check_in AS (
+  INSERT INTO hostel_check_in (accomodation_id, checked_in_by)
+  SELECT id, $2
+  FROM accommodation_lookup
+  RETURNING accomodation_id
+)
+SELECT
+  ad.name,
+  hm.hostel_name
+FROM new_check_in
+JOIN accomodation_details ad ON ad.id = new_check_in.accomodation_id
+JOIN hostel_metadata hm ON hm.id = ad.hostel_id;
 
 -- name: HostelGateStatusQuery :one
 WITH student_info AS (

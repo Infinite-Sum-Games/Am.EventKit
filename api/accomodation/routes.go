@@ -48,6 +48,8 @@ func GateRoutes(r *gin.RouterGroup) {
 	r.POST("/app/gate/check-in/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckIn)
 	r.GET("/app/gate/status/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateStatus)
 	r.POST("/app/gate/check-out/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckOut)
+
+	r.POST("/app/hostel/check-in/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckHostel, HostelCheckIn)
 }
 
 func SecurityRoutes(r *gin.RouterGroup) {
