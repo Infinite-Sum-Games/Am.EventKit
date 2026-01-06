@@ -17,7 +17,8 @@ SELECT
     logged_at::date AS date,
     jsonb_build_object(
         'IN',  COUNT(*) FILTER (WHERE direction = 'IN'),
-        'OUT', COUNT(*) FILTER (WHERE direction = 'OUT')
+        'OUT', COUNT(*) FILTER (WHERE direction = 'OUT'),
+        'CURRENTLY_INSIDE', COUNT(*) FILTER (WHERE direction = 'IN') - COUNT(*) FILTER (WHERE direction = 'OUT')
     ) AS counts
 FROM gate_management
 GROUP BY date
@@ -50,24 +51,33 @@ func (q *Queries) GetInsideCampusAnalyticsQuery(ctx context.Context, db DBTX) ([
 }
 
 const getLiveBedsAnalyticsQuery = `-- name: GetLiveBedsAnalyticsQuery :many
-SELECT
-    room_filled
+SELECT jsonb_build_object(
+    'hostels', jsonb_agg(
+        jsonb_build_object(
+            'id', id,
+            'hostel_name', hostel_name,
+            'room_count', room_count,
+            'room_filled', room_filled
+        )
+    ),
+    'total_beds_filled', SUM(room_filled)
+)
 FROM hostel_metadata
 `
 
-func (q *Queries) GetLiveBedsAnalyticsQuery(ctx context.Context, db DBTX) ([]int32, error) {
+func (q *Queries) GetLiveBedsAnalyticsQuery(ctx context.Context, db DBTX) ([]json.RawMessage, error) {
 	rows, err := db.Query(ctx, getLiveBedsAnalyticsQuery)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []int32
+	var items []json.RawMessage
 	for rows.Next() {
-		var room_filled int32
-		if err := rows.Scan(&room_filled); err != nil {
+		var jsonb_build_object json.RawMessage
+		if err := rows.Scan(&jsonb_build_object); err != nil {
 			return nil, err
 		}
-		items = append(items, room_filled)
+		items = append(items, jsonb_build_object)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
