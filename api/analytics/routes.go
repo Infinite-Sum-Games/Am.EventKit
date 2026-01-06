@@ -11,4 +11,7 @@ func AnalyticsRoutes(r *gin.RouterGroup) {
 	r.GET("/registrations", mw.Auth, mw.CheckAdmin, GetEventRegistrationAnalytics)
 	// r.GET("/people", mw.Auth, mw.CheckAdmin, GetPeopleAnalytics)
 	r.GET("/transactions", mw.Auth, mw.CheckAdmin, GetTransactionAnalytics)
+
+	// Hospitality Analytics
+	r.GET("/hospitality/inside", GetInsideCampusAnalytics)
 }
