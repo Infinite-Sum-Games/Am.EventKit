@@ -292,6 +292,10 @@ func GateCheckOut(c *gin.Context) {
 		PersonellID: personellId,
 	})
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[GATE-ERROR]: Failed to check out", err)
 		return
 	}
 
