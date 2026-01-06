@@ -381,18 +381,24 @@ func GateCheckInStatus(c *gin.Context) {
 	})
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Invalid hospitality ID",
-			"allow":   false,
-			"reason":  "Invalid hospitality ID provided.",
+			"message":      "Invalid hospitality ID",
+			"allow":        false,
+			"reason":       "Invalid hospitality ID provided.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
 		})
 		pkg.Log.WarnCtx(c, "[GATE-CHECKIN-WARN]: Invalid hospitality ID")
 		return
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-			"allow":   false,
-			"reason":  "Server error.",
+			"message":      "Oops! Something happened. Please try again later",
+			"allow":        false,
+			"reason":       "Server error.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
 		})
 		pkg.Log.ErrorCtx(c, "[GATE-CHECKIN-ERROR]: Failed to check gate status", err)
 		return
@@ -415,9 +421,12 @@ func GateCheckInStatus(c *gin.Context) {
 			// Rule: Cannot check-in if already inside
 			// Already inside is defined as last_check_in > last_check_out
 			c.JSON(http.StatusOK, gin.H{
-				"message": "Check-in status",
-				"allow":   false,
-				"reason":  "Already check-in.",
+				"message":      "Check-in status",
+				"allow":        false,
+				"reason":       "Already check-in.",
+				"name":         res.Name,
+				"email":        res.Email,
+				"college_name": res.CollegeName,
 			})
 			pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for accomodation holder (already inside)")
 			return
@@ -431,9 +440,12 @@ func GateCheckInStatus(c *gin.Context) {
 
 			if lastCheckInTime.Year() == now.Year() && lastCheckInTime.YearDay() == now.YearDay() {
 				c.JSON(http.StatusOK, gin.H{
-					"message": "Check-in status",
-					"allow":   false,
-					"reason":  "Already checked in today",
+					"message":      "Check-in status",
+					"allow":        false,
+					"reason":       "Already checked in today",
+					"name":         res.Name,
+					"email":        res.Email,
+					"college_name": res.CollegeName,
 				})
 				pkg.Log.InfoCtx(c, "[GATE-CHECKIN-STATUS]: Denied check-in for day scholar (already checked in today)")
 				return
@@ -442,9 +454,12 @@ func GateCheckInStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Checkin status sent successfully",
-		"allow":   true,
-		"reason":  "",
+		"message":      "Checkin status sent successfully",
+		"allow":        true,
+		"reason":       "",
+		"name":         res.Name,
+		"email":        res.Email,
+		"college_name": res.CollegeName,
 	})
 	pkg.Log.SuccessCtx(c)
 }
@@ -474,9 +489,12 @@ func GateCheckOutStatus(c *gin.Context) {
 	})
 	if err == pgx.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Invalid hospitality ID",
-			"allow":   false,
-			"reason":  "Invalid hospitality ID provided",
+			"message":      "Invalid hospitality ID",
+			"allow":        false,
+			"reason":       "Invalid hospitality ID provided",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
 		})
 		pkg.Log.WarnCtx(c, "[GATE-CHECKOUT-WARN]: Invalid hospitality ID")
 		return
@@ -501,18 +519,24 @@ func GateCheckOutStatus(c *gin.Context) {
 
 	if !isCurrentlyInside {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Checkout status",
-			"allow":   false,
-			"reason":  "Not currently checkin in.",
+			"message":      "Checkout status",
+			"allow":        false,
+			"reason":       "Not currently checked in.",
+			"name":         res.Name,
+			"email":        res.Email,
+			"college_name": res.CollegeName,
 		})
 		pkg.Log.InfoCtx(c, "[GATE-CHECKOUT-STATUS]: Denied checkout (not inside)")
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Checkout status sent successfully",
-		"allow":   true,
-		"reason":  "",
+		"message":      "Checkout status sent successfully",
+		"allow":        true,
+		"reason":       "",
+		"name":         res.Name,
+		"email":        res.Email,
+		"college_name": res.CollegeName,
 	})
 	pkg.Log.SuccessCtx(c)
 }
