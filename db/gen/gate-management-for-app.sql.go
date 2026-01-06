@@ -85,12 +85,12 @@ const gateCheckStatusQuery = `-- name: GateCheckStatusQuery :one
 SELECT
   ad.payment_status AS accomodation_status,
   (
-    SELECT MAX(logged_out)
+    SELECT MAX(logged_at)
     FROM gate_management
     WHERE student_id = s.id AND direction = 'IN'
   ) AS last_check_in,
   (
-    SELECT MAX(logged_out)
+    SELECT MAX(logged_at)
     FROM gate_management
     WHERE
       student_id = s.id AND direction = 'OUT'
