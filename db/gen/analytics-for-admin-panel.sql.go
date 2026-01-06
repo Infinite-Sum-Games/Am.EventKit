@@ -12,28 +12,7 @@ import (
 )
 
 const getEventRegistrationAnalytics = `-- name: GetEventRegistrationAnalytics :one
-SELECT
-    id,
-    total_event_registrations,
-    participant_split,
-    event_registration_stats
-FROM event_registration_analytics
-WHERE id = 1
-`
 
-func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (EventRegistrationAnalytic, error) {
-	row := db.QueryRow(ctx, getEventRegistrationAnalytics)
-	var i EventRegistrationAnalytic
-	err := row.Scan(
-		&i.ID,
-		&i.TotalEventRegistrations,
-		&i.ParticipantSplit,
-		&i.EventRegistrationStats,
-	)
-	return i, err
-}
-
-const getPeopleRegistrationAnalytics = `-- name: GetPeopleRegistrationAnalytics :one
 SELECT
     id,
     website_registration_split,
@@ -42,8 +21,17 @@ FROM people_registration_analytics
 WHERE id = 1
 `
 
-func (q *Queries) GetPeopleRegistrationAnalytics(ctx context.Context, db DBTX) (PeopleRegistrationAnalytic, error) {
-	row := db.QueryRow(ctx, getPeopleRegistrationAnalytics)
+// SELECT
+//
+//	id,
+//	total_event_participants,
+//	participant_split,
+//	event_registration_stats
+//
+// FROM participants_analytics
+// WHERE id = 1;
+func (q *Queries) GetEventRegistrationAnalytics(ctx context.Context, db DBTX) (PeopleRegistrationAnalytic, error) {
+	row := db.QueryRow(ctx, getEventRegistrationAnalytics)
 	var i PeopleRegistrationAnalytic
 	err := row.Scan(&i.ID, &i.WebsiteRegistrationSplit, &i.TotalWebsiteRegistrations)
 	return i, err

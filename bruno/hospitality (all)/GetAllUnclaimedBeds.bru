@@ -1,0 +1,16 @@
+meta {
+  name: GetAllUnclaimedBeds
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/accommodation/panel/beds/unclaimed
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

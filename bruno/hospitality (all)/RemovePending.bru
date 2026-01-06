@@ -1,0 +1,19 @@
+meta {
+  name: RemovePending
+  type: http
+  seq: 21
+}
+
+delete {
+  url: {{baseUrl}}/accommodation/panel/beds/:hospId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  hospId: 
+}
+
+settings {
+  encodeUrl: true
+}

@@ -267,6 +267,48 @@ func (ns NullEventTypeEnum) Value() (driver.Value, error) {
 	return string(ns.EventTypeEnum), nil
 }
 
+type GateLogDirectionEnum string
+
+const (
+	GateLogDirectionEnumIN  GateLogDirectionEnum = "IN"
+	GateLogDirectionEnumOUT GateLogDirectionEnum = "OUT"
+)
+
+func (e *GateLogDirectionEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = GateLogDirectionEnum(s)
+	case string:
+		*e = GateLogDirectionEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for GateLogDirectionEnum: %T", src)
+	}
+	return nil
+}
+
+type NullGateLogDirectionEnum struct {
+	GateLogDirectionEnum GateLogDirectionEnum `json:"gate_log_direction_enum"`
+	Valid                bool                 `json:"valid"` // Valid is true if GateLogDirectionEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullGateLogDirectionEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.GateLogDirectionEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.GateLogDirectionEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullGateLogDirectionEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.GateLogDirectionEnum), nil
+}
+
 type OrganizerTypeEnum string
 
 const (
@@ -478,6 +520,23 @@ type Favourite struct {
 	ID      int32     `json:"id"`
 	Email   string    `json:"email"`
 	EventID uuid.UUID `json:"event_id"`
+}
+
+type GateManagement struct {
+	ID          uuid.UUID            `json:"id"`
+	Direction   GateLogDirectionEnum `json:"direction"`
+	LoggedAt    pgtype.Timestamp     `json:"logged_at"`
+	PersonellID uuid.UUID            `json:"personell_id"`
+	StudentID   uuid.UUID            `json:"student_id"`
+}
+
+type HostelCheckIn struct {
+	ID             uuid.UUID        `json:"id"`
+	AccomodationID uuid.UUID        `json:"accomodation_id"`
+	CheckedInAt    pgtype.Timestamp `json:"checked_in_at"`
+	CheckedOutAt   pgtype.Timestamp `json:"checked_out_at"`
+	CheckedInBy    uuid.UUID        `json:"checked_in_by"`
+	CheckedOutBy   pgtype.UUID      `json:"checked_out_by"`
 }
 
 type HostelMetadatum struct {

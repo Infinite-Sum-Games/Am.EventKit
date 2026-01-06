@@ -68,34 +68,34 @@ func GetEventRegistrationAnalytics(c *gin.Context) {
 
 }
 
-func GetPeopleAnalytics(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
-		return
-	}
-	defer conn.Release()
-
-	q := db.New()
-
-	peopleRegistrationSummary, err := q.GetPeopleRegistrationAnalytics(ctx, conn)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Oops! Something happened. Please try again later",
-		})
-		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get people registration summary", err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message":                     "Successfully fetched people analytics",
-		"people_registration_summary": peopleRegistrationSummary,
-	})
-	pkg.Log.SuccessCtx(c)
-
-}
+// func GetPeopleAnalytics(c *gin.Context) {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+//
+// 	conn, err := cmd.DBPool.Acquire(ctx)
+// 	if pkg.HandleDbAcquireErr(c, err, "ANALYTICS") {
+// 		return
+// 	}
+// 	defer conn.Release()
+//
+// 	q := db.New()
+//
+// 	peopleRegistrationSummary, err := q.GetPeopleRegistrationAnalytics(ctx, conn)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{
+// 			"message": "Oops! Something happened. Please try again later",
+// 		})
+// 		pkg.Log.ErrorCtx(c, "[ANALYTICS-ERROR]: Failed to get people registration summary", err)
+// 		return
+// 	}
+//
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"message":                     "Successfully fetched people analytics",
+// 		"people_registration_summary": peopleRegistrationSummary,
+// 	})
+// 	pkg.Log.SuccessCtx(c)
+//
+// }
 
 func GetTransactionAnalytics(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

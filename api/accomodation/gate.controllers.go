@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func GetAllHostels(c *gin.Context) {
@@ -96,8 +97,8 @@ func MapQrStudentId(c *gin.Context) {
 }
 
 func GetAccommodationById(c *gin.Context) {
-	accommodationIdStr := c.Param("accommodationId")
-	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "GET-ACCOMMODATION", "accommodationID")
+	accIdStr := c.Param("accId")
+	accommodationId, ok := pkg.GrabUuid(c, accIdStr, "GET-ACCOMMODATION", "Accommodation")
 	if !ok {
 		return
 	}
@@ -213,6 +214,127 @@ func UpdateAccommodationById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Accommodation request updated successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateCheckIn(c *gin.Context) {
+	personellIdStr, ok := pkg.GrabUserId(c, "GATE")
+	if !ok {
+		return
+	}
+	personellId, ok := pkg.GrabUuid(c, personellIdStr, "GATE", "Personell")
+	if !ok {
+		return
+	}
+
+	hospId := c.GetString("hospId")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "GATE") {
+		return
+	}
+	defer pkg.RollbackTx(c, tx, ctx, "GATE")
+
+	q := db.New()
+
+	direction, err := q.GateCheckInOutQuery(ctx, tx, db.GateCheckInOutQueryParams{
+		HospitalityID: pgtype.Text{
+			String: hospId,
+			Valid:  true,
+		},
+		Direction:   db.GateLogDirectionEnumIN,
+		PersonellID: personellId,
+	})
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Student marked successfully",
+		"direction": direction,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateCheckOut(c *gin.Context) {
+	personellIdStr, ok := pkg.GrabUserId(c, "GATE")
+	if !ok {
+		return
+	}
+	personellId, ok := pkg.GrabUuid(c, personellIdStr, "GATE", "Personell")
+	if !ok {
+		return
+	}
+
+	hospId := c.GetString("hospId")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	tx, err := cmd.DBPool.Begin(ctx)
+	if pkg.HandleDbTxnErr(c, err, "GATE") {
+		return
+	}
+	defer pkg.RollbackTx(c, tx, ctx, "GATE")
+
+	q := db.New()
+
+	direction, err := q.GateCheckInOutQuery(ctx, tx, db.GateCheckInOutQueryParams{
+		HospitalityID: pgtype.Text{
+			String: hospId,
+			Valid:  true,
+		},
+		Direction:   db.GateLogDirectionEnumOUT,
+		PersonellID: personellId,
+	})
+	if err != nil {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Student marked successfully",
+		"direction": direction,
+	})
+	pkg.Log.SuccessCtx(c)
+}
+
+func GateStatus(c *gin.Context) {
+	hospId := c.Param("hospId")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "GATE") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	resp, err := q.HostelGateStatusQuery(ctx, conn, pgtype.Text{
+		String: hospId,
+		Valid:  true,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[GATE-ERROR]: Failed to check gate status", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":         "Student accomodation status fetched successfully",
+		"student_name":    resp.StudentName,
+		"student_email":   resp.StudentEmail,
+		"single_check_in": resp.SingleCheckIn,
+		"last_check_in":   resp.LastCheckIn,
+		"last_check_out":  resp.LastCheckOut,
 	})
 	pkg.Log.SuccessCtx(c)
 }
