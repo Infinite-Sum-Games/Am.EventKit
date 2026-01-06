@@ -1,0 +1,16 @@
+meta {
+  name: GetInsideCampusAnalytics
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/analytics/hospitality/inside
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
