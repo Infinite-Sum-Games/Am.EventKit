@@ -39,7 +39,7 @@ func FetchUnclaimedBeds(c *gin.Context) {
 }
 
 func DeleteUnclaimedBed(c *gin.Context) {
-	bedId, ok := pkg.GrabUuid(c, c.Param("bedId"), "BED", "Bed")
+	accId, ok := pkg.GrabUuid(c, c.Param("accId"), "BED", "Accommodation")
 	if !ok {
 		return
 	}
@@ -54,7 +54,7 @@ func DeleteUnclaimedBed(c *gin.Context) {
 	defer pkg.RollbackTx(c, tx, ctx, "BED")
 
 	q := db.New()
-	rowsAffected, err := q.DeleteUnclaimedBedQuery(ctx, tx, bedId)
+	rowsAffected, err := q.DeleteUnclaimedBedQuery(ctx, tx, accId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Oops! Something happened. Please try again later",
@@ -66,7 +66,7 @@ func DeleteUnclaimedBed(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Bed not found",
 		})
-		pkg.Log.WarnCtx(c, "[BED-WARN]: No unclaimed bed with given Bed ID")
+		pkg.Log.WarnCtx(c, "[BED-WARN]: No unclaimed bed with given accommodation ID")
 		return
 	}
 

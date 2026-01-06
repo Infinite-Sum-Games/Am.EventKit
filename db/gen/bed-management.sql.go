@@ -13,19 +13,23 @@ import (
 )
 
 const deleteUnclaimedBedQuery = `-- name: DeleteUnclaimedBedQuery :execrows
+
 WITH updated_accommodation AS (
-    UPDATE accomodation_details AS ad
+    UPDATE accomodation_details
     SET 
-      ad.payment_status = 'FAILED'
-    WHERE ad.id = $1
-    RETURNING ad.hostel_id
+      payment_status = 'FAILED',
+      hostel_id = NULL
+    WHERE accomodation_details.id = $1
+    RETURNING (SELECT hostel_id FROM accomodation_details WHERE id = $1) AS old_hostel_id
 ) UPDATE hostel_metadata hm
 SET 
   room_filled = room_filled - 1
+FROM updated_accommodation ua
 WHERE 
-  hm.id = (SELECT hostel_id FROM updated_accommodation)
+  hm.id = ua.old_hostel_id
 `
 
+// AND ad.updated_at < NOW() - INTERVAL '30 minutes';
 func (q *Queries) DeleteUnclaimedBedQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
 	result, err := db.Exec(ctx, deleteUnclaimedBedQuery, id)
 	if err != nil {
@@ -36,7 +40,7 @@ func (q *Queries) DeleteUnclaimedBedQuery(ctx context.Context, db DBTX, id uuid.
 
 const fetchUnclaimedBedsQuery = `-- name: FetchUnclaimedBedsQuery :many
 SELECT
-  hm.id,
+  ad.id,
   hm.hostel_name,
   s.name as student_name,
   s.email as student_email,
@@ -48,11 +52,10 @@ LEFT JOIN student s ON ad.student_id = s.id
 WHERE
   ad.payment_status = 'PENDING'
   AND hm.id IS NOT NULL
-  AND ad.updated_at > NOW() - INTERVAL '30 minutes'
 `
 
 type FetchUnclaimedBedsQueryRow struct {
-	ID           pgtype.UUID `json:"id"`
+	ID           uuid.UUID   `json:"id"`
 	HostelName   pgtype.Text `json:"hostel_name"`
 	StudentName  pgtype.Text `json:"student_name"`
 	StudentEmail pgtype.Text `json:"student_email"`
