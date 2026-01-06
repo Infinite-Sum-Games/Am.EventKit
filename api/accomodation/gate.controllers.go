@@ -169,7 +169,7 @@ func UpdateAccommodationById(c *gin.Context) {
 	checkOutPgTimestamp := pkg.ToPgTimestamp(checkOut)
 	fmt.Println("CHECK OUT PG:", checkOutPgTimestamp)
 
-	accommodationIdStr := c.Param("accommodationId")
+	accommodationIdStr := c.Param("accId")
 	accommodationId, ok := pkg.GrabUuid(c, accommodationIdStr, "UPDATE-ACCOMMODATION", "accommodationID")
 	if !ok {
 		return
