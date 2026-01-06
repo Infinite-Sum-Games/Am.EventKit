@@ -28,7 +28,7 @@ func HostelCheckIn(c *gin.Context) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if pkg.HandleDbAcquireErr(c, err, "") {
+	if pkg.HandleDbAcquireErr(c, err, "HOSTEL") {
 		return
 	}
 	defer conn.Release()
