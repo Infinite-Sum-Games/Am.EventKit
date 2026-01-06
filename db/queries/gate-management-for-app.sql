@@ -36,7 +36,9 @@ WITH student_lookup AS (
 accommodation_lookup AS (
   SELECT id, hostel_id, student_id
   FROM accomodation_details
-  WHERE student_id = (SELECT id FROM student_lookup)
+  WHERE 
+    student_id = (SELECT id FROM student_lookup)
+    AND payment_status = 'COMPLETED'
 ),
 new_check_in AS (
   INSERT INTO hostel_check_in (accomodation_id, checked_in_by)
