@@ -260,7 +260,7 @@ SELECT
     WHEN hci.checked_in_at IS NOT NULL THEN 'IN'
     ELSE 'RESERVED'
   END AS check_in_status,
-  COALESCE(hm.hostel_name, 'No Hostel Allocated') AS hostel_name,
+  COALESCE(hm.hostel_name, 'No Hostel Allocated') AS hostel,
   ad.check_in::date as check_in_date,
   to_char(ad.check_in, 'HH12:MI AM') as check_in_time,
   ad.check_out::date as check_out_date,
@@ -282,7 +282,7 @@ type GetAllAccommodationRequestsQueryRow struct {
 	RoomPreference    string      `json:"room_preference"`
 	IsPaid            bool        `json:"is_paid"`
 	CheckInStatus     string      `json:"check_in_status"`
-	HostelName        string      `json:"hostel_name"`
+	Hostel            string      `json:"hostel"`
 	CheckInDate       pgtype.Date `json:"check_in_date"`
 	CheckInTime       string      `json:"check_in_time"`
 	CheckOutDate      pgtype.Date `json:"check_out_date"`
@@ -309,7 +309,7 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 			&i.RoomPreference,
 			&i.IsPaid,
 			&i.CheckInStatus,
-			&i.HostelName,
+			&i.Hostel,
 			&i.CheckInDate,
 			&i.CheckInTime,
 			&i.CheckOutDate,
