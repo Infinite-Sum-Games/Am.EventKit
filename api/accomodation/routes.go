@@ -44,6 +44,7 @@ func GateRoutes(r *gin.RouterGroup) {
 	r.POST("/app/map", mw.Auth, mw.CheckHospitality, mw.CheckGate, MapQrStudentId)
 	r.GET("/app/:accId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GetAccommodationById)
 	r.PUT("/app/:accId", mw.Auth, mw.CheckHospitality, mw.CheckGate, UpdateAccommodationById)
+	r.DELETE("/app/:accId", mw.Auth, mw.CheckHospitality, mw.CheckGate, DeleteAccommodationById)
 
 	r.GET("/app/gate/status/check-in/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckInStatus)
 	r.POST("/app/gate/check-in/:hospId", mw.Auth, mw.CheckHospitality, mw.CheckGate, GateCheckIn)
