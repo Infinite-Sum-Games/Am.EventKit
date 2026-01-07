@@ -160,6 +160,10 @@ SET
   updated_at = NOW()
 WHERE id = $1;
 
+-- name: DeleteAccommodationByIdQuery :execrows
+DELETE FROM accomodation_details
+WHERE id = $1;
+
 -- name: MapQrStudentIdQuery :one
 UPDATE student
 SET hospitality_id = $2
