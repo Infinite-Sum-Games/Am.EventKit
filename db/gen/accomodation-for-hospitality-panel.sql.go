@@ -172,6 +172,19 @@ func (q *Queries) AllotHostelQuery(ctx context.Context, db DBTX, arg AllotHostel
 	return result.RowsAffected(), nil
 }
 
+const deleteAccommodationByIdQuery = `-- name: DeleteAccommodationByIdQuery :execrows
+DELETE FROM accomodation_details
+WHERE id = $1
+`
+
+func (q *Queries) DeleteAccommodationByIdQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
+	result, err := db.Exec(ctx, deleteAccommodationByIdQuery, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteHostelQuery = `-- name: DeleteHostelQuery :execrows
 DELETE FROM hostel_metadata
 WHERE id = $1

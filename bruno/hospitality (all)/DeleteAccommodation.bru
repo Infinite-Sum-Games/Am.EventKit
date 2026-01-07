@@ -1,0 +1,20 @@
+meta {
+  name: DeleteAccommodation
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{baseUrl}}/accommodation/app/:accId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  accId: 008c88d4-332f-4246-845c-f8d4c234c557
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

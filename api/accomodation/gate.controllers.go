@@ -218,6 +218,47 @@ func UpdateAccommodationById(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
+func DeleteAccommodationById(c *gin.Context) {
+	accIdStr := c.Param("accId")
+	accId, ok := pkg.GrabUuid(c, accIdStr, "DELETE-ACCOMMODATION", "Accommodation")
+	if !ok {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "DELETE-ACCOMMODATION") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+
+	row, err := q.DeleteAccommodationByIdQuery(ctx, conn, accId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later.",
+		})
+		pkg.Log.ErrorCtx(c, "[DELETE-ACCOMMODATION-ERROR]: Failed to delete accommodation request", err)
+		return
+	}
+	if row == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Accommodation request not found",
+		})
+		pkg.Log.WarnCtx(c, "[DELETE-ACCOMMODATION-WARN]: Accommodation ID does not exist")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Accommodation request deleted successfully",
+	})
+	pkg.Log.SuccessCtx(c)
+
+}
+
 func GateCheckIn(c *gin.Context) {
 	personellIdStr, ok := pkg.GrabUserId(c, "GATE")
 	if !ok {
