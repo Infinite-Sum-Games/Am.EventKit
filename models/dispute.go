@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -10,8 +12,9 @@ type UpdateDisputeStatusInput struct {
 	Description  string `json:"description"`
 }
 
-func (u UpdateDisputeStatusInput) Validate() error {
-	if err := v.ValidateStruct(&u,
+func (u *UpdateDisputeStatusInput) Validate() error {
+	u.StudentEmail = strings.ToLower(u.StudentEmail)
+	if err := v.ValidateStruct(u,
 		v.Field(&u.StudentEmail, is.Email),
 		v.Field(&u.Description),
 	); err != nil {
