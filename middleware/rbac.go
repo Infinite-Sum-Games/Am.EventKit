@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	"github.com/gin-gonic/gin"
 )
 

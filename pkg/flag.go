@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )

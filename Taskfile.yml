@@ -1,0 +1,100 @@
+version: '3'
+
+vars:
+  ENVIRONMENT: "DEVELOPMENT2"
+  DB_URL: "postgresql://postgres:1234@localhost:5432/postgres"
+  GO_BIN:
+    sh: go env GOPATH
+  GOOSE_DRIVER: postgres
+  GOOSE_DBSTRING: "{{.DB_URL}}"
+  GOOSE_MIGRATION_DIR: ./db/migrations/
+  BIN_NAME:
+    sh: |
+      if [ "{{.OS}}" = "Windows_NT" ]; then
+        echo "bin/Am.EventKit.exe"
+      else
+        echo "bin/Am.EventKit"
+      fi
+
+tasks:
+  setup:
+    desc: "Install CLI tools and setup development environment"
+    cmds:
+      - go install github.com/air-verse/air@latest
+      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - go install github.com/evilmartians/lefthook@latest
+      - go install github.com/pressly/goose/v3/cmd/goose@latest
+      - lefthook install
+      - echo "All CLI tools installed successfully in {{.GO_BIN}}/bin"
+
+  dev:
+    desc: "Run the development server with hot reload"
+    cmds:
+      - air
+
+  build:
+    desc: "Build the application"
+    cmds:
+      - go mod tidy
+      - go fmt ./...
+      - go build -o {{.BIN_NAME}} main.go
+
+  run:
+    desc: "Build and run the application"
+    deps: [build]
+    cmds:
+      - ./{{.BIN_NAME}}
+
+  up:
+    desc: "Run all database migrations"
+    cmds:
+      - goose -dir {{.GOOSE_MIGRATION_DIR}} {{.GOOSE_DRIVER}} {{.GOOSE_DBSTRING}} up
+
+  upone:
+    desc: "Run one database migration at a time"
+    cmds:
+      - goose -dir {{.GOOSE_MIGRATION_DIR}} {{.GOOSE_DRIVER}} {{.GOOSE_DBSTRING}} up-by-one
+
+  seed:
+    desc: "Seed the database with test data (DEVELOPMENT environment only)"
+    deps: [build]
+    cmds:
+      - |
+        if [ "{{.ENVIRONMENT}}" = "DEVELOPMENT" ]; then
+          go run seed/seed.go seed/truncate.go seed/main.go -s
+        else
+          echo "Skipping seed: not in DEVELOPMENT environment."
+        fi
+
+  down:
+    desc: "Reset all database migrations"
+    cmds:
+      - goose -dir {{.GOOSE_MIGRATION_DIR}} {{.GOOSE_DRIVER}} {{.GOOSE_DBSTRING}} reset
+
+  downto:
+    desc: "Migrate down to a specific version"
+    vars:
+      VERSION: "{{.v | default \"0\"}}"
+    cmds:
+      - goose -dir {{.GOOSE_MIGRATION_DIR}} {{.GOOSE_DRIVER}} {{.GOOSE_DBSTRING}} down-to {{.VERSION}}
+
+  status:
+    desc: "Show migration status"
+    cmds:
+      - goose -dir {{.GOOSE_MIGRATION_DIR}} {{.GOOSE_DRIVER}} {{.GOOSE_DBSTRING}} status
+
+  clean:
+    desc: "Clean database data"
+    cmds:
+      - go run seed/seed.go seed/truncate.go seed/main.go -c
+
+  docker:
+    desc: "Start server with Docker"
+    cmds:
+      - docker compose up -d
+
+  pod:
+    desc: "Restart services with Podman"
+    cmds:
+      - podman compose down
+      - podman compose up -d

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
+	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
 	"golang.org/x/crypto/bcrypt"
 )
 

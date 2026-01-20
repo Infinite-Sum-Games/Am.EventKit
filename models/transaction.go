@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	v "github.com/go-ozzo/ozzo-validation/v4"
 )
 

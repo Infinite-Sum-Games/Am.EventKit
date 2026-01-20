@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
