@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
+	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 )
 
 func truncate() {

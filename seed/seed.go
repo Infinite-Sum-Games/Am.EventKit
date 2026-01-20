@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
-	pkg "github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
+	pkg "github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"

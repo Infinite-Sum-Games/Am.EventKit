@@ -1,7 +1,7 @@
 package api
 
 import (
-	mw "github.com/Thanus-Kumaar/anokha-2025-backend/middleware"
+	mw "github.com/Infinite-Sum-Games/Am.EventKit/middleware"
 	"github.com/gin-gonic/gin"
 )
 

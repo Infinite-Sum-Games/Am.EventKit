@@ -7,9 +7,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
+	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	"github.com/gin-gonic/gin"
 )
 

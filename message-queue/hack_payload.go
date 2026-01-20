@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	db "github.com/Thanus-Kumaar/anokha-2025-backend/db/gen"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
 )
 
 // Payload builder for Hackathon events.

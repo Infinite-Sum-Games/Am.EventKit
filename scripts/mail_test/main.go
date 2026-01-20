@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Thanus-Kumaar/anokha-2025-backend/cmd"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/mail"
-	"github.com/Thanus-Kumaar/anokha-2025-backend/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
+	"github.com/Infinite-Sum-Games/Am.EventKit/mail"
+	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 )
 
 func main() {

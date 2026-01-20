@@ -1,4 +1,4 @@
-module github.com/Thanus-Kumaar/anokha-2025-backend
+module github.com/Infinite-Sum-Games/Am.EventKit
 
 go 1.24.1
 
