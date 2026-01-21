@@ -1,0 +1,14 @@
+[features]
+kill_web = false
+kill_admin = false
+kill_org_web = false
+kill_org_app = false
+kill_logistics_web = false
+kill_logistics_app = false
+
+[integrations]
+kill_payments = false
+kill_mailer = false
+kill_db = false
+kill_redis = false
+kill_queue = false
