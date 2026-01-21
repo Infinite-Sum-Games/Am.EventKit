@@ -1,0 +1,182 @@
+version: '3.8'
+
+services:
+  # ClickHouse - SigNoz's primary database
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: signoz-clickhouse
+    hostname: clickhouse
+    ports:
+      - "8123:8123"  # HTTP interface
+      - "9000:9000"  # Native interface
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./signoz/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml
+    environment:
+      - CLICKHOUSE_DB=signoz
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kafka - For log streaming
+  kafka:
+    image: bitnami/kafka:3.5
+    container_name: signoz-kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Zookeeper - Required for Kafka
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    container_name: signoz-zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SigNoz Query Service
+  query-service:
+    image: signoz/signoz-query-service:latest
+    container_name: signoz-query-service
+    hostname: query-service
+    ports:
+      - "8080:8080"  # HTTP API
+    environment:
+      - STORAGE=clickhouse
+      - CLICKHOUSE_SERVER_URL=http://clickhouse:8123
+      - KAFKA_SERVERS=kafka:9092
+      - ZOOKEEPER_SERVERS=zookeeper:2181
+      - SIGNOZ_TELEMETRY_ENABLED=true
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SigNoz Frontend
+  frontend:
+    image: signoz/signoz-frontend:latest
+    container_name: signoz-frontend
+    hostname: frontend
+    ports:
+      - "3301:3301"  # Web UI
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_THEMING_ENABLED=true
+      - REACT_APP_SIGNOZ_CLOUD_URL=
+    depends_on:
+      - query-service
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3301/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SigNoz Otel Collector
+  otel-collector:
+    image: signoz/signoz-otel-collector:latest
+    container_name: signoz-otel-collector
+    hostname: otel-collector
+    ports:
+      - "4317:4317"  # OTLP gRPC receiver
+      - "4318:4318"  # OTLP HTTP receiver
+      - "9411:9411"  # Zipkin receiver
+      - "8888:8888"  # Prometheus metrics
+      - "8889:8889"  # Prometheus exporter metrics
+    volumes:
+      - ./signoz/otel-collector-config.yaml:/etc/signoz/otel-collector-config.yaml
+    command: ["--config=/etc/signoz/otel-collector-config.yaml"]
+    depends_on:
+      - query-service
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8888/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SigNoz Alert Manager
+  alertmanager:
+    image: signoz/signoz-alertmanager:latest
+    container_name: signoz-alertmanager
+    hostname: alertmanager
+    ports:
+      - "9093:9093"  # Alertmanager UI
+    environment:
+      - SIGNOZ_TELEMETRY_ENABLED=true
+      - STORAGE=clickhouse
+      - CLICKHOUSE_SERVER_URL=http://clickhouse:8123
+      - QUERY_SERVICE_URL=http://query-service:8080
+    depends_on:
+      query-service:
+        condition: service_healthy
+    networks:
+      - signoz-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  clickhouse_data:
+    driver: local
+  kafka_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+
+networks:
+  signoz-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
