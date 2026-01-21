@@ -599,7 +599,7 @@ func ConnectEventAndTags(c *gin.Context) {
 	pkg.Log.SuccessCtx(c)
 }
 
-func DisonnectEventAndTags(c *gin.Context) {
+func DisconnectEventAndTags(c *gin.Context) {
 	req, ok := pkg.ValidateRequest[models.DisconnectEventAndTagsRequest](c)
 	if !ok {
 		return
