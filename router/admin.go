@@ -1,0 +1,111 @@
+package router
+
+import (
+	analyticsApi "github.com/Infinite-Sum-Games/Am.EventKit/api/analytics"
+	authApi "github.com/Infinite-Sum-Games/Am.EventKit/api/auth"
+	bookingApi "github.com/Infinite-Sum-Games/Am.EventKit/api/booking"
+	disputeApi "github.com/Infinite-Sum-Games/Am.EventKit/api/dispute"
+	eventApi "github.com/Infinite-Sum-Games/Am.EventKit/api/event"
+	orgApi "github.com/Infinite-Sum-Games/Am.EventKit/api/organizers"
+	peopleApi "github.com/Infinite-Sum-Games/Am.EventKit/api/people"
+	tagApi "github.com/Infinite-Sum-Games/Am.EventKit/api/tag"
+	mw "github.com/Infinite-Sum-Games/Am.EventKit/middleware"
+	"github.com/gin-gonic/gin"
+)
+
+func AdminRouter(r *gin.RouterGroup) {
+	adminRouter := r.Group("/admin")
+
+	// Authentication routes
+	adminRouter.POST("/auth/login", authApi.LoginAdmin)
+	auth := adminRouter.Group("/auth", mw.Auth)
+	{
+		auth.GET("/session", authApi.FetchAdminSession)
+		auth.GET("/logout", authApi.Logout)
+	}
+
+	// Event routes
+	event := adminRouter.Group("/event", mw.Auth)
+	{
+		// General-Event management
+		event.GET("", eventApi.GetAllAdminEvents)
+		event.GET("/:eventId", eventApi.GetAdminEventsById)
+		event.GET("/new", eventApi.NewEvent)
+		event.GET("/:eventId", eventApi.AddEventDetails)
+		event.POST("/size/:eventId", eventApi.AddEventDimension)
+		event.POST("/toggle/:eventId", eventApi.AddEventToggles)
+		event.POST("/publish/:eventId", eventApi.PublishEvent)
+		event.DELETE("/publish/:eventId", eventApi.UnpublishEvent)
+		event.POST("/completed/:eventId", eventApi.MarkEventAsCompleted)
+		event.DELETE("/completed/:eventId", eventApi.UnmarkEventAsCompleted)
+		// Event-Poster management
+		event.POST("/poster/:eventId", eventApi.AddEventPoster)
+		event.DELETE("/poster/:eventId", eventApi.DeleteEventPoster)
+		// Event-Organizer management
+		event.POST("/org", eventApi.ConnectEventAndOrganizer)
+		event.DELETE("/org", eventApi.DisconnectEventAndOrganizer)
+		// Event-Tag management
+		event.POST("/tag", eventApi.ConnectEventAndTags)
+		event.DELETE("/tag", eventApi.DisconnectEventAndTags)
+		// Event-Dignitary management
+		event.POST("/people", eventApi.ConnectEventAndPeople)
+		event.DELETE("/people", eventApi.DisconnectEventAndPeople)
+		// Event-Schedule management
+		event.POST("/schedule/:eventId")
+		event.PUT("/schedule/:scheduleId")
+		event.DELETE("/schedule/:scheduleId")
+	}
+
+	// Booking routes
+	book := adminRouter.Group("/booking", mw.Auth)
+	{
+		book.GET("/transactions", bookingApi.FetchAdminTransactions)
+	}
+
+	// Dispute routes
+	dispute := adminRouter.Group("/dispute", mw.Auth)
+	{
+		dispute.GET("", disputeApi.GetAllDisputes)
+		dispute.POST("/:txnId", disputeApi.CreateDispute)
+		dispute.PUT("/:disputeId", disputeApi.UpdateDispute)
+		dispute.POST("/close-as-true/:disputeId", disputeApi.CloseAsTrueDispute)
+		dispute.POST("/close-as-false/:disputeId", disputeApi.CloseAsFalseDispute)
+	}
+
+	// People routes
+	people := adminRouter.Group("/people")
+	{
+		people.GET("", peopleApi.FetchAllPeople)
+		people.POST("", peopleApi.AddNewPerson)
+		people.PUT("/:personId", peopleApi.UpdatePersonDetails)
+		people.DELETE("/:personId", peopleApi.UpdatePersonDetails)
+	}
+
+	// Organizer routes
+	org := adminRouter.Group("/org")
+	{
+		org.GET("", orgApi.GetAllOrganizers)
+		org.POST("", orgApi.CreateOrganizer)
+		org.PUT("/:orgId", orgApi.EditOrganizer)
+		org.PUT("/password/:orgId", orgApi.EditOrganizer)
+		org.DELETE("/password/:orgId", orgApi.DeleteOrganizer)
+	}
+
+	// Tag routes
+	tag := adminRouter.Group("/tag")
+	{
+		tag.GET("/", tagApi.FetchEventTags)
+		tag.POST("/", tagApi.CreateEventTag)
+		tag.PUT("/:tagId", tagApi.EditEventTag)
+		tag.DELETE("/:tagId", tagApi.DeleteEventTag)
+	}
+
+	// Analytics routes
+	analytics := adminRouter.Group("/analytics")
+	{
+		analytics.GET("/quick", analyticsApi.GetQuickDashboard)
+		analytics.GET("/revenue", analyticsApi.GetRevenueAnalytics)
+		analytics.GET("/registrations", analyticsApi.GetEventRegistrationAnalytics)
+		analytics.GET("/transactions", analyticsApi.GetTransactionAnalytics)
+	}
+}

@@ -1,0 +1,93 @@
+services:
+
+  postgres:
+    image: naganathan05/postgres-cron:18
+    container_name: eventkit_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+    command: >
+      postgres -c shared_preload_libraries=pg_cron
+              -c cron.database_name=postgres
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    networks:
+      - eventkit_app_network
+    volumes:
+      - eventkit_postgres_data:/var/lib/postgresql/18/data
+
+  drizzle-gate:
+    image: ghcr.io/drizzle-team/gateway:latest
+    container_name: eventkit_db_ui
+    environment:
+      DATABASE_URL: postgresql://postgres:1234@postgres:5432/postgres
+      STORE_PATH: /app
+    restart: on-failure
+    depends_on:
+      - postgres
+    ports:
+      - "4983:4983"
+    volumes:
+      - eventkit_drizzle_gateway_data:/app
+    networks:
+      - eventkit_app_network
+
+  # Rate limiting layer
+  valkey:
+    image: valkey/valkey:8.1.1-alpine
+    container_name: eventkit_redis
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: valkey-server --appendonly yes # persistance
+    volumes:
+      - eventkit_valkey_data:/data
+    networks:
+      - eventkit_app_network
+
+  # UI for Valkey (cache)
+  insight:
+    image: redislabs/redisinsight:latest
+    container_name: eventkit_redis_ui
+    restart: on-failure
+    ports:
+      - "5540:5540"
+    depends_on:
+      - valkey
+    environment:
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+    networks:
+      - eventkit_app_network
+
+  # Workflow management with RabbitMQ
+  rabbitmq:
+    image: rabbitmq:4.1.5-management-alpine
+    container_name: eventkit_rabbitmq
+    restart: on-failure
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq/
+    networks:
+      - eventkit_app_network
+
+networks:
+  eventkit_app_network:
+    driver: bridge
+
+volumes:
+  eventkit_postgres_data:
+  eventkit_drizzle_gateway_data:
+  eventkit_valkey_data:
+  rabbitmq-lib:
+    driver: local
+  rabbitmq-log:
+    driver: local
