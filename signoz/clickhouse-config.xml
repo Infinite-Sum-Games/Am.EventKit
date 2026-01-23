@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<yandex>
+    <logger>
+        <level>information</level>
+        <console>true</console>
+    </logger>
+</yandex>
