@@ -1,14 +1,14 @@
 services:
 
   postgres:
-    image: naganathan05/postgres-cron:18
+    image: iamriteshkoushik/pg18-duckdb-cron:18-main
     container_name: eventkit_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: postgres
     command: >
-      postgres -c shared_preload_libraries=pg_cron
+      postgres -c shared_preload_libraries=pg_duckdb,pg_cron
               -c cron.database_name=postgres
     ports:
       - "5432:5432"
