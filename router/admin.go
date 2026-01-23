@@ -31,7 +31,7 @@ func AdminRouter(r *gin.RouterGroup) {
 		event.GET("", eventApi.GetAllAdminEvents)
 		event.GET("/:eventId", eventApi.GetAdminEventsById)
 		event.GET("/new", eventApi.NewEvent)
-		event.GET("/:eventId", eventApi.AddEventDetails)
+		event.POST("/:eventId", eventApi.AddEventDetails)
 		event.POST("/size/:eventId", eventApi.AddEventDimension)
 		event.POST("/toggle/:eventId", eventApi.AddEventToggles)
 		event.POST("/publish/:eventId", eventApi.PublishEvent)
