@@ -1,14 +1,10 @@
-package tag
+package api
 
 import (
 	"context"
 	"net/http"
 	"time"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
-	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
-	"github.com/Infinite-Sum-Games/Am.EventKit/models"
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	"github.com/gin-gonic/gin"
 )
 
