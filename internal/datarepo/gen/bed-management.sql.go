@@ -13,7 +13,6 @@ import (
 )
 
 const deleteUnclaimedBedQuery = `-- name: DeleteUnclaimedBedQuery :execrows
-
 WITH updated_accommodation AS (
     UPDATE accomodation_details
     SET 
@@ -29,7 +28,6 @@ WHERE
   hm.id = ua.old_hostel_id
 `
 
-// AND ad.updated_at < NOW() - INTERVAL '30 minutes';
 func (q *Queries) DeleteUnclaimedBedQuery(ctx context.Context, db DBTX, id uuid.UUID) (int64, error) {
 	result, err := db.Exec(ctx, deleteUnclaimedBedQuery, id)
 	if err != nil {
@@ -69,7 +67,7 @@ func (q *Queries) FetchUnclaimedBedsQuery(ctx context.Context, db DBTX) ([]Fetch
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchUnclaimedBedsQueryRow
+	items := []FetchUnclaimedBedsQueryRow{}
 	for rows.Next() {
 		var i FetchUnclaimedBedsQueryRow
 		if err := rows.Scan(

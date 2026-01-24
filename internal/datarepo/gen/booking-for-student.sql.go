@@ -172,7 +172,7 @@ func (q *Queries) GetAnyBookingByUsersAndEvent(ctx context.Context, db DBTX, arg
 		return nil, err
 	}
 	defer rows.Close()
-	var items []uuid.UUID
+	items := []uuid.UUID{}
 	for rows.Next() {
 		var student_id uuid.UUID
 		if err := rows.Scan(&student_id); err != nil {
@@ -199,7 +199,7 @@ func (q *Queries) GetAnyPendingBookingByUser(ctx context.Context, db DBTX, stude
 		return nil, err
 	}
 	defer rows.Close()
-	var items []uuid.UUID
+	items := []uuid.UUID{}
 	for rows.Next() {
 		var id uuid.UUID
 		if err := rows.Scan(&id); err != nil {
@@ -314,7 +314,7 @@ func (q *Queries) GetTeamMembersByTeamID(ctx context.Context, db DBTX, teamID uu
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TeamMember
+	items := []TeamMember{}
 	for rows.Next() {
 		var i TeamMember
 		if err := rows.Scan(
@@ -362,7 +362,6 @@ type UpdateEventSeatsParams struct {
 	ID          uuid.UUID `json:"id"`
 }
 
-// Hopefully, we can use this for removing decrement too (should try)
 func (q *Queries) UpdateEventSeats(ctx context.Context, db DBTX, arg UpdateEventSeatsParams) error {
 	_, err := db.Exec(ctx, updateEventSeats, arg.SeatsFilled, arg.ID)
 	return err

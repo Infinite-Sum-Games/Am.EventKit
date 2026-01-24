@@ -409,7 +409,7 @@ func (q *Queries) ViewAdminSeedQuery(ctx context.Context, db DBTX) ([]Admin, err
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Admin
+	items := []Admin{}
 	for rows.Next() {
 		var i Admin
 		if err := rows.Scan(
@@ -461,7 +461,7 @@ func (q *Queries) ViewBookingsSeedQuery(ctx context.Context, db DBTX) ([]ViewBoo
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewBookingsSeedQueryRow
+	items := []ViewBookingsSeedQueryRow{}
 	for rows.Next() {
 		var i ViewBookingsSeedQueryRow
 		if err := rows.Scan(
@@ -510,7 +510,7 @@ func (q *Queries) ViewEventScheduleSeedQuery(ctx context.Context, db DBTX) ([]Vi
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewEventScheduleSeedQueryRow
+	items := []ViewEventScheduleSeedQueryRow{}
 	for rows.Next() {
 		var i ViewEventScheduleSeedQueryRow
 		if err := rows.Scan(
@@ -573,7 +573,7 @@ func (q *Queries) ViewEventSeedQuery(ctx context.Context, db DBTX) ([]ViewEventS
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewEventSeedQueryRow
+	items := []ViewEventSeedQueryRow{}
 	for rows.Next() {
 		var i ViewEventSeedQueryRow
 		if err := rows.Scan(
@@ -616,7 +616,7 @@ func (q *Queries) ViewEventTagMappingSeedQuery(ctx context.Context, db DBTX) ([]
 		return nil, err
 	}
 	defer rows.Close()
-	var items []EventTagMapping
+	items := []EventTagMapping{}
 	for rows.Next() {
 		var i EventTagMapping
 		if err := rows.Scan(&i.ID, &i.TagID, &i.EventID); err != nil {
@@ -644,7 +644,7 @@ func (q *Queries) ViewEventToOrganizerMappingSeedQuery(ctx context.Context, db D
 		return nil, err
 	}
 	defer rows.Close()
-	var items []EventToOrganizerMapping
+	items := []EventToOrganizerMapping{}
 	for rows.Next() {
 		var i EventToOrganizerMapping
 		if err := rows.Scan(&i.ID, &i.EventID, &i.OrganizerID); err != nil {
@@ -686,7 +686,7 @@ func (q *Queries) ViewOrganizerSeedQuery(ctx context.Context, db DBTX) ([]ViewOr
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewOrganizerSeedQueryRow
+	items := []ViewOrganizerSeedQueryRow{}
 	for rows.Next() {
 		var i ViewOrganizerSeedQueryRow
 		if err := rows.Scan(
@@ -724,7 +724,7 @@ func (q *Queries) ViewPeopleSeedQuery(ctx context.Context, db DBTX) ([]Person, e
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Person
+	items := []Person{}
 	for rows.Next() {
 		var i Person
 		if err := rows.Scan(
@@ -764,7 +764,7 @@ func (q *Queries) ViewPeopleToEventMappingSeedQuery(ctx context.Context, db DBTX
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewPeopleToEventMappingSeedQueryRow
+	items := []ViewPeopleToEventMappingSeedQueryRow{}
 	for rows.Next() {
 		var i ViewPeopleToEventMappingSeedQueryRow
 		if err := rows.Scan(&i.ID, &i.EventID, &i.PersonID); err != nil {
@@ -806,7 +806,7 @@ func (q *Queries) ViewSoloEventParticipantQuery(ctx context.Context, db DBTX) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewSoloEventParticipantQueryRow
+	items := []ViewSoloEventParticipantQueryRow{}
 	for rows.Next() {
 		var i ViewSoloEventParticipantQueryRow
 		if err := rows.Scan(
@@ -871,7 +871,7 @@ func (q *Queries) ViewSoloEventSeedQuery(ctx context.Context, db DBTX) ([]ViewSo
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewSoloEventSeedQueryRow
+	items := []ViewSoloEventSeedQueryRow{}
 	for rows.Next() {
 		var i ViewSoloEventSeedQueryRow
 		if err := rows.Scan(
@@ -926,7 +926,7 @@ func (q *Queries) ViewStudentSeedQuery(ctx context.Context, db DBTX) ([]ViewStud
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewStudentSeedQueryRow
+	items := []ViewStudentSeedQueryRow{}
 	for rows.Next() {
 		var i ViewStudentSeedQueryRow
 		if err := rows.Scan(
@@ -961,7 +961,7 @@ func (q *Queries) ViewTagSeedQuery(ctx context.Context, db DBTX) ([]Tag, error) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Tag
+	items := []Tag{}
 	for rows.Next() {
 		var i Tag
 		if err := rows.Scan(&i.ID, &i.Name, &i.Abbreviation); err != nil {
@@ -1003,7 +1003,7 @@ func (q *Queries) ViewTeamEventScheduleSeedQuery(ctx context.Context, db DBTX) (
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ViewTeamEventScheduleSeedQueryRow
+	items := []ViewTeamEventScheduleSeedQueryRow{}
 	for rows.Next() {
 		var i ViewTeamEventScheduleSeedQueryRow
 		if err := rows.Scan(
@@ -1040,7 +1040,7 @@ func (q *Queries) ViewTeamEventsAttendanceQuery(ctx context.Context, db DBTX) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TeamEventsAttendance
+	items := []TeamEventsAttendance{}
 	for rows.Next() {
 		var i TeamEventsAttendance
 		if err := rows.Scan(

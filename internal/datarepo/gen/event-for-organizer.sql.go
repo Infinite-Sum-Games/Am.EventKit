@@ -51,7 +51,7 @@ func (q *Queries) GetEventsByOrganizerIdQuery(ctx context.Context, db DBTX, orga
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetEventsByOrganizerIdQueryRow
+	items := []GetEventsByOrganizerIdQueryRow{}
 	for rows.Next() {
 		var i GetEventsByOrganizerIdQueryRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.IsGroup); err != nil {
@@ -103,7 +103,7 @@ func (q *Queries) GetOrganizerGroupEventParticipantListQuery(ctx context.Context
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetOrganizerGroupEventParticipantListQueryRow
+	items := []GetOrganizerGroupEventParticipantListQueryRow{}
 	for rows.Next() {
 		var i GetOrganizerGroupEventParticipantListQueryRow
 		if err := rows.Scan(
@@ -165,7 +165,7 @@ func (q *Queries) GetOrganizerSoloEventParticipantListQuery(ctx context.Context,
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetOrganizerSoloEventParticipantListQueryRow
+	items := []GetOrganizerSoloEventParticipantListQueryRow{}
 	for rows.Next() {
 		var i GetOrganizerSoloEventParticipantListQueryRow
 		if err := rows.Scan(

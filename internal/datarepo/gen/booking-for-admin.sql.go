@@ -57,7 +57,7 @@ func (q *Queries) FetchAdminTransactionsQuery(ctx context.Context, db DBTX, txnS
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchAdminTransactionsQueryRow
+	items := []FetchAdminTransactionsQueryRow{}
 	for rows.Next() {
 		var i FetchAdminTransactionsQueryRow
 		if err := rows.Scan(

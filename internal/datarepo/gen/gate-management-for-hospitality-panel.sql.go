@@ -40,7 +40,7 @@ func (q *Queries) GetLiveGateLogsQuery(ctx context.Context, db DBTX) ([]GetLiveG
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetLiveGateLogsQueryRow
+	items := []GetLiveGateLogsQueryRow{}
 	for rows.Next() {
 		var i GetLiveGateLogsQueryRow
 		if err := rows.Scan(
@@ -92,7 +92,7 @@ func (q *Queries) GetLiveHostelCheckInQuery(ctx context.Context, db DBTX) ([]Get
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetLiveHostelCheckInQueryRow
+	items := []GetLiveHostelCheckInQueryRow{}
 	for rows.Next() {
 		var i GetLiveHostelCheckInQueryRow
 		if err := rows.Scan(

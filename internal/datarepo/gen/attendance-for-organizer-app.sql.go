@@ -170,7 +170,7 @@ func (q *Queries) FetchEventsByOrganizerQuery(ctx context.Context, db DBTX, orga
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchEventsByOrganizerQueryRow
+	items := []FetchEventsByOrganizerQueryRow{}
 	for rows.Next() {
 		var i FetchEventsByOrganizerQueryRow
 		if err := rows.Scan(
@@ -217,7 +217,7 @@ func (q *Queries) FetchParticipantsBySoloEventQuery(ctx context.Context, db DBTX
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchParticipantsBySoloEventQueryRow
+	items := []FetchParticipantsBySoloEventQueryRow{}
 	for rows.Next() {
 		var i FetchParticipantsBySoloEventQueryRow
 		if err := rows.Scan(
@@ -267,7 +267,7 @@ func (q *Queries) FetchParticipantsByTeamEventQuery(ctx context.Context, db DBTX
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchParticipantsByTeamEventQueryRow
+	items := []FetchParticipantsByTeamEventQueryRow{}
 	for rows.Next() {
 		var i FetchParticipantsByTeamEventQueryRow
 		if err := rows.Scan(
@@ -367,7 +367,7 @@ func (q *Queries) GetSchedulesByEventID(ctx context.Context, db DBTX, eventID uu
 		return nil, err
 	}
 	defer rows.Close()
-	var items []uuid.UUID
+	items := []uuid.UUID{}
 	for rows.Next() {
 		var id uuid.UUID
 		if err := rows.Scan(&id); err != nil {
@@ -419,7 +419,7 @@ func (q *Queries) GetStudentsByEmails(ctx context.Context, db DBTX, dollar_1 []s
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Student
+	items := []Student{}
 	for rows.Next() {
 		var i Student
 		if err := rows.Scan(

@@ -36,7 +36,7 @@ func (q *Queries) GetInsideCampusAnalyticsQuery(ctx context.Context, db DBTX) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetInsideCampusAnalyticsQueryRow
+	items := []GetInsideCampusAnalyticsQueryRow{}
 	for rows.Next() {
 		var i GetInsideCampusAnalyticsQueryRow
 		if err := rows.Scan(&i.Date, &i.Counts); err != nil {
@@ -71,7 +71,7 @@ func (q *Queries) GetLiveBedsAnalyticsQuery(ctx context.Context, db DBTX) ([]jso
 		return nil, err
 	}
 	defer rows.Close()
-	var items []json.RawMessage
+	items := []json.RawMessage{}
 	for rows.Next() {
 		var jsonb_build_object json.RawMessage
 		if err := rows.Scan(&jsonb_build_object); err != nil {

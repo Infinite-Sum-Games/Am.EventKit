@@ -690,7 +690,7 @@ func (q *Queries) GetAllAdminEventsQuery(ctx context.Context, db DBTX) ([]GetAll
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllAdminEventsQueryRow
+	items := []GetAllAdminEventsQueryRow{}
 	for rows.Next() {
 		var i GetAllAdminEventsQueryRow
 		if err := rows.Scan(

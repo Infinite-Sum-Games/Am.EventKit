@@ -82,7 +82,6 @@ FROM bookings
 WHERE student_id = $1
 AND txn_status = 'PENDING';
 
--- Hopefully, we can use this for removing decrement too (should try)
 -- name: UpdateEventSeats :exec
 UPDATE event
 SET seats_filled = seats_filled + $1

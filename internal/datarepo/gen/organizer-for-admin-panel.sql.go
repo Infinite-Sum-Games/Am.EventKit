@@ -112,7 +112,7 @@ func (q *Queries) ListOrganizersQuery(ctx context.Context, db DBTX) ([]ListOrgan
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListOrganizersQueryRow
+	items := []ListOrganizersQueryRow{}
 	for rows.Next() {
 		var i ListOrganizersQueryRow
 		if err := rows.Scan(

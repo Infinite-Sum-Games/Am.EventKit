@@ -98,7 +98,7 @@ func (q *Queries) GetAllDisputesQuery(ctx context.Context, db DBTX) ([]GetAllDis
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllDisputesQueryRow
+	items := []GetAllDisputesQueryRow{}
 	for rows.Next() {
 		var i GetAllDisputesQueryRow
 		if err := rows.Scan(

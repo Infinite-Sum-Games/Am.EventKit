@@ -351,7 +351,7 @@ func (q *Queries) GetEventsQuery(ctx context.Context, db DBTX) ([]GetEventsQuery
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetEventsQueryRow
+	items := []GetEventsQueryRow{}
 	for rows.Next() {
 		var i GetEventsQueryRow
 		if err := rows.Scan(
@@ -478,7 +478,7 @@ func (q *Queries) GetEventsWithAuthQuery(ctx context.Context, db DBTX, arg GetEv
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetEventsWithAuthQueryRow
+	items := []GetEventsWithAuthQueryRow{}
 	for rows.Next() {
 		var i GetEventsWithAuthQueryRow
 		if err := rows.Scan(

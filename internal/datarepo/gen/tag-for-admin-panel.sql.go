@@ -75,7 +75,7 @@ func (q *Queries) ListTagsQuery(ctx context.Context, db DBTX) ([]ListTagsQueryRo
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListTagsQueryRow
+	items := []ListTagsQueryRow{}
 	for rows.Next() {
 		var i ListTagsQueryRow
 		if err := rows.Scan(

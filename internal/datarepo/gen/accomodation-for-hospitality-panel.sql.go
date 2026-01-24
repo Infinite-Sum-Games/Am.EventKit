@@ -308,7 +308,7 @@ func (q *Queries) GetAllAccommodationRequestsQuery(ctx context.Context, db DBTX)
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllAccommodationRequestsQueryRow
+	items := []GetAllAccommodationRequestsQueryRow{}
 	for rows.Next() {
 		var i GetAllAccommodationRequestsQueryRow
 		if err := rows.Scan(
@@ -374,7 +374,7 @@ func (q *Queries) GetAllHostelDetailsQuery(ctx context.Context, db DBTX) ([]GetA
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllHostelDetailsQueryRow
+	items := []GetAllHostelDetailsQueryRow{}
 	for rows.Next() {
 		var i GetAllHostelDetailsQueryRow
 		if err := rows.Scan(
@@ -422,7 +422,7 @@ func (q *Queries) GetAllHostelsQuery(ctx context.Context, db DBTX) ([]GetAllHost
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllHostelsQueryRow
+	items := []GetAllHostelsQueryRow{}
 	for rows.Next() {
 		var i GetAllHostelsQueryRow
 		if err := rows.Scan(

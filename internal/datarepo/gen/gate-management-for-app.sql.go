@@ -33,7 +33,7 @@ func (q *Queries) FetchStudentGateLogs(ctx context.Context, db DBTX, hospitality
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchStudentGateLogsRow
+	items := []FetchStudentGateLogsRow{}
 	for rows.Next() {
 		var i FetchStudentGateLogsRow
 		if err := rows.Scan(&i.Direction, &i.LoggedAt); err != nil {

@@ -12,7 +12,6 @@ LEFT JOIN student s ON ad.student_id = s.id
 WHERE
   ad.payment_status = 'PENDING'
   AND hm.id IS NOT NULL;
-  -- AND ad.updated_at < NOW() - INTERVAL '30 minutes';
 
 -- name: DeleteUnclaimedBedQuery :execrows
 WITH updated_accommodation AS (

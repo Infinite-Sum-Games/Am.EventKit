@@ -74,7 +74,7 @@ func (q *Queries) FetchAllPeopleQuery(ctx context.Context, db DBTX) ([]Person, e
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Person
+	items := []Person{}
 	for rows.Next() {
 		var i Person
 		if err := rows.Scan(
@@ -120,7 +120,7 @@ func (q *Queries) FetchPeopleByDayQuery(ctx context.Context, db DBTX, eventDay [
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchPeopleByDayQueryRow
+	items := []FetchPeopleByDayQueryRow{}
 	for rows.Next() {
 		var i FetchPeopleByDayQueryRow
 		if err := rows.Scan(
@@ -169,7 +169,7 @@ func (q *Queries) FetchPeopleByDepartmentQuery(ctx context.Context, db DBTX, id 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchPeopleByDepartmentQueryRow
+	items := []FetchPeopleByDepartmentQueryRow{}
 	for rows.Next() {
 		var i FetchPeopleByDepartmentQueryRow
 		if err := rows.Scan(
@@ -216,7 +216,7 @@ func (q *Queries) FetchPeopleByEventQuery(ctx context.Context, db DBTX, id uuid.
 		return nil, err
 	}
 	defer rows.Close()
-	var items []FetchPeopleByEventQueryRow
+	items := []FetchPeopleByEventQueryRow{}
 	for rows.Next() {
 		var i FetchPeopleByEventQueryRow
 		if err := rows.Scan(

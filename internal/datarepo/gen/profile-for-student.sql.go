@@ -135,7 +135,7 @@ func (q *Queries) GetAllTransactionsOfUserQuery(ctx context.Context, db DBTX, st
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllTransactionsOfUserQueryRow
+	items := []GetAllTransactionsOfUserQueryRow{}
 	for rows.Next() {
 		var i GetAllTransactionsOfUserQueryRow
 		if err := rows.Scan(
@@ -219,7 +219,7 @@ func (q *Queries) GetMySoloEventTickets(ctx context.Context, db DBTX, email stri
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetMySoloEventTicketsRow
+	items := []GetMySoloEventTicketsRow{}
 	for rows.Next() {
 		var i GetMySoloEventTicketsRow
 		if err := rows.Scan(
@@ -310,7 +310,7 @@ func (q *Queries) GetMyTeamEventTickets(ctx context.Context, db DBTX, email stri
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetMyTeamEventTicketsRow
+	items := []GetMyTeamEventTicketsRow{}
 	for rows.Next() {
 		var i GetMyTeamEventTicketsRow
 		if err := rows.Scan(
