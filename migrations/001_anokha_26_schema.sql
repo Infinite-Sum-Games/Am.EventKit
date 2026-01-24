@@ -1,8 +1,9 @@
--- +goose up
+-- +goose Up
 -- +goose StatementBegin
-CREATE SCHEMA IF NOT EXISTS "public";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS citext;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+CREATE EXTENSION IF NOT EXISTS pg_duckdb;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
@@ -36,9 +37,21 @@ CREATE TYPE attendance_mode_enum AS ENUM (
   'SOLO',
   'DUO'
 );
+
+CREATE TYPE dispute_status_enum AS ENUM (
+  'OPEN',
+  'CLOSED_AS_TRUE',
+  'CLOSED_AS_FALSE'
+);
+
+CREATE TYPE gate_log_direction_enum AS ENUM (
+  'IN',
+  'OUT'
+);
 -- +goose StatementEnd
 
 -- +goose StatementBegin
+-- Tables
 CREATE TABLE IF NOT EXISTS student (
   id UUID DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -51,11 +64,13 @@ CREATE TABLE IF NOT EXISTS student (
   college_city TEXT DEFAULT 'Coimbatore' NOT NULL,
   account_status account_status_enum DEFAULT 'VERIFIED',
   refresh_token TEXT,
+  hospitality_id TEXT UNIQUE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "student_pkey" PRIMARY KEY (id)
 );
+
 CREATE UNIQUE INDEX student_unique_roll_number
 ON student(amrita_roll_number)
 WHERE amrita_roll_number IS NOT NULL;
@@ -94,17 +109,32 @@ CREATE TABLE IF NOT EXISTS password_reset (
   created_at TIMESTAMP DEFAULT NOW(),
   expiry_at TIMESTAMP NOT NULL,
 
-  CONSTRAINT "password_reset_pkey" PRIMARY KEY (id)
+  CONSTRAINT "password_reset_pkey" PRIMARY KEY (id),
+  CONSTRAINT unique_password_reset_email UNIQUE (email)
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS admin (
+  id UUID DEFAULT gen_random_uuid(),
+  name TEXT,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  refresh_token TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+
+  CONSTRAINT admin_pkey PRIMARY KEY (id)
 );
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS organizer (
   id UUID DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE, -- eg: Computer Science and Engineering
-  email TEXT NOT NULL UNIQUE, -- eg: cse@cb.amrita.edu
-  password TEXT NOT NULL, -- eg: Single-time hash; need: For attendance
-  org_type organizer_type_enum  NOT NULL, -- eg: DEPARTMENT | CLUB
+  name TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  org_type organizer_type_enum  NOT NULL,
   student_head TEXT NOT NULL,
   student_co_head TEXT,
   faculty_head TEXT NOT NULL,
@@ -122,12 +152,13 @@ CREATE TABLE IF NOT EXISTS event (
   name TEXT NOT NULL UNIQUE,
   blurb TEXT NOT NULL,
   description TEXT NOT NULL,
-  cover_image_url TEXT UNIQUE,
-  price NUMERIC NOT NULL,
+  cover_image_url TEXT,
+  price INTEGER NOT NULL,
   is_per_head BOOLEAN NOT NULL,
   rules TEXT NOT NULL,
   event_type event_type_enum NOT NULL,
   is_group BOOLEAN NOT NULL,
+  is_technical BOOLEAN DEFAULT false,
   max_teamsize INTEGER,
   min_teamsize INTEGER,
   total_seats INTEGER NOT NULL,
@@ -149,12 +180,15 @@ CREATE TABLE IF NOT EXISTS favourites (
   event_id UUID NOT NULL,
 
   CONSTRAINT "favourites_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "favourites_email_event_id_unique" UNIQUE (email, event_id),
-
   CONSTRAINT "favourites_email" 
     FOREIGN KEY (email)
     REFERENCES student(email)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "favourites_event_id_fkey"
+    FOREIGN KEY (event_id)
+    REFERENCES event (id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE
 );
@@ -172,7 +206,6 @@ CREATE TABLE IF NOT EXISTS event_schedule (
   updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "event_schedule_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "event_schedule_event_id_fkey"
     FOREIGN KEY (event_id)
     REFERENCES event(id)
@@ -198,15 +231,14 @@ CREATE TABLE people_to_event_mapping (
   id SERIAL NOT NULL,
   event_id UUID NOT NULL,
   person_id UUID NOT NULL,
+  event_day INTEGER[],
 
   CONSTRAINT "people_to_event_mapping_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "people_to_event_mapping_event_id_fkey"
     FOREIGN KEY (event_id)
     REFERENCES event(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "people_to_event_mapping_person_id_fkey"
     FOREIGN KEY (person_id)
     REFERENCES people(id)
@@ -222,13 +254,11 @@ CREATE TABLE IF NOT EXISTS event_to_organizer_mapping (
   organizer_id UUID NOT NULL,
 
   CONSTRAINT "event_to_organizer_mapping_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "event_to_organizer_mapping_event_id_fkey"
     FOREIGN KEY (event_id)
     REFERENCES event(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "event_to_organizer_mapping_organizer_id_fkey"
     FOREIGN KEY (organizer_id)
     REFERENCES organizer(id)
@@ -254,13 +284,11 @@ CREATE TABLE IF NOT EXISTS event_tag_mapping (
   event_id UUID NOT NULL,
 
   CONSTRAINT "event_tag_mapping_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "event_tag_mapping_tag_id_fkey"
     FOREIGN KEY (tag_id)
     REFERENCES tags(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "event_tag_mapping_event_id_fkey"
     FOREIGN KEY (event_id)
     REFERENCES event(id)
@@ -272,10 +300,11 @@ CREATE TABLE IF NOT EXISTS event_tag_mapping (
 -- +goose StatementBegin
 CREATE TABLE bookings (
   id UUID DEFAULT gen_random_uuid(),
-  txn_id TEXT NOT NULL,
+  txn_id TEXT NOT NULL UNIQUE,
   student_id UUID NOT NULL,
   event_id UUID NOT NULL ,
-  registration_fee NUMERIC NOT NULL,
+  registration_fee INTEGER NOT NULL,
+  registration_fee_without_gst INTEGER DEFAULT 0,
   product_info TEXT NOT NULL,
   seats_released  INTEGER NOT NULL DEFAULT 0,
   txn_status TEXT NOT NULL,
@@ -285,18 +314,16 @@ CREATE TABLE bookings (
   updated_at TIMESTAMP DEFAULT NOW(),
 
   CONSTRAINT "bookings_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "bookings_student_id_fkey"
-  FOREIGN KEY (student_id)
-  REFERENCES student(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE,
-
+    FOREIGN KEY (student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
   CONSTRAINT "bookings_event_id_fkey"
-  FOREIGN KEY (event_id)
-  REFERENCES event(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY (event_id)
+    REFERENCES event(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -307,22 +334,20 @@ CREATE TABLE IF NOT EXISTS teams (
   event_id UUID NOT NULL,
   leader_name TEXT NOT NULL,
   booking_id UUID NOT NULL,
+  metadata JSONB,
 
   CONSTRAINT "teams_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "team_name_event_id_unique" UNIQUE (team_name, event_id),
-
   CONSTRAINT "teams_event_id_fkey"
     FOREIGN KEY (event_id)
     REFERENCES event(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "teams_booking_id_fkey"
-  FOREIGN KEY (booking_id)
-  REFERENCES bookings(id)
-  ON DELETE RESTRICT
-  ON UPDATE CASCADE
+    FOREIGN KEY (booking_id)
+    REFERENCES bookings(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
@@ -336,13 +361,11 @@ CREATE TABLE IF NOT EXISTS team_members (
   student_email TEXT NOT NULL,
 
   CONSTRAINT "team_members_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "team_members_team_id_fkey"
     FOREIGN KEY(team_id)
     REFERENCES teams(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "team_members_student_id_fkey"
     FOREIGN KEY(student_id)
     REFERENCES student(id)
@@ -360,13 +383,11 @@ CREATE TABLE IF NOT EXISTS team_events_attendance (
   check_out TIMESTAMP,
 
   CONSTRAINT "team_events_attendance_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "team_events_attendance_student_id_fkey"
     FOREIGN KEY(student_id)
     REFERENCES student(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "team_events_attendance_event_schedule_id_fkey"
     FOREIGN KEY(event_schedule_id)
     REFERENCES event_schedule(id)
@@ -374,7 +395,7 @@ CREATE TABLE IF NOT EXISTS team_events_attendance (
       ON UPDATE CASCADE
 );
 -- +goose StatementEnd
---
+
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS solo_event_participant (
   id SERIAL NOT NULL,
@@ -388,25 +409,21 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
   check_out TIMESTAMP,
 
   CONSTRAINT "solo_event_participant_pkey" PRIMARY KEY (id),
-
   CONSTRAINT "solo_event_participant_student_id_fkey"
     FOREIGN KEY(student_id)
     REFERENCES student(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-  
   CONSTRAINT "solo_event_participant_event_id_fkey"
     FOREIGN KEY(event_id)
     REFERENCES event(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "solo_event_participant_event_schedule_id_fkey"
     FOREIGN KEY(event_schedule_id)
     REFERENCES event_schedule(id)
       ON DELETE RESTRICT
       ON UPDATE CASCADE,
-
   CONSTRAINT "solo_event_participant_booking_id_fkey"
     FOREIGN KEY(booking_id)
     REFERENCES bookings(id)
@@ -415,8 +432,167 @@ CREATE TABLE IF NOT EXISTS solo_event_participant (
 );
 -- +goose StatementEnd
 
--- +goose down
 -- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS dispute (
+  id UUID DEFAULT gen_random_uuid(),
+  txn_id TEXT NOT NULL,
+  student_email TEXT,
+  description TEXT,
+  event_id UUID NOT NULL,
+  dispute_status dispute_status_enum DEFAULT 'OPEN',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+
+  CONSTRAINT "dispute_pkey" PRIMARY KEY (id),
+  CONSTRAINT "dispute_to_student_mapping_fkey"
+    FOREIGN KEY (student_email)
+    REFERENCES student (email)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "dispute_to_event_mapping_fkey"
+    FOREIGN KEY (event_id)
+    REFERENCES event (id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "dispute_to_txn_mapping_fkey"
+    FOREIGN KEY (txn_id)
+    REFERENCES bookings (txn_id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS hostel_metadata (
+  id UUID DEFAULT gen_random_uuid(),
+  hostel_name TEXT NOT NULL,
+  room_count INTEGER DEFAULT 0 NOT NULL,
+  is_male BOOLEAN DEFAULT TRUE NOT NULL,
+  warden_email TEXT,
+  warden_password TEXT,
+  warden_refresh_token TEXT,
+  latitude TEXT,
+  longtitude TEXT,
+  map_url TEXT,
+  amrita_dayscholar_price INTEGER DEFAULT 0 NOT NULL,
+  non_amrita_price INTEGER DEFAULT 0 NOT NULL,
+  room_filled INTEGER NOT NULL DEFAULT 0,
+
+  CONSTRAINT room_filled_lte_room_count
+    CHECK (room_filled <= room_count),
+
+  CONSTRAINT "hostel_metadata_pkey" PRIMARY KEY (id)
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS accomodation_personell (
+  id UUID DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  refresh_token TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+
+  CONSTRAINT "accomodation_personell_pkey" PRIMARY KEY (id)
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS accomodation_details (
+  id UUID DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL,
+  hostel_id UUID,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone_number TEXT NOT NULL,
+  is_male BOOLEAN DEFAULT TRUE NOT NULL,
+  is_hosteller BOOLEAN DEFAULT TRUE NOT NULL,
+  college_roll_number TEXT NOT NULL,
+  college_name TEXT NOT NULL,
+  room_preference TEXT NOT NULL,
+  is_amrita_campus BOOLEAN DEFAULT FALSE NOT NULL,
+  payment_status TEXT DEFAULT '' NOT NULL,
+  payment_expires TIMESTAMP,
+  day_count INTEGER DEFAULT 0 NOT NULL,
+  check_in TIMESTAMP NOT NULL,
+  check_out TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+
+  CONSTRAINT "accomodation_details_pkey" PRIMARY KEY (id),
+  CONSTRAINT "accomodation_details_student_id_fkey"
+    FOREIGN KEY (student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "accomodation_details_hostel_id_fkey"
+    FOREIGN KEY (hostel_id)
+    REFERENCES hostel_metadata(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS hostel_check_in (
+  id UUID DEFAULT gen_random_uuid(),
+  accomodation_id UUID NOT NULL UNIQUE,
+  checked_in_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  checked_out_at TIMESTAMP,
+  checked_in_by UUID NOT NULL,
+  checked_out_by UUID,
+
+  CONSTRAINT "hostel_check_in_pkey" PRIMARY KEY (id),
+  CONSTRAINT "hostel_check_in_accomodation_id_fkey" 
+    FOREIGN KEY (accomodation_id)
+    REFERENCES accomodation_details(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "hostel_check_in_checked_in_by_fkey" 
+    FOREIGN KEY (checked_in_by)
+    REFERENCES accomodation_personell(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "hostel_check_in_checked_out_by_fkey" 
+    FOREIGN KEY (checked_out_by)
+    REFERENCES accomodation_personell(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TABLE IF NOT EXISTS gate_management (
+  id UUID DEFAULT gen_random_uuid(),
+  personell_id UUID NOT NULL,
+  student_id UUID NOT NULL,
+  direction gate_log_direction_enum NOT NULL,
+  logged_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+  CONSTRAINT "gate_management_pkey" PRIMARY KEY (id),
+  CONSTRAINT "gate_management_student_id_fkey"
+    FOREIGN KEY (student_id)
+    REFERENCES student(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE,
+  CONSTRAINT "gate_management_personell_id_fkey" 
+    FOREIGN KEY (personell_id)
+    REFERENCES accomodation_personell(id)
+      ON DELETE RESTRICT
+      ON UPDATE CASCADE
+);
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS gate_management;
+DROP TABLE IF EXISTS hostel_check_in;
+DROP TABLE IF EXISTS accomodation_details;
+DROP TABLE IF EXISTS accomodation_personell;
+DROP TABLE IF EXISTS hostel_metadata;
+DROP TABLE IF EXISTS dispute;
 DROP TABLE IF EXISTS solo_event_participant;
 DROP TABLE IF EXISTS team_events_attendance;
 DROP TABLE IF EXISTS team_members;
@@ -431,14 +607,22 @@ DROP TABLE IF EXISTS event_schedule;
 DROP TABLE IF EXISTS favourites;
 DROP TABLE IF EXISTS event;
 DROP TABLE IF EXISTS organizer;
-DROP TABLE IF EXISTS student_onboarding;
+DROP TABLE IF EXISTS admin;
 DROP TABLE IF EXISTS password_reset;
+DROP TABLE IF EXISTS student_onboarding;
 DROP TABLE IF EXISTS student;
 
+DROP TYPE IF EXISTS gate_log_direction_enum;
+DROP TYPE IF EXISTS dispute_status_enum;
 DROP TYPE IF EXISTS attendance_mode_enum;
 DROP TYPE IF EXISTS event_mode_enum;
 DROP TYPE IF EXISTS event_status_enum;
 DROP TYPE IF EXISTS event_type_enum;
 DROP TYPE IF EXISTS organizer_type_enum;
 DROP TYPE IF EXISTS account_status_enum;
+
+DROP EXTENSION IF EXISTS pg_duckdb;
+DROP EXTENSION IF EXISTS pg_cron;
+DROP EXTENSION IF EXISTS citext;
+DROP EXTENSION IF EXISTS "uuid-ossp";
 -- +goose StatementEnd
