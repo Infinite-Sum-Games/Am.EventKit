@@ -2,8 +2,8 @@ root = "."
 
 [build]
   args_bin = []
-  bin = "./bin/Am.EventKit.exe"
-  cmd = "go build -o ./bin/Am.EventKit.exe main.go"
+  bin = "./bin/Am.EventKit"
+  cmd = "go build -o ./bin/Am.EventKit main.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "bruno", "public", "mail/mail-queue"]
   exclude_file = []
