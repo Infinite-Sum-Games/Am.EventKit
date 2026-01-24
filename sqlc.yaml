@@ -2,15 +2,17 @@ version: "2"
 
 sql:
   - engine: "postgresql"
-    queries: "db/queries"
+    queries: "internal/datarepo/queries"
     schema: 
-      - db/migrations
+      - migrations
     gen:
       go:
+        emit_interface: true
+        emit_empty_slices: true
         emit_methods_with_db_argument: true
         emit_json_tags: true
-        package: "db"
-        out: "db/gen"
+        package: "datarepo"
+        out: "internal/datarepo/gen"
         sql_package: "pgx/v5"
         overrides:
           - db_type: "uuid"
