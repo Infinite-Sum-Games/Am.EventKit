@@ -4,6 +4,8 @@ Backend server for Anokha, built with Go, PostgreSQL, Redis, and modern tooling.
 
 ---
 
+# Documentation is Outdated! Do not follow!
+
 ## 📦 Key Libraries
 
 - **Gin** – Fast HTTP web framework  
