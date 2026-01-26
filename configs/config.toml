@@ -1,6 +1,7 @@
 [app]
 env = "DEVELOPMENT"
 port = 8080
+mcp_port = 8081
 client_domain = "http://localhost:3000"
 cookie_domain = "localhost"
 cookie_secure = true
@@ -17,6 +18,8 @@ connect_timeout = "60s"
 [redis]
 host = "localhost"
 port = "6379"
+username = ""
+password = ""
 db = 0
 protocol = 3
 dial_timeout = "5s"
@@ -31,3 +34,17 @@ queue_auto_delete = false
 prefetch_count = 10
 reconnect_delay = "5s"
 max_reconnect_attempts = 5
+
+[mailer]
+host = "smtp.host.name"
+port = 56
+username = ""
+password = ""
+
+[payment]
+payu_test_key = ""
+payu_test_salt = ""
+payu_prod_key = ""
+payu_prod_salt = ""
+payu_test_verify_url = ""
+payu_prod_verify_url = ""
