@@ -9,6 +9,13 @@ import (
 
 var Txn_regex = regexp.MustCompile(`^TXN-ANK26`)
 
+const (
+	PaymentFailed   = "FAILED"
+	PaymentSuccess  = "SUCCESS"
+	PaymentPending  = "PENDING"
+	PaymentNotFound = "NOT_FOUND"
+)
+
 type TeamBookingRequest struct {
 	TeamName    string       `json:"team_name" binding:"required"`
 	TeamMembers []TeamMember `json:"team_members" binding:"required"`
@@ -62,13 +69,6 @@ func (s VerifyTransactionRequest) Validate() error {
 			v.Match(Txn_regex).
 				Error("txn_id is not valid")))
 }
-
-const (
-	PaymentFailed   = "FAILED"
-	PaymentSuccess  = "SUCCESS"
-	PaymentPending  = "PENDING"
-	PaymentNotFound = "NOT_FOUND"
-)
 
 type PayUVerifyResponse struct {
 	Status             int                      `json:"status"`
