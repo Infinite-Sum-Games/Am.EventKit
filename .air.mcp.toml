@@ -1,0 +1,50 @@
+root = "."
+
+[build]
+  args_bin = ["-mode", "mcp"]
+  bin = "./bin/Am.EventKit.mcp"
+  cmd = "go build -o ./bin/Am.EventKit.mcp main.go"
+  delay = 1000
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "bruno", "public", "mail/mail-queue"]
+  exclude_file = []
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = false
+  follow_symlink = false
+  full_bin = ""
+  include_dir = []
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  include_file = []
+  kill_delay = "200ms"
+  log = "build-errors-mcp.log"
+  poll = false
+  poll_interval = 0
+  post_cmd = []
+  pre_cmd = []
+  rerun = false
+  rerun_delay = 500
+  send_interrupt = false
+  stop_on_error = false
+
+[color]
+  app = ""
+  build = "blue"
+  main = "cyan"
+  runner = "magenta"
+  watcher = "green"
+
+[log]
+  main_only = false
+  silent = false
+  time = false
+
+[misc]
+  clean_on_exit = false
+
+[proxy]
+  app_port = 8081
+  enabled = false
+  proxy_port = 0
+
+[screen]
+  clear_on_rebuild = true
+  keep_scroll = true

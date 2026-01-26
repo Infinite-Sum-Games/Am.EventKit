@@ -8,12 +8,19 @@ vars:
   GOOSE_DRIVER: postgres
   GOOSE_DBSTRING: "{{.DB_URL}}"
   GOOSE_MIGRATION_DIR: ./db/migrations/
-  BIN_NAME:
+  API_BIN_NAME:
     sh: |
       if [ "{{.OS}}" = "Windows_NT" ]; then
-        echo "bin/Am.EventKit.exe"
+        echo "bin/Am.EventKit.api.exe"
       else
-        echo "bin/Am.EventKit"
+        echo "bin/Am.EventKit.api"
+      fi
+  MCP_BIN_NAME:
+    sh: |
+      if [ "{{.OS}}" = "Windows_NT" ]; then
+        echo "bin/Am.EventKit.mcp.exe"
+      else
+        echo "bin/Am.EventKit.mcp"
       fi
 
 tasks:
@@ -27,23 +34,58 @@ tasks:
       - lefthook install
       - echo "All CLI tools installed successfully in {{.GO_BIN}}/bin"
 
-  dev:
-    desc: "Run the development server with hot reload"
+  api:
+    desc: "Run the development server with hot reload (API)"
     cmds:
-      - air
+      - air -c .air.api.toml
+
+  mcp:
+    desc: "Run the MCP server with hot reload"
+    cmds:
+      - air -c .air.mcp.toml
+
+  dev-all:
+    desc: "Run both API and MCP servers with hot reload"
+    cmds:
+      - task: dev
+      - task: dev-mcp
 
   build:
-    desc: "Build the application"
+    desc: "Build both API and MCP applications"
+    deps: [build-api, build-mcp]
+
+  build-api:
+    desc: "Build the API application"
     cmds:
       - go mod tidy
       - go fmt ./...
-      - go build -o {{.BIN_NAME}} main.go
+      - go build -o {{.API_BIN_NAME}} -ldflags "-X main.mode=api" main.go
+
+  build-mcp:
+    desc: "Build the MCP application"
+    cmds:
+      - go mod tidy
+      - go fmt ./...
+      - go build -o {{.MCP_BIN_NAME}} -ldflags "-X main.mode=mcp" main.go
 
   run:
-    desc: "Build and run the application"
+    desc: "Build and run the API application"
+    deps: [build-api]
+    cmds:
+      - ./{{.API_BIN_NAME}}
+
+  run-mcp:
+    desc: "Build and run the MCP application"
+    deps: [build-mcp]
+    cmds:
+      - ./{{.MCP_BIN_NAME}}
+
+  run-all:
+    desc: "Build and run both API and MCP applications"
     deps: [build]
     cmds:
-      - ./{{.BIN_NAME}}
+      - ./{{.API_BIN_NAME}} &
+      - ./{{.MCP_BIN_NAME}}
 
   up:
     desc: "Run all database migrations"
@@ -87,14 +129,3 @@ tasks:
     desc: "Clean database data"
     cmds:
       - go run seed/seed.go seed/truncate.go seed/main.go -c
-
-  docker:
-    desc: "Start server with Docker"
-    cmds:
-      - docker compose up -d
-
-  pod:
-    desc: "Restart services with Podman"
-    cmds:
-      - podman compose down
-      - podman compose up -d
