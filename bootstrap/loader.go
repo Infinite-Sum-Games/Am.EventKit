@@ -8,6 +8,8 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
+var Env *Config
+
 type Config struct {
 	App        AppConfig        `koanf:"app"`
 	Database   DatabaseConfig   `koanf:"database"`
@@ -21,6 +23,7 @@ type Config struct {
 type AppConfig struct {
 	Env          string `koanf:"env"`
 	Port         int    `koanf:"port"`
+	MCPPort      int    `koanf:"mcp_port"`
 	ClientDomain string `koanf:"client_domain"`
 	CookieDomain string `koanf:"cookie_domain"`
 	CookieSecure bool   `koanf:"cookie_secure"`
