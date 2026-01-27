@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// Totally over-engineered OTP generation function :) (Fixed!)
 func GenerateOTP() (string, []string, error) {
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
