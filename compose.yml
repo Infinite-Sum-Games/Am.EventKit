@@ -13,7 +13,7 @@ services:
               -c cron.database_name=postgres
     volumes:
       - eventkit_postgres_data:/var/lib/postgresql/18/data
-      - ./scripts/create-multiple-postgresql-databases.sh:/docker-entrypoint-initdb.d/create-multiple-postgresql-databases.sh
+      - ./scripts/create-pg-dbs.sh:/docker-entrypoint-initdb.d/create-pg-dbs.sh
     ports:
       - "5432:5432"
     restart: on-failure
