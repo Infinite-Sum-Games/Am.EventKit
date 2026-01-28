@@ -1,4 +1,4 @@
-package pkg
+package helpers
 
 import (
 	"context"
@@ -6,7 +6,10 @@ import (
 	"time"
 
 	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
-	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
+	"github.com/Infinite-Sum-Games/Am.EventKit/configs"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/internal/datarepo/gen"
+	"github.com/Infinite-Sum-Games/Am.EventKit/internal/errors"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -18,13 +21,13 @@ func SetAuthCookie(c *gin.Context, authTokenString string) {
 		c.SetSameSite(http.SameSiteNoneMode)
 	}
 	c.SetCookie(
-		"access_token",       // key
-		authTokenString,      // value
-		3600,                 // maxAge (1 hour)
-		"/",                  // path
-		cmd.Env.CookieDomain, // domain
-		cmd.Env.CookieSecure, // secure
-		true,                 // httpOnly
+		"access_token",               // key
+		authTokenString,              // value
+		3600,                         // maxAge (1 hour)
+		"/",                          // path
+		configs.Env.App.CookieDomain, // domain
+		configs.Env.App.CookieSecure, // secure
+		true,                         // httpOnly
 	)
 }
 
@@ -35,13 +38,13 @@ func SetRefreshCookie(c *gin.Context, refreshTokenString string) {
 		c.SetSameSite(http.SameSiteNoneMode)
 	}
 	c.SetCookie(
-		"refresh_token",      // key
-		refreshTokenString,   // value
-		3600*24*90,           // maxAge (90 days)
-		"/",                  // path
-		cmd.Env.CookieDomain, // domain
-		cmd.Env.CookieSecure, // secure
-		true,                 // httpOnly
+		"refresh_token",              // key
+		refreshTokenString,           // value
+		3600*24*90,                   // maxAge (90 days)
+		"/",                          // path
+		configs.Env.App.CookieDomain, // domain
+		configs.Env.App.CookieSecure, // secure
+		true,                         // httpOnly
 	)
 }
 
@@ -52,13 +55,13 @@ func SetTempCookie(c *gin.Context, tempTokenString string) {
 		c.SetSameSite(http.SameSiteNoneMode)
 	}
 	c.SetCookie(
-		"temp_token",         // key
-		tempTokenString,      // value
-		5*60,                 // maxAge (5 mins)
-		"/",                  // path
-		cmd.Env.CookieDomain, // domain
-		cmd.Env.CookieSecure, // secure
-		true,                 // httpOnly
+		"temp_token",                 // key
+		tempTokenString,              // value
+		5*60,                         // maxAge (5 mins)
+		"/",                          // path
+		configs.Env.App.CookieDomain, // domain
+		configs.Env.App.CookieSecure, // secure
+		true,                         // httpOnly
 	)
 }
 
@@ -69,13 +72,13 @@ func SetCsrfCookie(c *gin.Context, csrfTokenString string) {
 		c.SetSameSite(http.SameSiteNoneMode)
 	}
 	c.SetCookie(
-		"csrf_token",         // key
-		csrfTokenString,      // value
-		5*60,                 // maxAge (5 minutes)
-		c.Request.URL.Path,   // path to be constructed for restriction
-		cmd.Env.CookieDomain, // domain
-		cmd.Env.CookieSecure, // secure
-		true,                 // httpOnly
+		"csrf_token",                 // key
+		csrfTokenString,              // value
+		5*60,                         // maxAge (5 minutes)
+		c.Request.URL.Path,           // path to be constructed for restriction
+		configs.Env.App.CookieDomain, // domain
+		configs.Env.App.CookieSecure, // secure
+		true,                         // httpOnly
 	)
 }
 
@@ -89,9 +92,9 @@ func NullifyCookies(c *gin.Context) {
 		c.SetSameSite(http.SameSiteNoneMode)
 	}
 
-	c.SetCookie("access_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
-	c.SetCookie("refresh_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
-	c.SetCookie("csrf_token", "", -1, "/", cmd.Env.CookieDomain, cmd.Env.CookieSecure, true)
+	c.SetCookie("access_token", "", -1, "/", configs.Env.App.CookieDomain, configs.Env.App.CookieSecure, true)
+	c.SetCookie("refresh_token", "", -1, "/", configs.Env.App.CookieDomain, configs.Env.App.CookieSecure, true)
+	c.SetCookie("csrf_token", "", -1, "/", configs.Env.App.CookieDomain, configs.Env.App.CookieSecure, true)
 
 	email, exists := c.Get("email")
 	if !exists {
@@ -110,7 +113,7 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	defer cancel()
 
 	conn, err := cmd.DBPool.Acquire(ctx)
-	if HandleDbAcquireErr(c, err, "AUTH") {
+	if errors.HandleDbAcquireErr(c, err, "AUTH") {
 		return
 	}
 	defer conn.Release()
@@ -133,8 +136,8 @@ func RevokeRefreshToken(c *gin.Context, email string) {
 	}
 
 	if err != nil {
-		Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
+		logger.Log.ErrorCtx(c, "[AUTH-ERROR]: Failed to revoke Refresh Token in DB", err)
 		return
 	}
-	Log.InfoCtx(c, "[AUTH-INFO]: Successfully revoked Refresh Token in DB")
+	logger.Log.InfoCtx(c, "[AUTH-INFO]: Successfully revoked Refresh Token in DB")
 }

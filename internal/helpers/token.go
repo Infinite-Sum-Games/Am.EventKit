@@ -1,4 +1,4 @@
-package pkg
+package helpers
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	paseto "aidanwoods.dev/go-paseto"
 	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
-	db "github.com/Infinite-Sum-Games/Am.EventKit/db/gen"
+	db "github.com/Infinite-Sum-Games/Am.EventKit/internal/datarepo/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 )
