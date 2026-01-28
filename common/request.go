@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/segmentio/ksuid"
+	"github.com/google/uuid"
 )
 
 func TagRequestWithId(c *gin.Context) {
-	id := ksuid.New()
+	id := uuid.New()
 	c.Set("request_id", id.String())
 	c.Next()
 }

@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/segmentio/ksuid"
 )
 
 var Txn_regex = regexp.MustCompile(`^TXN-ANK26`)
@@ -79,7 +78,7 @@ func ToPgNumericFromFloat(f float64) (pgtype.Numeric, error) {
 }
 
 func GenerateTxnID() string {
-	txnID := "TXN-ANK26-" + ksuid.New().String()
+	txnID := "TXN-ANK26-" + uuid.New().String()
 	return txnID
 }
 
