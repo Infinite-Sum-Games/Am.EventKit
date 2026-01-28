@@ -11,9 +11,9 @@ import (
 	"github.com/Infinite-Sum-Games/Am.EventKit/models"
 	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/segmentio/ksuid"
 )
 
 func GetAllAdminEvents(c *gin.Context) {
@@ -116,7 +116,7 @@ func NewEvent(c *gin.Context) {
 	q := db.New()
 	result, err := q.NewUntitledEventQuery(ctx, conn,
 		db.NewUntitledEventQueryParams{
-			Name:        fmt.Sprintf("Untitled %s", ksuid.New().String()),
+			Name:        fmt.Sprintf("Untitled %s", uuid.New().String()),
 			Blurb:       "",
 			Description: "",
 			Price:       0,
