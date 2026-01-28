@@ -3,125 +3,65 @@ package bootstrap
 import (
 	"context"
 	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"syscall"
-	"time"
+
+	"github.com/Infinite-Sum-Games/Am.EventKit/configs"
+	"github.com/Infinite-Sum-Games/Am.EventKit/registry"
 )
 
 type App struct {
-	appConfig Config
+	registry  *registry.Registry
+	appConfig *configs.Config
 }
 
-func NewApp() *Config {
-	config, err := LoadConfig()
+func (a *App) RunMCPServer(ctx context.Context) error {
+	return RunMCPServer(ctx)
+}
+
+func (a *App) Close() {
+	if a.registry == nil {
+		return
+	}
+
+	// Close Redis if available
+	if redisCli := a.registry.GetRedisClient(); redisCli != nil {
+		if err := redisCli.Close(); err != nil {
+			log.Printf("[ERROR]: Failed to close Redis client: %v", err)
+		}
+	}
+
+	// Close OLTP pool if available
+	if oltpPool := a.registry.GetOLTPPool(); oltpPool != nil {
+		oltpPool.Close()
+	}
+
+	// Close OLAP pool if available
+	if olapPool := a.registry.GetOLAPPool(); olapPool != nil {
+		if closer, ok := olapPool.(interface{ Close() }); ok {
+			closer.Close()
+		}
+	}
+
+	log.Println("[OK]: App closed")
+}
+
+func NewApp() *App {
+	config, err := configs.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
-	return config
-}
+	configs.Env = config
 
-func StartApp() {
-	// Setting up environment variables
-	config, err := cmd.LoadConfig()
-	if err != nil {
-		log.Printf("[CRASH]: Failed to load environment variables: %v", err)
-		return
-	}
-	cmd.Env = config
-	log.Println("[OK]: Environment variables loaded successfully.")
+	reg := registry.New(
+		registry.WithConfig(config),
+	)
+	registry.SetSingletonObject(reg)
 
-	// Initializing the logger and other middlewares
-	pkg.Log, err = pkg.InitLogger(cmd.Env.Environment)
-	if err != nil {
-		log.Printf("[CRASH]: Logger initialization failed: %v", err)
-		return
-	}
-	pkg.Log.Info("[OK]: Logger initiation successful")
-
-	// Initialize RSA
-	err = cmd.CheckRSAKeyPairExists()
-	if err != nil {
-		err = cmd.GenerateRSAKeyPair()
-		if err != nil {
-			pkg.Log.Fatal("[CRASH]: Failed to initialize rsa", err)
-		}
-		pkg.Log.Info("[OK]: RSA keypair generated and saved successfully.")
-	} else {
-		pkg.Log.Info("[OK]: Using existing RSA keypair.")
+	if err := registry.InitializeServices(); err != nil {
+		log.Fatalf("Failed to initialize services: %v", err)
 	}
 
-	// Setup PASETO
-	if err := pkg.InitPaseto(); err != nil {
-		pkg.Log.Fatal("[CRASH]: Paseto initialization failed", err)
+	return &App{
+		registry:  reg,
+		appConfig: config,
 	}
-	pkg.Log.Info("[OK]: Paseto initialization successful!")
-
-	// Initialize DB Pool
-	err = cmd.InitDBPool()
-	if err != nil {
-		pkg.Log.Fatal("[CRASH]: Failed to initialize database pool", err)
-		return
-	}
-	pkg.Log.Info("[OK]: Initialized database pool successfully")
-
-	// Initialize Redis for caching and rate limiing
-	cmd.Redis, err = cmd.InitRedis()
-	if err != nil {
-		pkg.Log.Info("[CRASH]: Redis failed to start")
-		return
-	}
-	pkg.Log.Info("[OK]: Redis serivce started successfully")
-
-	// Initialize RabbitMQ for durable message passing
-	mq.Rabbit, err = mq.NewBroker(cmd.Env.MsgBrokerConnUrl)
-	if err != nil {
-		return
-	}
-	pkg.Log.Info("[OK]: Message broker initialized successfully.")
-
-	// Setup LIVE flags
-	pkg.InitFlag()
-
-	// Initialize Mailer Service
-	mail.Mail, err = mail.NewMailerService("mail/mail-queue", 4)
-	if err != nil {
-		pkg.Log.Fatal("[CRASH]: failed to create mailer service", err)
-		return
-	}
-	mail.Mail.Start()
-	pkg.Log.Info("[OK]: Mailer service started successfully")
-
-	// Initialize server
-	server := &http.Server{
-		Addr:    ":" + strconv.Itoa(cmd.Env.Port),
-		Handler: SetupRouter(mail.Mail),
-	}
-
-	go func() {
-		portStr := strconv.Itoa(cmd.Env.Port)
-		pkg.Log.Info("[OK]: Start the server on port " + portStr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			pkg.Log.Fatal("could not listen on port "+portStr, err)
-		} // Blocking in nature (?)
-	}()
-
-	// Graceful shutdown with 10 second timeout; no new connections accepted
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	pkg.Log.Info("[OK]: Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		pkg.Log.Fatal("[OK]: Server forced to shutdown", err)
-	}
-
-	// Mailer shutdown sequence
-	mail.Mail.Shutdown()
-
-	pkg.Log.Info("[OK]: Server shutting down")
 }

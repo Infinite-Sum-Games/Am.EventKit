@@ -1,19 +1,30 @@
 package bootstrap
 
 import (
+	"context"
 	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
-	mw "github.com/Infinite-Sum-Games/Am.EventKit/internal/middleware"
+	"github.com/Infinite-Sum-Games/Am.EventKit/common"
+	"github.com/Infinite-Sum-Games/Am.EventKit/configs"
 	"github.com/Infinite-Sum-Games/Am.EventKit/router"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func initializeRouter(cfg *configs.Config) *gin.Engine {
+	clientDomain := "http://localhost:3000"
+	if cfg.App.ClientDomain != "" {
+		clientDomain = cfg.App.ClientDomain
+	}
 
 	config := cors.Config{
-		AllowOrigins:              []string{cmd.Env.ClientDomain},
+		AllowOrigins:              []string{clientDomain},
 		AllowWildcard:             true,
 		AllowMethods:              []string{"GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"},
 		AllowHeaders:              []string{"X-Csrf-Token", "Origin", "Content-Type"},
@@ -25,63 +36,56 @@ func SetupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
-	r.Use(cors.New(config)) // Setup CORS() first before other middlewares
-	// r.Use(mw.MaintainanceMiddleware)
-	r.Use(pkg.Log.LogMiddleware)
+	r.Use(cors.New(config))
 	r.Use(common.TagRequestWithId)
-	r.Use(mw.RecoveryPanics)
 
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Server is live ◪_◪",
 		})
-		pkg.Log.SuccessCtx(c)
 	})
 
-	v1 := r.Group("/api/v1")
-	{
-		authRouter := v1.Group("/auth")
-		attendanceRouter := v1.Group("/attendance")
-		userRouter := v1.Group("/user")
-		eventRouter := v1.Group("/events")
-		peopleRouter := v1.Group("/people")
-		tagRouter := v1.Group("/tags")
-		organizerRouter := v1.Group("/organizers")
-		analyticsRouter := v1.Group("/analytics")
-		disputeRouter := v1.Group("/disputes")
-		accomodationRouter := v1.Group("/accommodation")
-
-		apiAuth.StudentAuthRoutes(authRouter)
-		apiAuth.OrganizerAuthRoutes(authRouter)
-		apiAuth.AdminAuthRoutes(authRouter)
-		apiProfile.ProfileRoutes(userRouter)
-		apiEvent.EventRoutes(eventRouter)
-		apiTag.TagRoutes(tagRouter)
-		apiAttend.AttendanceRoutes(attendanceRouter)
-		apiPeople.PeopleRoutes(peopleRouter)
-		apiOrganizers.OrganizerRoutes(organizerRouter)
-		apiOrganizers.OrganizerDashboardRoutes(organizerRouter)
-		apiBooking.BookingRoutes(eventRouter)
-		apiAnalytics.AnalyticsRoutes(analyticsRouter)
-		apiDispute.DisputeRoutes(disputeRouter)
-
-		apiAccomodation.AccomodationFormRoutes(accomodationRouter)
-		apiAccomodation.AccomodationAuthRoutes(accomodationRouter)
-		apiAccomodation.AccomodationPanelRoutes(accomodationRouter)
-		apiAccomodation.FinanceRoutes(accomodationRouter)
-		apiAccomodation.GateRoutes(accomodationRouter)
-		apiAccomodation.SecurityRoutes(accomodationRouter)
-	}
-
-	v2 := r.Group("/api/v2")
-	{
-		router.WebRouter(v2)
-		router.AdminRouter(v2)
-		router.OrganizerWebRouter(v2)
-		router.OrganizerAppRouter(v2)
-		router.LogisticsWebRouter(v2)
-		router.LogisticsAppRouter(v2)
-	}
+	router.InitRouter(r, cfg)
 
 	return r
+}
+
+func (a *App) RunGinServer() error {
+	config := a.appConfig
+	router := initializeRouter(a.appConfig)
+	// msg := fmt.Sprintf("starting server on port - %d", config.App.Port)
+	// TODO: Fix after better logger is introduced
+	// logger.Log.Info(msg)
+
+	srv := &http.Server{
+		Addr:    strings.Join([]string{"0.0.0.0", strconv.Itoa(config.App.Port)}, ":"),
+		Handler: router,
+		// TODO: Introduce these variables
+		// ReadTimeout: time.Duration(config.Http.ReadTimeout) * time.Second,
+		// WriteTimeout: time.Duration(config.Http.WriteTimeout) * time.Second,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			// TODO: Fix after logger
+			// logger.Log.Error("gin server errored out", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need to add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// logger.Log.Info("marking server as unhealthy")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		// logger.Log.Error()
+	}
+	<-ctx.Done()
+	return nil
 }
