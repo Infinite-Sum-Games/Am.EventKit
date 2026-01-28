@@ -1,7 +1,6 @@
 package router
 
 import (
-	analyticsApi "github.com/Infinite-Sum-Games/Am.EventKit/api/analytics"
 	authApi "github.com/Infinite-Sum-Games/Am.EventKit/api/auth"
 	bookingApi "github.com/Infinite-Sum-Games/Am.EventKit/api/booking"
 	disputeApi "github.com/Infinite-Sum-Games/Am.EventKit/api/dispute"
@@ -18,14 +17,14 @@ func AdminRouter(r *gin.RouterGroup) {
 
 	// Authentication routes
 	adminRouter.POST("/auth/login", authApi.LoginAdmin)
-	auth := adminRouter.Group("/auth", mw.Auth)
+	auth := adminRouter.Group("/auth", mw.Auth, mw.RequireRoles("admin"))
 	{
 		auth.GET("/session", authApi.FetchAdminSession)
 		auth.GET("/logout", authApi.Logout)
 	}
 
 	// Event routes
-	event := adminRouter.Group("/event", mw.Auth)
+	event := adminRouter.Group("/event", mw.Auth, mw.RequireRoles("admin"))
 	{
 		// General-Event management
 		event.GET("", eventApi.GetAllAdminEvents)
@@ -57,13 +56,13 @@ func AdminRouter(r *gin.RouterGroup) {
 	}
 
 	// Booking routes
-	book := adminRouter.Group("/booking", mw.Auth)
+	book := adminRouter.Group("/booking", mw.Auth, mw.RequireRoles("admin"))
 	{
 		book.GET("/transactions", bookingApi.FetchAdminTransactions)
 	}
 
 	// Dispute routes
-	dispute := adminRouter.Group("/dispute", mw.Auth)
+	dispute := adminRouter.Group("/dispute", mw.Auth, mw.RequireRoles("admin"))
 	{
 		dispute.GET("", disputeApi.GetAllDisputes)
 		dispute.POST("/:txnId", disputeApi.CreateDispute)
@@ -73,16 +72,16 @@ func AdminRouter(r *gin.RouterGroup) {
 	}
 
 	// People routes
-	people := adminRouter.Group("/people")
+	people := adminRouter.Group("/people", mw.Auth, mw.RequireRoles("admin"))
 	{
-		people.GET("", peopleApi.FetchAllPeople)
+		people.GET("", peopleApi.FetchAllPeople, mw.Auth, mw.RequireRoles("admin"))
 		people.POST("", peopleApi.AddNewPerson)
 		people.PUT("/:personId", peopleApi.UpdatePersonDetails)
 		people.DELETE("/:personId", peopleApi.UpdatePersonDetails)
 	}
 
 	// Organizer routes
-	org := adminRouter.Group("/org")
+	org := adminRouter.Group("/org", mw.Auth, mw.RequireRoles("admin"))
 	{
 		org.GET("", orgApi.GetAllOrganizers)
 		org.POST("", orgApi.CreateOrganizer)
@@ -92,7 +91,7 @@ func AdminRouter(r *gin.RouterGroup) {
 	}
 
 	// Tag routes
-	tag := adminRouter.Group("/tag")
+	tag := adminRouter.Group("/tag", mw.Auth, mw.RequireRoles("admin"))
 	{
 		tag.GET("/", tagApi.FetchEventTags)
 		tag.POST("/", tagApi.CreateEventTag)
@@ -100,12 +99,12 @@ func AdminRouter(r *gin.RouterGroup) {
 		tag.DELETE("/:tagId", tagApi.DeleteEventTag)
 	}
 
-	// Analytics routes
-	analytics := adminRouter.Group("/analytics")
+	// TODO: Analytics routes
+	// analytics := adminRouter.Group("/analytics", mw.Auth, mw.RequireRoles("admin"))
 	{
-		analytics.GET("/quick", analyticsApi.GetQuickDashboard)
-		analytics.GET("/revenue", analyticsApi.GetRevenueAnalytics)
-		analytics.GET("/registrations", analyticsApi.GetEventRegistrationAnalytics)
-		analytics.GET("/transactions", analyticsApi.GetTransactionAnalytics)
+		// analytics.GET("/quick", analyticsApi.GetQuickDashboard)
+		// analytics.GET("/revenue", analyticsApi.GetRevenueAnalytics)
+		// analytics.GET("/registrations", analyticsApi.GetEventRegistrationAnalytics)
+		// analytics.GET("/transactions", analyticsApi.GetTransactionAnalytics)
 	}
 }

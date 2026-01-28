@@ -42,7 +42,7 @@ func WebRouter(r *gin.RouterGroup) {
 	}
 
 	// User authenticated routes
-	user := r.Group("/", mw.Auth)
+	user := r.Group("/", mw.Auth, mw.RequireRoles("student"))
 	{
 		// Event routes with authentication
 		user.GET("/events/auth", eventApi.FetchAllEventsWithAuth)

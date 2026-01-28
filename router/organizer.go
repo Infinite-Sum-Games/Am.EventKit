@@ -1,30 +1,43 @@
 package router
 
 import (
-	attendApi "github.com/Infinite-Sum-Games/Am.EventKit/api/attendance"
-	orgApi "github.com/Infinite-Sum-Games/Am.EventKit/api/organizers"
+	attendanceApi "github.com/Infinite-Sum-Games/Am.EventKit/api/attendance"
+	authApi "github.com/Infinite-Sum-Games/Am.EventKit/api/auth"
+	organizersApi "github.com/Infinite-Sum-Games/Am.EventKit/api/organizers"
 	mw "github.com/Infinite-Sum-Games/Am.EventKit/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func OrganizerAppRouter(r *gin.RouterGroup) {
-	// Attendance routes
+	// Attendance management routes
 	org := r.Group("/org/app", mw.Auth)
 	{
-		org.GET("/event", attendApi.FetchEventsByOrganizer)
-		org.GET("/event/:eventId/:scheduleId", attendApi.FetchParticipantsByEvent)
-		org.POST("/solo/mark", attendApi.MarkSoloCheckInOutBoth)
-		org.POST("/team/mark", attendApi.MarkTeamCheckInOutBoth)
-		org.POST("/solo/unmark", attendApi.UnMarkSoloCheckInOutBoth)
-		org.POST("/team/unmark", attendApi.UnMarkTeamCheckInOutBoth)
+		// Event and schedule management
+		org.GET("/events", attendanceApi.FetchEventsByOrganizer)
+		org.GET("/events/:eventId/schedules/:scheduleId/participants", attendanceApi.FetchParticipantsByEvent)
+
+		// Solo attendance management
+		org.POST("/attendance/solo/:key/:studentId/:scheduleId", attendanceApi.MarkSoloCheckInOutBoth)
+		org.POST("/attendance/solo/unmark/:key/:studentId/:scheduleId", attendanceApi.UnMarkSoloCheckInOutBoth)
+
+		// Team attendance management
+		org.POST("/attendance/team/:key/:studentId/:scheduleId", attendanceApi.MarkTeamCheckInOutBoth)
+		org.POST("/attendance/team/unmark/:key/:studentId/:scheduleId", attendanceApi.UnMarkTeamCheckInOutBoth)
+
+		// Organizer session management
+		org.GET("/session", authApi.FetchOrganizerSession)
 	}
 }
 
 func OrganizerWebRouter(r *gin.RouterGroup) {
-	// Dashboard routes
+	// Dashboard and web interface routes
 	org := r.Group("/org/web", mw.Auth)
 	{
-		org.GET("/dashboard", orgApi.GetOrganizerEvents)
-		org.GET("/dashboard/:eventId", orgApi.GetOrganizerEvents)
+		// Organizer dashboard
+		org.GET("/dashboard", organizersApi.GetOrganizerEvents)
+
+		// Event participant management
+		org.GET("/events/:eventId/participants", organizersApi.GetOrganizerEventParticipantList)
+		org.GET("/session", authApi.FetchOrganizerSession)
 	}
 }
