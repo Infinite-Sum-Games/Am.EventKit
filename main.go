@@ -22,11 +22,7 @@ func main() {
 
 	ctx := context.Background()
 
-	app, err := bootstrap.NewApp()
-	if err != nil {
-		fmt.Printf("error creation app: %v", err)
-		os.Exit(1)
-	}
+	app := bootstrap.NewApp()
 
 	switch *mode {
 	case "api":
