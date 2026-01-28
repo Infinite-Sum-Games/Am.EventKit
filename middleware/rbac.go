@@ -5,7 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/internal/helpers"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,20 +33,20 @@ func RequireRoles(roles ...string) gin.HandlerFunc {
 			switch roles[0] {
 			case "STUDENT-ROLE":
 				message = "Access denied."
-				pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have user role")
+				logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have user role")
 			case "ADMIN-ROLE":
 				message = "Admin access denied."
-				pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have admin role")
+				logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have admin role")
 			case "ORGANIZER-ROLE":
 				message = "Organizer access denied."
-				pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have organizer role")
+				logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have organizer role")
 			case "HOSPITALITY-ROLE":
 				message = "Hospitality access denied."
-				pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality role")
+				logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have hospitality role")
 			}
 		} else {
 			message = "Access denied. Required role not found."
-			pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have required role")
+			logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have required role")
 		}
 
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -76,7 +77,7 @@ func SplRole(role string) gin.HandlerFunc {
 	message := "Unauthorized " + role + " email."
 
 	fn := func(c *gin.Context) {
-		email, ok := pkg.GrabEmail(c, authKey)
+		email, ok := helpers.GrabEmail(c, authKey)
 		if !ok {
 			return
 		}
@@ -87,7 +88,7 @@ func SplRole(role string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"message": message,
 			})
-			pkg.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have "+role+" role")
+			logger.Log.WarnCtx(c, "[RBAC-FAIL]: Does not have "+role+" role")
 		}
 	}
 	return fn

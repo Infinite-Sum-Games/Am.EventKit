@@ -3,7 +3,8 @@ package mw
 import (
 	"net/http"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/internal/helpers"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,11 +13,11 @@ func Auth(c *gin.Context) {
 	// Extract refresh token
 	refreshToken, refErr := c.Cookie("refresh_token")
 	if refErr == http.ErrNoCookie {
-		pkg.NullifyCookies(c)
+		helpers.NullifyCookies(c)
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "Access denied.",
 		})
-		pkg.Log.ErrorCtx(c, "[AUTH-ERROR]: Refresh Cookie is missing", refErr)
+		logger.Log.ErrorCtx(c, "[AUTH-ERROR]: Refresh Cookie is missing", refErr)
 		return
 	}
 
@@ -28,7 +29,7 @@ func Auth(c *gin.Context) {
 	// the cookie and the gin.Context be populate as well
 
 	accessToken, accessErr := c.Cookie("access_token")
-	if accessErr == nil && pkg.VerifyTokens(c, accessToken, refreshToken) {
+	if accessErr == nil && helpers.VerifyTokens(c, accessToken, refreshToken) {
 		c.Next()
 		return
 	}
@@ -37,12 +38,12 @@ func Auth(c *gin.Context) {
 		// Check if refresh token is valid. If yes, only then check for access token
 		// validity. If access token is valid then setup gin.Context map otherwise
 		// mint new token and then setup gin.Context map
-		validToken, err := pkg.VerifyRefreshToken(c, refreshToken)
+		validToken, err := helpers.VerifyRefreshToken(c, refreshToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": "Access denied.",
 			})
-			pkg.Log.ErrorCtx(c, "[COOKIE-ERROR]: Failed to verify refresh token", err)
+			logger.Log.ErrorCtx(c, "[COOKIE-ERROR]: Failed to verify refresh token", err)
 			return
 		}
 
@@ -55,7 +56,7 @@ func Auth(c *gin.Context) {
 		isHospitality, _ := refreshTokenClaims["HOSPITALITY-ROLE"].(bool)
 
 		// Creating and setting auth token, so it can be used for future requests
-		authToken, err := pkg.CreateAuthToken(userId, email, pkg.Roles{
+		authToken, err := helpers.CreateAuthToken(userId, email, helpers.Roles{
 			IsUser:        isStudent,
 			IsOrganizer:   isOrganizer,
 			IsAdmin:       isAdmin,
@@ -65,10 +66,10 @@ func Auth(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Oops! Something happened. Please try again later.",
 			})
-			pkg.Log.FatalCtx(c, "[COOKIE-ERROR]: Failed to mint new auth token", err)
+			logger.Log.FatalCtx(c, "[COOKIE-ERROR]: Failed to mint new auth token", err)
 			return
 		}
-		pkg.SetAuthCookie(c, authToken)
+		helpers.SetAuthCookie(c, authToken)
 	}
 
 	c.Next()
