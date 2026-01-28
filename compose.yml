@@ -7,16 +7,18 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_DATABASES: postgres,flagsmith
     command: >
       postgres -c shared_preload_libraries=pg_duckdb,pg_cron
               -c cron.database_name=postgres
+    volumes:
+      - eventkit_postgres_data:/var/lib/postgresql/18/data
+      - ./scripts/create-multiple-postgresql-databases.sh:/docker-entrypoint-initdb.d/create-multiple-postgresql-databases.sh
     ports:
       - "5432:5432"
     restart: on-failure
     networks:
       - eventkit_app_network
-    volumes:
-      - eventkit_postgres_data:/var/lib/postgresql/18/data
 
   drizzle-gate:
     image: ghcr.io/drizzle-team/gateway:latest

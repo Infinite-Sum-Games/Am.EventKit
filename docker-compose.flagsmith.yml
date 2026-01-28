@@ -1,0 +1,84 @@
+# Flagsmith Infrastructure for Am.EventKit
+# This Docker Compose file sets up the Flagsmith platform
+version: '3.8'
+
+services:
+  # Flagsmith API Service
+  flagsmith:
+    image: docker.flagsmith.com/flagsmith/flagsmith:latest
+    container_name: eventkit_flagsmith_api
+    environment:
+      # Database Configuration
+      DATABASE_URL: postgresql://postgres:1234@postgres:5432/flagsmith
+      USE_POSTGRES_FOR_ANALYTICS: 'true'
+      
+      # Application Configuration
+      ENVIRONMENT: production
+      DJANGO_ALLOWED_HOSTS: '*'
+      FLAGSMITH_DOMAIN: localhost:8080
+      DJANGO_SECRET_KEY: eventkit-flagsmith-secret-key-change-in-production
+      
+      # Task Processor Configuration
+      TASK_RUN_METHOD: TASK_PROCESSOR
+      PROMETHEUS_ENABLED: 'true'
+      
+      # Email Configuration (Optional - uncomment to enable)
+      # EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      # EMAIL_HOST: mail.example.com
+      # SENDER_EMAIL: flagsmith@example.com
+      # EMAIL_HOST_USER: flagsmith@example.com
+      # EMAIL_HOST_PASSWORD: smtp_account_password
+      # EMAIL_PORT: 587
+      # EMAIL_USE_TLS: 'true'
+      
+      # Security Configuration
+      PREVENT_SIGNUP: 'false'  # Set to 'true' to prevent additional signups
+      ALLOW_ADMIN_INITIATION_VIA_CLI: 'true'
+      
+      # API Configuration
+      FLAGSMITH_API_URL: http://localhost:8080/api/v1/
+      
+    ports:
+      - "8080:8000"
+    healthcheck:
+      test: ['CMD-SHELL', 'python /app/scripts/healthcheck.py']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - eventkit_app_network
+    restart: on-failure
+    volumes:
+      - flagsmith_data:/app/data
+
+  # Flagsmith Task Processor (for background tasks)
+  flagsmith-task-processor:
+    image: docker.flagsmith.com/flagsmith/flagsmith:latest
+    container_name: eventkit_flagsmith_processor
+    environment:
+      DATABASE_URL: postgresql://postgres:1234@postgres:5432/flagsmith
+      USE_POSTGRES_FOR_ANALYTICS: 'true'
+      DJANGO_ALLOWED_HOSTS: '*'
+      PROMETHEUS_ENABLED: 'true'
+      TASK_RUN_METHOD: TASK_PROCESSOR
+    depends_on:
+      - flagsmith
+      postgres:
+        condition: service_healthy
+    networks:
+      - eventkit_app_network
+    restart: on-failure
+    command: run-task-processor
+    volumes:
+      - flagsmith_data:/app/data
+
+volumes:
+  flagsmith_data:
+
+networks:
+  eventkit_app_network:
+    external: true
