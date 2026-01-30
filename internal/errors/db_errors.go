@@ -1,4 +1,4 @@
-package pkg
+package errors
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 )
@@ -27,7 +28,7 @@ func HandleDbAcquireErr(c *gin.Context, err error, path string) bool {
 	}
 
 	msg := fmt.Sprintf("[%s-FATAL]: Failed to acquire DB connection", path)
-	Log.FatalCtx(c, msg, err)
+	logger.Log.FatalCtx(c, msg, err)
 
 	return true
 }
@@ -49,7 +50,7 @@ func HandleDbTxnErr(c *gin.Context, err error, path string) bool {
 	}
 
 	msg := fmt.Sprintf("[%s-FATAL]: Failed to acquire DB txn", path)
-	Log.FatalCtx(c, msg, err)
+	logger.Log.FatalCtx(c, msg, err)
 
 	return true
 }
@@ -70,7 +71,7 @@ func HandleDbTxnCommitErr(c *gin.Context, err error, path string) bool {
 		})
 	}
 	msg := fmt.Sprintf("[%s-FATAL]: Failed to commit DB transaction", path)
-	Log.FatalCtx(c, msg, err)
+	logger.Log.FatalCtx(c, msg, err)
 
 	return true
 }
@@ -79,6 +80,6 @@ func RollbackTx(c *gin.Context, tx pgx.Tx, ctx context.Context, path string) {
 	err := tx.Rollback(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrTxClosed) {
 		msg := fmt.Sprintf("[%s-FATAL]: Failed to rollback DB txn", path)
-		Log.FatalCtx(c, msg, err)
+		logger.Log.FatalCtx(c, msg, err)
 	}
 }
