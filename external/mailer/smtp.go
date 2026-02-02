@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/cmd"
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/configs"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	gomail "gopkg.in/gomail.v2"
 )
 
@@ -19,10 +19,10 @@ type Mailer struct {
 func NewMailer() *Mailer {
 	return &Mailer{
 		dialer: &gomail.Dialer{
-			Host:     cmd.Env.SMTPHost,
-			Port:     cmd.Env.SMTPPort,
-			Username: cmd.Env.SMTPUsername,
-			Password: cmd.Env.SMTPPassword,
+			Host:     configs.Env.Mailer.Host,
+			Port:     configs.Env.Mailer.Port,
+			Username: configs.Env.Mailer.SMTPUsername,
+			Password: configs.Env.Mailer.SMTPPassword,
 			TLSConfig: &tls.Config{
 				InsecureSkipVerify: true,
 				MinVersion:         tls.VersionTLS12,
@@ -72,7 +72,7 @@ func (m *Mailer) Send(
 		// _ = sender.Close()
 		err = m.dialer.DialAndSend(msg)
 		if err == nil {
-			pkg.Log.Info(
+			logger.Log.Info(
 				fmt.Sprintf("Email sent successfully: %s - Retry count: %d",
 					strings.Join(toAddresses, ", "),
 					3-retryCount,
@@ -82,7 +82,7 @@ func (m *Mailer) Send(
 
 		lastErr = err
 	} else {
-		pkg.Log.Error("Max retries reached for email send", nil)
+		logger.Log.Error("Max retries reached for email send", nil)
 		return nil
 	}
 	return fmt.Errorf("email send failed after retries: %w", lastErr)

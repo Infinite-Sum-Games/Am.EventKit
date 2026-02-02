@@ -1,12 +1,9 @@
 package router
 
 import (
-	accommodationApi "github.com/Infinite-Sum-Games/Am.EventKit/api/accomodation"
-	authApi "github.com/Infinite-Sum-Games/Am.EventKit/api/auth"
-	bookingApi "github.com/Infinite-Sum-Games/Am.EventKit/api/booking"
-	eventApi "github.com/Infinite-Sum-Games/Am.EventKit/api/event"
-	profileApi "github.com/Infinite-Sum-Games/Am.EventKit/api/profile"
-	tagApi "github.com/Infinite-Sum-Games/Am.EventKit/api/tag"
+	accommodationApi "github.com/Infinite-Sum-Games/Am.EventKit/handlers/api/accomodation"
+	authApi "github.com/Infinite-Sum-Games/Am.EventKit/handlers/api/auth"
+	eventApi "github.com/Infinite-Sum-Games/Am.EventKit/handlers/api/event"
 	mw "github.com/Infinite-Sum-Games/Am.EventKit/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +15,7 @@ func WebRouter(r *gin.RouterGroup) {
 		// Event routes - public access
 		public.GET("/events", eventApi.FetchAllEvents)
 		public.GET("/events/:eventId", eventApi.FetchEventById)
-		public.GET("/tags", tagApi.FetchEventTags)
+		// public.GET("/tags", tagApi.FetchEventTags)
 
 		// Authentication routes - no auth required
 		public.POST("/auth/check-email", authApi.CheckEmailExist)
@@ -53,16 +50,16 @@ func WebRouter(r *gin.RouterGroup) {
 		user.POST("/events/:eventId/unstar", eventApi.UnstarEvent)
 
 		// Booking routes
-		user.GET("/booking/events/:eventId/csrf", bookingApi.BookEventCsrf)
-		user.POST("/booking/events/:eventId", bookingApi.BookEvent)
-		user.POST("/booking/verify", bookingApi.VerifyTransaction)
+		// user.GET("/booking/events/:eventId/csrf", bookingApi.BookEventCsrf)
+		// user.POST("/booking/events/:eventId", bookingApi.BookEvent)
+		// user.POST("/booking/verify", bookingApi.VerifyTransaction)
 
 		// Profile routes
-		user.GET("/profile", profileApi.FetchUserProfile)
-		user.GET("/profile/edit/csrf", profileApi.EditUserProfileCsrf)
-		user.PUT("/profile/edit", profileApi.EditUserProfile)
-		user.GET("/profile/transactions", profileApi.GetAllUserTransactions)
-		user.GET("/profile/tickets", profileApi.GetTickets)
+		// user.GET("/profile", profileApi.FetchUserProfile)
+		// user.GET("/profile/edit/csrf", profileApi.EditUserProfileCsrf)
+		// user.PUT("/profile/edit", profileApi.EditUserProfile)
+		// user.GET("/profile/transactions", profileApi.GetAllUserTransactions)
+		// user.GET("/profile/tickets", profileApi.GetTickets)
 
 		// Session management
 		user.GET("/auth/session/user", authApi.FetchUserSession)

@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/joncrlsn/dque"
 )
 
@@ -39,7 +39,7 @@ func NewMailerService(path string, numWorkers int) (*MailerService, error) {
 	if err != nil {
 		return nil, fmt.Errorf("[MAIL-SERVICE]: queue initialization failed: %w", err)
 	}
-	pkg.Log.Info("[MAIL-SERVICE]: mail queue created successfully!")
+	logger.Log.Info("[MAIL-SERVICE]: mail queue created successfully!")
 	ctx, cancel := context.WithCancel(context.Background())
 	return &MailerService{
 		Queue:   queue,
@@ -57,7 +57,7 @@ func (m *MailerService) Start() {
 	}
 
 	msg := fmt.Sprintf("[OK]: Mail service initialized with %d workers", m.workers)
-	pkg.Log.Info(msg)
+	logger.Log.Info(msg)
 }
 
 func (m *MailerService) Enqueue(req *EmailRequest) error {
@@ -67,36 +67,36 @@ func (m *MailerService) Enqueue(req *EmailRequest) error {
 func (m *MailerService) worker(id int) {
 	defer m.wg.Done()
 	sender := NewMailer()
-	pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: started", id))
+	logger.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: started", id))
 
 	for {
 		select {
 		case <-m.ctx.Done():
-			pkg.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: shutting down", id))
+			logger.Log.Info(fmt.Sprintf("[MAIL-WORKER-%d]: shutting down", id))
 			return
 
 		default:
 			item, err := m.Queue.DequeueBlock()
 			if err != nil {
-				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to dequeue", id), err)
+				logger.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to dequeue", id), err)
 				continue
 			}
 			req, ok := item.(*EmailRequest)
 			if !ok {
-				pkg.Log.Error(fmt.Sprintf("type assertion failed for *EmailRequest, got: %#v", item), nil)
+				logger.Log.Error(fmt.Sprintf("type assertion failed for *EmailRequest, got: %#v", item), nil)
 				continue
 			}
 
 			err = sender.Send(req.To, req.Subject, req.Type, req.Data, req.Retries)
 			if err != nil {
-				pkg.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email, re-enqueueing...", id), err)
+				logger.Log.Error(fmt.Sprintf("[MAIL-WORKER-%d]: failed to send email, re-enqueueing...", id), err)
 
 				// Removed infinite retry to avoid blocking the worker forever on a bad email.
 				// Instead, we re-enqueue the mail only for the Retries count specified in the request.
 				req.Retries--
 				if req.Retries > 0 {
 					if err := m.Enqueue(req); err != nil {
-						pkg.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
+						logger.Log.Error("[MAILER-ERROR]: Failed to re-enqueue unsent mail", err)
 					}
 				}
 			}
@@ -111,7 +111,7 @@ func (m *MailerService) Wait() {
 func (m *MailerService) Shutdown() {
 	m.cancel()
 	if err := m.Queue.Close(); err != nil {
-		pkg.Log.Error("[MAIL-SERVICE]: error in closing mail queue", err)
+		logger.Log.Error("[MAIL-SERVICE]: error in closing mail queue", err)
 	}
 	m.wg.Wait()
 }

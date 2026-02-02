@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/Infinite-Sum-Games/Am.EventKit/pkg"
+	"github.com/Infinite-Sum-Games/Am.EventKit/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,5 +14,5 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged out successfully",
 	})
-	pkg.Log.SuccessCtx(c)
+	logger.Log.SuccessCtx(c)
 }
