@@ -14,7 +14,7 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-var Txn_regex = regexp.MustCompile(`^TXN-ANK26`)
+var Txn_regex = regexp.MustCompile(`^TXN-PGT26`)
 
 func ToPgText(value string) pgtype.Text {
 	if value == "" {
@@ -79,7 +79,7 @@ func ToPgNumericFromFloat(f float64) (pgtype.Numeric, error) {
 }
 
 func GenerateTxnID() string {
-	txnID := "TXN-ANK26-" + ksuid.New().String()
+	txnID := "TXN-PGT26-" + ksuid.New().String()
 	return txnID
 }
 
