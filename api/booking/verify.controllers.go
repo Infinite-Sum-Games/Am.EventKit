@@ -350,7 +350,7 @@ func VerifyTransaction(c *gin.Context) {
 
 		err = mail.Mail.Enqueue(&mail.EmailRequest{
 			To:      []string{},
-			Subject: "Event Registration - Anokha 2026",
+			Subject: "Event Registration - Pragati 2026",
 			Type:    "event-reg",
 			Data: &mail.RegistrationData{
 				UserName:      student.Name,

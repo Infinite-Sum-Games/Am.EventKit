@@ -157,7 +157,7 @@ func RegisterUserAccount(c *gin.Context) {
 
 	err = mail.Mail.Enqueue(&mail.EmailRequest{
 		To:      []string{req.Email},
-		Subject: "OTP - Anokha 2026",
+		Subject: "OTP - Pragati 2026",
 		Type:    "otp",
 		Data: &mail.OTPTemplateData{
 			UserName: req.Name,
@@ -272,7 +272,7 @@ func VerifyUserOtp(c *gin.Context) {
 
 	err = mail.Mail.Enqueue(&mail.EmailRequest{
 		To:      []string{result.Email},
-		Subject: "Welcome to Anokha 2026",
+		Subject: "Welcome to Pragati 2026",
 		Type:    "welcome",
 		Data: &mail.WelcomeTemplateData{
 			UserName: result.Name,
@@ -330,7 +330,7 @@ func ResendUserOtp(c *gin.Context) {
 	// Resend OTP via Mail
 	emailReq := mail.EmailRequest{
 		To:      []string{email},
-		Subject: fmt.Sprintf("Resend OTP - Anokha 2026 - %d", time.Now().UnixMilli()),
+		Subject: fmt.Sprintf("Resend OTP - Pragati 2026 - %d", time.Now().UnixMilli()),
 		Type:    "otp",
 		Data: &mail.OTPTemplateData{
 			UserName: results.Name,
