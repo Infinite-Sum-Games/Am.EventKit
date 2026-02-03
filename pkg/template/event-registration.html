@@ -1,13 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Pragati ’25 – Registration Confirmation</title>
+    <title>Pragati ’26 – Registration Confirmation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
-
       * {
         margin: 0;
         padding: 0;
@@ -15,10 +13,10 @@
       }
 
       body {
-        font-family: "VT323", monospace;
         background-color: #0a0a0a;
         padding: 25px 15px;
         color: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
       }
 
       .container {
@@ -30,38 +28,41 @@
 
       .header {
         background: #d4202a;
-        padding: 30px 20px;
+        padding: 28px 20px;
         text-align: center;
       }
 
       .header h1 {
-        font-family: "Press Start 2P", cursive;
-        font-size: 26px;
+        font-family: "Courier New", Consolas, monospace;
+        font-size: 24px;
         color: #e8b923;
-        text-shadow: 2px 2px 0 #000;
         letter-spacing: 2px;
-        margin-bottom: 10px;
+        font-weight: bold;
+        margin-bottom: 8px;
       }
 
       .header p {
-        font-size: 20px;
-        color: #fff;
+        font-size: 16px;
+        color: #ffffff;
+        letter-spacing: 1px;
       }
 
       .content {
-        padding: 35px;
+        padding: 34px;
       }
 
       .content h2 {
-        font-family: "Press Start 2P", cursive;
-        font-size: 14px;
+        font-family: "Courier New", Consolas, monospace;
+        font-size: 13px;
         color: #e8b923;
         margin-bottom: 20px;
         text-align: center;
+        letter-spacing: 1px;
+        font-weight: bold;
       }
 
       .content p {
-        font-size: 22px;
+        font-size: 16px;
         line-height: 1.6;
         margin-bottom: 18px;
         color: #e5e5e5;
@@ -69,6 +70,7 @@
 
       .highlight {
         color: #e8b923;
+        font-weight: bold;
       }
 
       .summary-box {
@@ -79,7 +81,7 @@
       }
 
       .summary-box p {
-        font-size: 21px;
+        font-size: 15px;
         margin-bottom: 8px;
         color: #ffffff;
       }
@@ -92,14 +94,16 @@
       }
 
       .info-box p {
-        font-size: 20px;
+        font-size: 15px;
         margin-bottom: 10px;
         line-height: 1.5;
+        color: #ffffff;
       }
 
       .link {
         color: #e8b923;
         text-decoration: none;
+        font-weight: bold;
       }
 
       .link:hover {
@@ -109,33 +113,27 @@
       .footer {
         background: #0a0a0a;
         border-top: 3px solid #d4202a;
-        padding: 25px 20px;
+        padding: 22px 20px;
         text-align: center;
       }
 
       .footer p {
-        font-size: 18px;
-        color: #aaa;
+        font-size: 14px;
+        color: #aaaaaa;
         line-height: 1.6;
       }
 
       .footer strong {
-        font-family: "Press Start 2P", cursive;
+        font-family: "Courier New", Consolas, monospace;
         font-size: 13px;
         color: #e8b923;
+        letter-spacing: 1px;
+        font-weight: bold;
       }
 
       @media (max-width: 600px) {
-        .header h1 {
-          font-size: 20px;
-        }
-
         .content {
-          padding: 25px;
-        }
-
-        .content p {
-          font-size: 20px;
+          padding: 24px;
         }
       }
     </style>
@@ -144,21 +142,19 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>PRAGATI ’25</h1>
+        <h1>PRAGATI 2026</h1>
         <p>Registration Confirmation</p>
       </div>
 
       <div class="content">
-        <h2>WELCOME TO PRAGATI ’25</h2>
+        <h2>WELCOME TO PRAGATI 2026</h2>
 
-        <p>
-          Dear <span class="highlight">{{.UserName}}</span>,
-        </p>
+        <p>Dear <span class="highlight">{{.UserName}}</span>,</p>
 
         <p>
           Thank you for registering for
           <span class="highlight">{{.EventName}}</span> as part of
-          <span class="highlight">Pragati ’25</span>, the annual management fest
+          <span class="highlight">Pragati '26</span>, the annual management fest
           of Amrita School of Business, Coimbatore.
         </p>
 
@@ -181,36 +177,34 @@
           </p>
           <p>
             • For accommodation-related details, please visit:
-            <a
-              href="https://pragati.amrita.edu/accommodation"
-              class="link"
+            <a href="https://pragati.amrita.edu/accommodation" class="link"
               >pragati.amrita.edu/accommodation</a
             >
           </p>
         </div>
 
         <p>
-          We look forward to your participation and hope Pragati ’25 proves to
+          We look forward to your participation and hope Pragati '26 proves to
           be an enriching and memorable experience for you.
         </p>
 
         <p>
           Warm regards,<br />
-          <strong>Team Pragati ’25</strong><br />
+          <strong>Team Pragati '26</strong><br />
           Amrita School of Business<br />
           Coimbatore
         </p>
 
         <p>
           For any queries, feel free to contact us at
-          <a href="mailto:pragati@amrita.edu" class="link"
-            >pragati@amrita.edu</a
+          <a href="mailto:pragatiinfo@cb.amrita.edu" class="link"
+            >pragatiinfo@cb.amrita.edu</a
           >.
         </p>
       </div>
 
       <div class="footer">
-        <p>© 2025 Pragati. All rights reserved.</p>
+        <p>© 2026 Pragati. All rights reserved.</p>
       </div>
     </div>
   </body>

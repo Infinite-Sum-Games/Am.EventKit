@@ -3,11 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Account - Pragati '25</title>
+    <title>Verify Your Account - Pragati '26</title>
 
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
-
       * {
         margin: 0;
         padding: 0;
@@ -15,9 +13,9 @@
       }
 
       body {
-        font-family: "VT323", monospace;
         background-color: #0c0c0c;
         padding: 30px 15px;
+        font-family: Arial, Helvetica, sans-serif;
       }
 
       .email-container {
@@ -29,35 +27,34 @@
 
       .header {
         background: #d4202a;
-        padding: 28px 20px;
+        padding: 26px 20px;
         text-align: center;
       }
 
       .logo {
-        font-family: "Press Start 2P", cursive;
-        font-size: 24px;
+        font-family: "Courier New", Consolas, monospace;
+        font-size: 22px;
         color: #e8b923;
-        text-shadow: 2px 2px 0 #000;
         letter-spacing: 3px;
-        margin-bottom: 10px;
+        font-weight: bold;
+        margin-bottom: 8px;
       }
 
       .tagline {
-        font-size: 20px;
-        color: #fff;
-        text-shadow: 1px 1px 0 #000;
+        font-size: 18px;
+        color: #ffffff;
         letter-spacing: 1px;
       }
 
       .content {
-        padding: 35px 30px;
+        padding: 34px 30px;
         background: #1a1a2e;
       }
 
       .greeting {
-        font-size: 24px;
-        color: #fff;
-        margin-bottom: 20px;
+        font-size: 20px;
+        color: #ffffff;
+        margin-bottom: 18px;
       }
 
       .greeting .name {
@@ -66,95 +63,92 @@
       }
 
       .message {
-        font-size: 22px;
-        color: #ccc;
+        font-size: 16px;
+        color: #dddddd;
         line-height: 1.6;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
       }
 
       .otp-container {
         background: #0a0a0a;
         border: 2px solid #e8b923;
-        padding: 30px 20px;
-        margin: 35px auto;
+        padding: 28px 20px;
+        margin: 30px auto;
         text-align: center;
         max-width: 420px;
       }
 
       .otp-label {
-        font-family: "Press Start 2P", cursive;
+        font-family: "Courier New", Consolas, monospace;
         font-size: 12px;
         color: #d4202a;
         letter-spacing: 3px;
-        margin-bottom: 20px;
-        text-shadow: 1px 1px 0 #000;
+        margin-bottom: 18px;
+        font-weight: bold;
       }
 
       .otp-code {
-        font-family: "Press Start 2P", cursive;
-        font-size: 44px;
+        font-family: "Courier New", Consolas, monospace;
+        font-size: 36px;
         color: #e8b923;
-        letter-spacing: 14px;
-        text-shadow: 2px 2px 0 #000;
-        margin: 20px 0;
+        letter-spacing: 12px;
+        font-weight: bold;
+        margin: 18px 0;
       }
 
-      .otp-code p {
-        display: inline;
+      .otp-code span {
+        display: inline-block;
       }
 
       .otp-subtext {
-        font-size: 18px;
-        color: #888;
-        margin-top: 20px;
+        font-size: 14px;
+        color: #999999;
+        margin-top: 16px;
       }
 
       .info-box {
         background: #162447;
         border-left: 4px solid #e8b923;
-        padding: 20px;
-        margin: 30px 0;
+        padding: 18px;
+        margin: 26px 0;
       }
 
       .info-box p {
-        font-size: 20px;
-        color: #fff;
+        font-size: 15px;
+        color: #ffffff;
         line-height: 1.5;
       }
 
       .footer {
         background: #0a0a0a;
-        padding: 25px 20px;
+        padding: 22px 20px;
         text-align: center;
         border-top: 3px solid #d4202a;
       }
 
       .footer-text {
-        font-size: 18px;
-        color: #888;
+        font-size: 14px;
+        color: #999999;
         line-height: 1.6;
       }
 
       .footer-brand {
-        font-family: "Press Start 2P", cursive;
-        font-size: 14px;
+        font-family: "Courier New", Consolas, monospace;
+        font-size: 13px;
         color: #e8b923;
-        margin-top: 15px;
-        text-shadow: 1px 1px 0 #000;
+        margin-top: 12px;
+        font-weight: bold;
+        letter-spacing: 1px;
       }
 
       @media (max-width: 600px) {
-        .logo {
-          font-size: 20px;
+        .content {
+          padding: 26px 20px;
         }
 
         .otp-code {
-          font-size: 32px;
-          letter-spacing: 10px;
-        }
-
-        .content {
-          padding: 28px 20px;
+          font-size: 30px;
+          letter-spacing: 8px;
         }
       }
     </style>
@@ -163,7 +157,7 @@
   <body>
     <div class="email-container">
       <div class="header">
-        <div class="logo">PRAGATI ’25</div>
+        <div class="logo">PRAGATI 2026</div>
         <div class="tagline">ACCOUNT VERIFICATION</div>
       </div>
 
@@ -173,14 +167,14 @@
         </p>
 
         <p class="message">
-          Thank you for registering for Pragati ’25. Please use the verification
+          Thank you for registering for Pragati '26. Please use the verification
           code below to confirm your account.
         </p>
 
         <div class="otp-container">
           <div class="otp-label">YOUR OTP CODE</div>
           <div class="otp-code">
-            {{range .OTP}}<p>{{.}}</p>{{end}}
+            {{range .OTP}}<span>{{.}}</span>{{end}}
           </div>
           <div class="otp-subtext">
             Enter this code to continue
@@ -202,8 +196,8 @@
 
       <div class="footer">
         <p class="footer-text">Regards,</p>
-        <div class="footer-brand">Team Pragati ’25</div>
-        <p class="footer-text" style="margin-top: 15px;">
+        <div class="footer-brand">Team Pragati '26</div>
+        <p class="footer-text" style="margin-top: 12px;">
           Amrita School of Business, Coimbatore
         </p>
       </div>

@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Welcome to Pragati '25</title>
+  <title>Welcome to Pragati '26</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
-      font-family: 'VT323', monospace;
       background-color: #0c0c0c;
       padding: 30px 15px;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .email-container {
@@ -24,43 +28,51 @@
     .header {
       background: #d4202a;
       text-align: center;
-      padding: 28px 20px;
+      padding: 26px 20px;
     }
 
     .logo {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 28px;
+      font-family: "Courier New", Consolas, monospace;
+      font-size: 26px;
       color: #e8b923;
-      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 3px;
+      font-weight: bold;
     }
 
     .year {
-      font-family: 'Press Start 2P', cursive;
-      font-size: 16px;
-      color: #fff;
+      font-family: "Courier New", Consolas, monospace;
+      font-size: 14px;
+      color: #ffffff;
       margin-top: 6px;
+      letter-spacing: 2px;
     }
 
     .content {
       padding: 32px;
-      color: #fff;
+      color: #ffffff;
     }
 
     .content h2 {
-      font-family: 'Press Start 2P', cursive;
+      font-family: "Courier New", Consolas, monospace;
       font-size: 13px;
       color: #e8b923;
       margin-bottom: 18px;
       text-align: center;
+      letter-spacing: 1px;
+      font-weight: bold;
     }
 
     .content p {
-      font-size: 22px;
+      font-size: 16px;
       line-height: 1.6;
       margin-bottom: 18px;
+      color: #ffffff;
     }
 
-    .highlight { color: #e8b923; }
+    .highlight {
+      color: #e8b923;
+      font-weight: bold;
+    }
 
     .info-box {
       background: #162447;
@@ -70,8 +82,9 @@
     }
 
     .info-box p {
-      font-size: 21px;
+      font-size: 15px;
       margin-bottom: 10px;
+      color: #ffffff;
     }
 
     .footer {
@@ -82,17 +95,24 @@
     }
 
     .footer p {
-      font-size: 18px;
-      color: #aaa;
+      font-size: 14px;
+      color: #aaaaaa;
       line-height: 1.6;
     }
 
     .footer strong {
       color: #e8b923;
-      font-family: 'Press Start 2P', cursive;
+      font-family: "Courier New", Consolas, monospace;
       font-size: 13px;
+      letter-spacing: 1px;
+      font-weight: bold;
     }
 
+    @media (max-width: 600px) {
+      .content {
+        padding: 24px;
+      }
+    }
   </style>
 </head>
 
@@ -100,16 +120,16 @@
 <div class="email-container">
   <div class="header">
     <div class="logo">PRAGATI</div>
-    <div class="year">'25</div>
+    <div class="year">2026</div>
   </div>
 
   <div class="content">
-    <h2>WELCOME TO PRAGATI '25</h2>
+    <h2>WELCOME TO PRAGATI 2026</h2>
 
     <p>Dear <span class="highlight">{{.UserName}}</span>,</p>
 
     <p>
-      We are pleased to welcome you to <span class="highlight">Pragati ’25</span>,
+      We are pleased to welcome you to <span class="highlight">Pragati '26</span>,
       the annual management fest of Amrita School of Business, Coimbatore.
     </p>
 
@@ -119,20 +139,20 @@
     </p>
 
     <div class="info-box">
-      <p><strong class="highlight">📅 Date:</strong> February 16 & 17, 2025</p>
-      <p><strong class="highlight">📍 Venue:</strong> ASB, Coimbatore</p>
+      <p><strong class="highlight">📅 Date:</strong> Feb 20, 21</p>
+      <p><strong class="highlight">📍 Venue:</strong> Amrita School of Business, Coimbatore</p>
       <p><strong class="highlight">🎯 Format:</strong> Two-Day Fest</p>
     </div>
 
     <p>
-      We’re glad to have you join us and look forward to your participation.
+      We're glad to have you join us and look forward to your participation.
     </p>
   </div>
 
   <div class="footer">
     <p>
       Warm Regards,<br />
-      <strong>Team Pragati ’25</strong><br />
+      <strong>Team Pragati '26</strong><br />
       Amrita School of Business, Coimbatore
     </p>
   </div>
