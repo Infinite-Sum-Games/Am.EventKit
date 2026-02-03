@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to Pragati '25</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'VT323', monospace;
+      background-color: #0c0c0c;
+      padding: 30px 15px;
+    }
+
+    .email-container {
+      max-width: 650px;
+      margin: auto;
+      background: #1a1a2e;
+      border: 2px solid #d4202a;
+    }
+
+    .header {
+      background: #d4202a;
+      text-align: center;
+      padding: 28px 20px;
+    }
+
+    .logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 28px;
+      color: #e8b923;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .year {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 16px;
+      color: #fff;
+      margin-top: 6px;
+    }
+
+    .content {
+      padding: 32px;
+      color: #fff;
+    }
+
+    .content h2 {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 13px;
+      color: #e8b923;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .content p {
+      font-size: 22px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .highlight { color: #e8b923; }
+
+    .info-box {
+      background: #162447;
+      border-left: 4px solid #e8b923;
+      padding: 18px;
+      margin: 24px 0;
+    }
+
+    .info-box p {
+      font-size: 21px;
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      background: #0a0a0a;
+      border-top: 3px solid #d4202a;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 18px;
+      color: #aaa;
+      line-height: 1.6;
+    }
+
+    .footer strong {
+      color: #e8b923;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 13px;
+    }
+
+  </style>
+</head>
+
+<body>
+<div class="email-container">
+  <div class="header">
+    <div class="logo">PRAGATI</div>
+    <div class="year">'25</div>
+  </div>
+
+  <div class="content">
+    <h2>WELCOME TO PRAGATI '25</h2>
+
+    <p>Dear <span class="highlight">{{.UserName}}</span>,</p>
+
+    <p>
+      We are pleased to welcome you to <span class="highlight">Pragati ’25</span>,
+      the annual management fest of Amrita School of Business, Coimbatore.
+    </p>
+
+    <p>
+      Pragati is designed to foster learning, collaboration, and professional
+      growth through engaging events and discussions.
+    </p>
+
+    <div class="info-box">
+      <p><strong class="highlight">📅 Date:</strong> February 16 & 17, 2025</p>
+      <p><strong class="highlight">📍 Venue:</strong> ASB, Coimbatore</p>
+      <p><strong class="highlight">🎯 Format:</strong> Two-Day Fest</p>
+    </div>
+
+    <p>
+      We’re glad to have you join us and look forward to your participation.
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>
+      Warm Regards,<br />
+      <strong>Team Pragati ’25</strong><br />
+      Amrita School of Business, Coimbatore
+    </p>
+  </div>
+</div>
+</body>
+</html>
