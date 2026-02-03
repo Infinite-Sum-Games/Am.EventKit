@@ -2,175 +2,215 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Anokha 2026 - Registration Confirmation</title>
+    <title>Pragati ’25 – Registration Confirmation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <style>
-      /* Reset & base styles */
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap");
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: "Poppins", "Segoe UI", Tahoma, Geneva, sans-serif;
       }
 
       body {
-        background-color: #fffdea; /* Soft light yellow */
-        color: #333;
-        padding: 20px;
+        font-family: "VT323", monospace;
+        background-color: #0a0a0a;
+        padding: 25px 15px;
+        color: #ffffff;
       }
 
       .container {
-        max-width: 640px;
+        max-width: 650px;
         margin: auto;
-        background: #ffffff;
-        padding: 35px;
-        border-radius: 12px;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-        border-left: 8px solid #facc15;
+        background: #1a1a2e;
+        border: 3px solid #d4202a;
       }
 
-      .header-img {
+      .header {
+        background: #d4202a;
+        padding: 30px 20px;
         text-align: center;
-        margin-bottom: 20px;
       }
 
-      .header-img img {
-        height: 80px;
+      .header h1 {
+        font-family: "Press Start 2P", cursive;
+        font-size: 26px;
+        color: #e8b923;
+        text-shadow: 2px 2px 0 #000;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 20px;
+        color: #fff;
+      }
+
+      .content {
+        padding: 35px;
       }
 
       .content h2 {
-        font-size: 24px;
-        color: #1f2937;
-        margin-bottom: 16px;
+        font-family: "Press Start 2P", cursive;
+        font-size: 14px;
+        color: #e8b923;
+        margin-bottom: 20px;
         text-align: center;
       }
 
       .content p {
-        font-size: 16px;
-        color: #4b5563;
-        margin-bottom: 18px;
+        font-size: 22px;
         line-height: 1.6;
+        margin-bottom: 18px;
+        color: #e5e5e5;
       }
 
-      .event-summary {
-        background-color: #fefce8;
-        border-left: 4px solid #facc15;
-        border-radius: 10px;
-        padding: 15px 20px;
-        margin: 20px 0;
+      .highlight {
+        color: #e8b923;
       }
 
-      .event-summary p {
-        margin: 6px 0;
-        font-size: 15px;
+      .summary-box {
+        background: #162447;
+        border-left: 5px solid #e8b923;
+        padding: 18px 22px;
+        margin: 25px 0;
+      }
+
+      .summary-box p {
+        font-size: 21px;
+        margin-bottom: 8px;
+        color: #ffffff;
+      }
+
+      .info-box {
+        background: #0f172a;
+        border: 2px dashed #d4202a;
+        padding: 20px;
+        margin: 30px 0;
+      }
+
+      .info-box p {
+        font-size: 20px;
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+
+      .link {
+        color: #e8b923;
+        text-decoration: none;
+      }
+
+      .link:hover {
+        text-decoration: underline;
       }
 
       .footer {
-        margin-top: 30px;
-        font-size: 14px;
-        color: #6b7280;
+        background: #0a0a0a;
+        border-top: 3px solid #d4202a;
+        padding: 25px 20px;
         text-align: center;
       }
 
       .footer p {
-        margin-bottom: 8px;
+        font-size: 18px;
+        color: #aaa;
+        line-height: 1.6;
       }
 
-      .contact-link {
-        color: #d97706;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .contact-link:hover {
-        text-decoration: underline;
+      .footer strong {
+        font-family: "Press Start 2P", cursive;
+        font-size: 13px;
+        color: #e8b923;
       }
 
       @media (max-width: 600px) {
-        .container {
+        .header h1 {
+          font-size: 20px;
+        }
+
+        .content {
           padding: 25px;
         }
 
-        .content h2 {
+        .content p {
           font-size: 20px;
         }
       }
     </style>
   </head>
+
   <body>
     <div class="container">
-      <div class="header-img">
-        <img
-          src="https://z8zpxxhr4u.ufs.sh/f/a50ALO7tkuEHROc2RQ2LzkZWMT7gKYsJ21pBfPUrFyAxE8Ib"
-          alt="Anokha Logo"
-        />
+      <div class="header">
+        <h1>PRAGATI ’25</h1>
+        <p>Registration Confirmation</p>
       </div>
+
       <div class="content">
-        <h2>Dear {{.UserName}},</h2>
+        <h2>WELCOME TO PRAGATI ’25</h2>
 
         <p>
-          Thank you for registering for <strong>{{.EventName}}</strong> at
-          <strong>Anokha 2026</strong>! We're excited to have you participate in
-          this exciting event as part of our annual tech fest at Amrita Vishwa
-          Vidyapeetham, Coimbatore.
+          Dear <span class="highlight">{{.UserName}}</span>,
         </p>
 
-        <div class="event-summary">
-          <p><strong>Event:</strong> {{.EventName}}</p>
-          <p><strong>Date:</strong> {{.EventDate}}</p>
-          <p><strong>Time:</strong> {{.EventTime}}</p>
-          <p><strong>Location:</strong> {{.EventLocation}}</p>
+        <p>
+          Thank you for registering for
+          <span class="highlight">{{.EventName}}</span> as part of
+          <span class="highlight">Pragati ’25</span>, the annual management fest
+          of Amrita School of Business, Coimbatore.
+        </p>
+
+        <div class="summary-box">
+          <p><strong>📌 Event:</strong> {{.EventName}}</p>
+          <p><strong>📅 Date:</strong> {{.EventDate}}</p>
+          <p><strong>⏰ Time:</strong> {{.EventTime}}</p>
+          <p><strong>📍 Venue:</strong> {{.EventLocation}}</p>
         </div>
 
-        <div class="event-summary">
-          <p><strong>Important Instructions:</strong></p>
+        <div class="info-box">
+          <p><strong>Important Information:</strong></p>
           <p>
-            <strong>• ID Requirement:</strong> Please note that a valid college
-            ID card is mandatory for entry into the campus and to attend Anokha
-            2026, applicable to both Amrita and non-Amrita students.
+            • A valid college ID card is mandatory for entry into the campus for
+            all participants.
           </p>
           <p>
-            <strong>• Accommodation:</strong> Please check the provided link to
-            register and know more about accommodation:
+            • Please arrive at the venue at least 15 minutes prior to the event
+            start time.
+          </p>
+          <p>
+            • For accommodation-related details, please visit:
             <a
-              href="https://anokha.amrita.edu/accommodation"
-              class="contact-link"
-              >https://anokha.amrita.edu/accommodation</a
-            >.
-          </p>
-          <p>
-            <strong>• Payment Mode (Accommodation Charges):</strong> For
-            accommodation charges, please note that only UPI payments will be
-            allowed during the on-spot allotment process.
+              href="https://pragati.amrita.edu/accommodation"
+              class="link"
+              >pragati.amrita.edu/accommodation</a
+            >
           </p>
         </div>
 
         <p>
-          Please arrive at the venue at least 15 minutes early. If your event is
-          online, a link and additional instructions will be emailed to you
-          shortly.
-        </p>
-
-        <p>
-          We hope this event enriches your Anokha 2026 experience. Stay tuned
-          for more updates, and don't forget to explore other events and
-          workshops!
+          We look forward to your participation and hope Pragati ’25 proves to
+          be an enriching and memorable experience for you.
         </p>
 
         <p>
           Warm regards,<br />
-          <strong>WMD Team</strong><br />
-          Anokha 2026<br />
-          Amrita Vishwa Vidyapeetham<br />
-          Coimbatore Campus
+          <strong>Team Pragati ’25</strong><br />
+          Amrita School of Business<br />
+          Coimbatore
         </p>
 
         <p>
-          If you have any questions or need support, contact us at
-          <a href="mailto:anokhapr@cb.amrita.edu" class="contact-link"
-            >anokhapr@cb.amrita.edu</a
+          For any queries, feel free to contact us at
+          <a href="mailto:pragati@amrita.edu" class="link"
+            >pragati@amrita.edu</a
           >.
         </p>
+      </div>
+
+      <div class="footer">
+        <p>© 2025 Pragati. All rights reserved.</p>
       </div>
     </div>
   </body>
