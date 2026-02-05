@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"math"
 	"net/http"
 	"time"
 
@@ -151,8 +150,8 @@ func BookEvent(c *gin.Context) {
 	}
 
 	// Adding GST
-	totalFeeWithGST := float64(totalFee) * 1.18
-	totalFee = int32(math.Ceil(totalFeeWithGST))
+	// totalFeeWithGST := float64(totalFee) * 1.18
+	// totalFee = int32(math.Ceil(totalFeeWithGST))
 
 	// Fetching all student details for the team
 	students, err := q.GetStudentsByEmails(ctx, tx, allMembers)
