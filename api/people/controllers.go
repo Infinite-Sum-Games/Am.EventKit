@@ -174,3 +174,30 @@ func DeletePerson(c *gin.Context) {
 	})
 	pkg.Log.SuccessCtx(c)
 }
+
+func GetAllStudents(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := cmd.DBPool.Acquire(ctx)
+	if pkg.HandleDbAcquireErr(c, err, "STUDENTS") {
+		return
+	}
+	defer conn.Release()
+
+	q := db.New()
+	students, err := q.GetAllStudents(ctx, conn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[STUDENTS-ERROR]: Failed to fetch students", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Students list fetched successfully",
+		"students": students,
+	})
+	pkg.Log.SuccessCtx(c)
+}
