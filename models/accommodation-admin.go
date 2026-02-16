@@ -132,8 +132,11 @@ func (r MapQrStudentIdRequest) Validate() error {
 		v.Field(
 			&r.HospitalityId,
 			v.Required,
-			v.Match(regexp.MustCompile(`^A\d{4}CBE$`)).
-				Error("hospitality_id must be in the format A1234CBE"),
+			// v.Match(regexp.MustCompile(`^A\d{4}CBE$`)).
+			// 	Error("hospitality_id must be in the format A1234CBE"),
+			//P001
+			v.Match(regexp.MustCompile(`^P\d{3}$`)).
+				Error("hospitality_id must be in the format P001"),
 		),
 	)
 }
