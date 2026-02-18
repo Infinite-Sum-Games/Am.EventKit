@@ -73,7 +73,7 @@ func CheckGate(c *gin.Context) {
 	// Normalize just in case
 	email = strings.ToLower(email)
 
-	gateEmailRegex := regexp.MustCompile(`^[a-z]+\.gate@amrita\.edu$`)
+	gateEmailRegex := regexp.MustCompile(`^[a-z0-9.]+\.gate@(cb\.students\.)?amrita\.edu$`)
 
 	if !gateEmailRegex.MatchString(email) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -92,7 +92,7 @@ func CheckFinance(c *gin.Context) {
 	// Normalize just in case
 	email = strings.ToLower(email)
 
-	financeEmailRegex := regexp.MustCompile(`^[a-z]+\.finance@amrita\.edu$`)
+	financeEmailRegex := regexp.MustCompile(`^[a-z0-9.]+\.finance@(cb\.students\.)?amrita\.edu$`)
 
 	if !financeEmailRegex.MatchString(email) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -111,7 +111,7 @@ func CheckSecurity(c *gin.Context) {
 	// Normalize just in case
 	email = strings.ToLower(email)
 
-	securityEmailRegex := regexp.MustCompile(`^[a-z]+\.security@amrita\.edu$`)
+	securityEmailRegex := regexp.MustCompile(`^[a-z0-9.]+\.security@(cb\.students\.)?amrita\.edu$`)
 
 	if !securityEmailRegex.MatchString(email) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -130,7 +130,7 @@ func CheckHostel(c *gin.Context) {
 	// Normalize just in case
 	email = strings.ToLower(email)
 
-	hostelEmailRegex := regexp.MustCompile(`^[a-z]+\.hostel@amrita\.edu$`)
+	hostelEmailRegex := regexp.MustCompile(`^[a-z0-9.]+\.hostel@(cb\.students\.)?amrita\.edu$`)
 
 	if !hostelEmailRegex.MatchString(email) {
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
