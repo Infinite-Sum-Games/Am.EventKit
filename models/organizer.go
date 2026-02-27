@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -15,8 +17,9 @@ type CreateOrganizerRequest struct {
 	FacultyHead   string `json:"faculty_head"`
 }
 
-func (r CreateOrganizerRequest) Validate() error {
-	return v.ValidateStruct(&r,
+func (r *CreateOrganizerRequest) Validate() error {
+	r.Email = strings.ToLower(r.Email)
+	return v.ValidateStruct(r,
 
 		// Required fields
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 100)),
@@ -40,8 +43,9 @@ type EditOrganizerRequest struct {
 	FacultyHead   string `json:"faculty_head"`
 }
 
-func (r EditOrganizerRequest) Validate() error {
-	return v.ValidateStruct(&r,
+func (r *EditOrganizerRequest) Validate() error {
+	r.Email = strings.ToLower(r.Email)
+	return v.ValidateStruct(r,
 
 		v.Field(&r.Name, v.Required, v.RuneLength(3, 100)),
 		v.Field(&r.Email, v.Required, is.Email),

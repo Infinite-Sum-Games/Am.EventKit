@@ -2,6 +2,7 @@ package models
 
 import (
 	"regexp"
+	"strings"
 
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
@@ -14,8 +15,11 @@ type CreateNewPerson struct {
 	Email       *string `json:"email"`
 }
 
-func (p CreateNewPerson) Validate() error {
-	return v.ValidateStruct(&p,
+func (p *CreateNewPerson) Validate() error {
+	if p.Email != nil {
+		*p.Email = strings.ToLower(*p.Email)
+	}
+	return v.ValidateStruct(p,
 		v.Field(&p.Name, v.Required, v.Length(2, 100)),
 		v.Field(&p.PhoneNumber, v.Required,
 			v.Match(regexp.MustCompile(`^[0-9]{10}$`))),
@@ -36,8 +40,11 @@ type UpdatePersonEventRequest struct {
 	Email       *string `json:"email"`
 }
 
-func (p UpdatePersonEventRequest) Validate() error {
-	return v.ValidateStruct(&p,
+func (p *UpdatePersonEventRequest) Validate() error {
+	if p.Email != nil {
+		*p.Email = strings.ToLower(*p.Email)
+	}
+	return v.ValidateStruct(p,
 		v.Field(&p.Name, v.When(
 			p.Name != "",
 			v.Length(2, 100),

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -24,8 +26,11 @@ func (t TeamMember) Validate() error {
 	)
 }
 
-func (e TeamBookingRequest) Validate() error {
-	return v.ValidateStruct(&e,
+func (e *TeamBookingRequest) Validate() error {
+	for i := range e.TeamMembers {
+		e.TeamMembers[i].StudentEmail = strings.ToLower(e.TeamMembers[i].StudentEmail)
+	}
+	return v.ValidateStruct(e,
 		v.Field(&e.TeamName, v.Required, v.Length(2, 100)),
 		v.Field(&e.TeamMembers,
 			v.Length(0, 100),

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
@@ -9,8 +11,9 @@ type CheckEmailRequest struct {
 	Email string `json:"email"`
 }
 
-func (s CheckEmailRequest) Validate() error {
-	return v.ValidateStruct(&s,
+func (s *CheckEmailRequest) Validate() error {
+	s.Email = strings.ToLower(s.Email)
+	return v.ValidateStruct(s,
 		v.Field(&s.Email, v.Required, is.Email),
 	)
 }
@@ -26,8 +29,9 @@ type StudentOnboardingRequest struct {
 	CollegeCity      string `json:"college_city"`
 }
 
-func (s StudentOnboardingRequest) Validate() error {
-	return v.ValidateStruct(&s,
+func (s *StudentOnboardingRequest) Validate() error {
+	s.Email = strings.ToLower(s.Email)
+	return v.ValidateStruct(s,
 		v.Field(&s.Name, v.Required, v.Length(3, 50)),
 		v.Field(&s.Email, v.Required, is.Email),
 		v.Field(&s.Password, v.Required, v.Length(8, 0)),
@@ -42,8 +46,9 @@ type LoginRequest struct {
 	HashedPassword string `json:"password"`
 }
 
-func (l LoginRequest) Validate() error {
-	return v.ValidateStruct(&l,
+func (l *LoginRequest) Validate() error {
+	l.Email = strings.ToLower(l.Email)
+	return v.ValidateStruct(l,
 		v.Field(&l.Email, v.Required, is.Email),
 		v.Field(&l.HashedPassword, v.Required))
 }
@@ -63,8 +68,9 @@ type ForgetPasswordRequest struct {
 	NewPassword string `json:"new_password"`
 }
 
-func (f ForgetPasswordRequest) Validate() error {
-	return v.ValidateStruct(&f,
+func (f *ForgetPasswordRequest) Validate() error {
+	f.Email = strings.ToLower(f.Email)
+	return v.ValidateStruct(f,
 		v.Field(&f.Email, v.Required, is.Email),
 		v.Field(&f.NewPassword, v.Required, v.Length(8, 0)))
 }
