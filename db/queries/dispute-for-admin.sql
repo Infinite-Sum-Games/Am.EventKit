@@ -17,11 +17,19 @@ SELECT id,
 FROM dispute
 WHERE id = $1;
 
+-- name: CheckDisputeExistsByTxnIdQuery :one
+SELECT COUNT(*) AS count
+FROM dispute
+WHERE txn_id = $1
+AND dispute_status = 'OPEN';
+
+
 -- name: CreateDisputeQuery :exec
 INSERT INTO dispute (
     txn_id,
-    event_id
-) VALUES ($1, $2);
+    event_id,
+    student_email
+) VALUES ($1, $2, $3);
 
 -- name: GetEventIdByTxnIdQuery :one
 SELECT 
@@ -49,8 +57,7 @@ WHERE id = $1;
 
 -- name: UpdateDisputeQuery :execrows
 UPDATE dispute
-SET student_email = $2,
-    description = $3,
+SET description = $2,
     updated_at = NOW()
 WHERE id = $1;
 
@@ -66,4 +73,9 @@ SET dispute_status = 'CLOSED_AS_FALSE',
     updated_at = NOW()
 WHERE id = $1;
 
-
+-- name: GetEmailByTxnIdQuery :one
+SELECT s.email
+FROM student s
+INNER JOIN bookings b 
+  ON s.id = b.student_id
+WHERE b.txn_id = $1;

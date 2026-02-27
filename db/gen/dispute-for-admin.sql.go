@@ -12,6 +12,20 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkDisputeExistsByTxnIdQuery = `-- name: CheckDisputeExistsByTxnIdQuery :one
+SELECT COUNT(*) AS count
+FROM dispute
+WHERE txn_id = $1
+AND dispute_status = 'OPEN'
+`
+
+func (q *Queries) CheckDisputeExistsByTxnIdQuery(ctx context.Context, db DBTX, txnID string) (int64, error) {
+	row := db.QueryRow(ctx, checkDisputeExistsByTxnIdQuery, txnID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const closeAsFalseDisputeQuery = `-- name: CloseAsFalseDisputeQuery :execrows
 UPDATE dispute
 SET dispute_status = 'CLOSED_AS_FALSE',
@@ -45,17 +59,19 @@ func (q *Queries) CloseAsTrueDisputeQuery(ctx context.Context, db DBTX, id uuid.
 const createDisputeQuery = `-- name: CreateDisputeQuery :exec
 INSERT INTO dispute (
     txn_id,
-    event_id
-) VALUES ($1, $2)
+    event_id,
+    student_email
+) VALUES ($1, $2, $3)
 `
 
 type CreateDisputeQueryParams struct {
-	TxnID   string    `json:"txn_id"`
-	EventID uuid.UUID `json:"event_id"`
+	TxnID        string      `json:"txn_id"`
+	EventID      uuid.UUID   `json:"event_id"`
+	StudentEmail pgtype.Text `json:"student_email"`
 }
 
 func (q *Queries) CreateDisputeQuery(ctx context.Context, db DBTX, arg CreateDisputeQueryParams) error {
-	_, err := db.Exec(ctx, createDisputeQuery, arg.TxnID, arg.EventID)
+	_, err := db.Exec(ctx, createDisputeQuery, arg.TxnID, arg.EventID, arg.StudentEmail)
 	return err
 }
 
@@ -153,6 +169,21 @@ func (q *Queries) GetDisputeByIDQuery(ctx context.Context, db DBTX, id uuid.UUID
 	return i, err
 }
 
+const getEmailByTxnIdQuery = `-- name: GetEmailByTxnIdQuery :one
+SELECT s.email
+FROM student s
+INNER JOIN bookings b 
+  ON s.id = b.student_id
+WHERE b.txn_id = $1
+`
+
+func (q *Queries) GetEmailByTxnIdQuery(ctx context.Context, db DBTX, txnID string) (string, error) {
+	row := db.QueryRow(ctx, getEmailByTxnIdQuery, txnID)
+	var email string
+	err := row.Scan(&email)
+	return email, err
+}
+
 const getEventIdByDisputeIDQuery = `-- name: GetEventIdByDisputeIDQuery :one
 SELECT 
     d.event_id AS event_id
@@ -204,20 +235,18 @@ func (q *Queries) IncrementSeatFilledCountQuery(ctx context.Context, db DBTX, id
 
 const updateDisputeQuery = `-- name: UpdateDisputeQuery :execrows
 UPDATE dispute
-SET student_email = $2,
-    description = $3,
+SET description = $2,
     updated_at = NOW()
 WHERE id = $1
 `
 
 type UpdateDisputeQueryParams struct {
-	ID           uuid.UUID   `json:"id"`
-	StudentEmail pgtype.Text `json:"student_email"`
-	Description  pgtype.Text `json:"description"`
+	ID          uuid.UUID   `json:"id"`
+	Description pgtype.Text `json:"description"`
 }
 
 func (q *Queries) UpdateDisputeQuery(ctx context.Context, db DBTX, arg UpdateDisputeQueryParams) (int64, error) {
-	result, err := db.Exec(ctx, updateDisputeQuery, arg.ID, arg.StudentEmail, arg.Description)
+	result, err := db.Exec(ctx, updateDisputeQuery, arg.ID, arg.Description)
 	if err != nil {
 		return 0, err
 	}

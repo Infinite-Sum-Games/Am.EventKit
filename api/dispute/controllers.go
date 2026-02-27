@@ -63,11 +63,37 @@ func CreateDispute(c *gin.Context) {
 		return
 	}
 
+	disputeCount, err := q.CheckDisputeExistsByTxnIdQuery(ctx, tx, txnId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to check if dispute exists by transaction ID", err)
+		return
+	}
+	if disputeCount > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Dispute already exists for this transaction",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Attempted to create duplicate dispute for transaction ID", nil)
+		return
+	}
+
+	studentEmail, err := q.GetEmailByTxnIdQuery(ctx, tx, txnId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Oops! Something happened. Please try again later",
+		})
+		pkg.Log.ErrorCtx(c, "[DISPUTE-ERROR]: Failed to fetch student email by transaction ID", err)
+		return
+	}
+
 	if event.EventStatus == "ACTIVE" {
 
 		err = q.CreateDisputeQuery(ctx, tx, db.CreateDisputeQueryParams{
-			EventID: event.EventID,
-			TxnID:   txnId,
+			EventID:      event.EventID,
+			TxnID:        txnId,
+			StudentEmail: pkg.ToPgText(studentEmail),
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -136,9 +162,8 @@ func UpdateDispute(c *gin.Context) {
 	q := db.New()
 
 	row, err := q.UpdateDisputeQuery(ctx, conn, db.UpdateDisputeQueryParams{
-		ID:           disputeId,
-		StudentEmail: pkg.ToPgText(req.StudentEmail),
-		Description:  pkg.ToPgText(req.Description),
+		ID:          disputeId,
+		Description: pkg.ToPgText(req.Description),
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
