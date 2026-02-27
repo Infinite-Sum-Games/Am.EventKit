@@ -58,3 +58,16 @@ func MapPayUStatus(res PayUVerifyResponse, txnID string) string {
 		return PaymentNotFound
 	}
 }
+
+type ReverifyTransactionRequest struct {
+	TxnID string `json:"txn_id" binding:"required"`
+}
+
+func (s ReverifyTransactionRequest) Validate() error {
+	return v.ValidateStruct(&s,
+		v.Field(&s.TxnID,
+			v.Required,
+			v.Match(pkg.Txn_regex).
+				Error("txn_id is not valid")),
+	)
+}
